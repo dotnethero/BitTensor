@@ -1,7 +1,10 @@
 ﻿using BitTensor.Core;
-using System.Diagnostics;
 using BitTensor.Models;
 using BitTensor.Units;
+using System.Diagnostics;
+
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("BitTensor.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("BitTensor.Benchmarks")]
 
 namespace BitTensor;
 
@@ -15,7 +18,23 @@ public class Program
         // Tensor_count();
         Module_performace_inv();
     }
-    
+
+    public static void Module_performace_inv() // TODO: (ADD) Shapes are incompatible: (5,10) and (5,1)
+    {
+        const int batchDimension = 0;
+
+        var x = Tensor.Random.Normal([10, 100]).Transpose();
+        var d = Tensor.Random.Normal([10, 5]).Transpose();
+
+        var model = Model.Sequential(
+        [
+            new LinearLayerInv(x.Shape[batchDimension], d.Shape[batchDimension], Tensor.Sigmoid)
+        ]);
+
+        var compilation = model.Compile(x, d);
+        model.Fit(compilation, lr: 0.001f, epochs: 100);
+    }
+
     public static void Two_points_in_100D_to_10D()
     {
         var x = Tensor.Random.Uniform([2, 100]);
@@ -60,35 +79,6 @@ public class Program
         Console.WriteLine(test2);
     }
 
-    public static void Module_performace()
-    {
-        var x = Tensor.Random.Normal([1, 10000]);
-        var d = Tensor.Random.Normal([1, 40]);
-        var sw = Stopwatch.StartNew();
-
-        var model = Model.Sequential(
-        [
-            new LinearLayer(x.Shape[1], d.Shape[1], Tensor.Sigmoid)
-        ]);
-        var compilation = model.Compile(x, d);
-        model.Fit(compilation, lr: 0.001f, epochs: 15000);
-        Console.WriteLine(sw.Elapsed);
-    }
-
-    public static void Module_performace_inv()
-    {
-        var x = Tensor.Random.Normal([1, 10000]).Transpose();
-        var d = Tensor.Random.Normal([1, 40]).Transpose();
-        var sw = Stopwatch.StartNew();
-
-        var model = Model.Sequential(
-        [
-            new LinearLayerInv(x.Shape[0], d.Shape[0], Tensor.Sigmoid)
-        ]);
-        var compilation = model.Compile(x, d);
-        model.Fit(compilation, lr: 0.001f, epochs: 15000);
-        Console.WriteLine(sw.Elapsed);
-    }
 
     public static void Mojo_fun()
     {

@@ -1,5 +1,6 @@
 ﻿using BitTensor.Core;
 using BitTensor.Units;
+using System.Diagnostics;
 
 namespace BitTensor.Models;
 
@@ -22,11 +23,11 @@ public abstract class Model : ILayer
         return new(loss, gradients);
     }
 
-    public void Fit(Compilation compilation, float lr, int epochs)
+    public void Fit(Compilation compilation, float lr, int epochs, bool trace = false)
     {
         for (var i = 0; i < epochs; i++)
         {
-            if (i % (epochs / 10) == 0)
+            if (trace && i % (epochs / 10) == 0)
             {
                 Console.WriteLine(compilation.Loss.Values.Scalar());
             }

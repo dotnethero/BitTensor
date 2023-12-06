@@ -1,6 +1,4 @@
-﻿[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("BitTensor.Tests")]
-
-namespace BitTensor.Core;
+﻿namespace BitTensor.Core;
 
 internal static class ArrayExtensions
 {

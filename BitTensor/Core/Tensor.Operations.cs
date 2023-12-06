@@ -2,7 +2,7 @@
 
 public partial class Tensor
 {
-    public static Tensor Add(Tensor a, Tensor b)
+    public static Tensor Add(Tensor a, Tensor b) // TODO: add compatibility like in numpy
     {
         int[] shape;
 
@@ -200,8 +200,8 @@ public partial class Tensor
         var shrinkStart = 0;
         var shrinkEnd = 0;
 
-        var ato = a.Transpose(); // TODO: make transpose lazy
-        var bto = b.Transpose();
+        var ao = a;
+        var bo = b;
 
         if (a.Dimensions == 1)
         {
@@ -233,16 +233,16 @@ public partial class Tensor
         Tensor[] MatMulBackward(Tensor grad, Tensor local)
         {
             var da =
-                bto.Dimensions == 1 &&
+                bo.Dimensions == 1 &&
                 grad.Dimensions == 1
-                    ? Outer(grad, bto)
-                    : Matmul(grad, bto);
+                    ? Outer(grad, bo.Transpose())
+                    : Matmul(grad, bo.Transpose());
 
             var db =
-                ato.Dimensions == 1 &&
+                ao.Dimensions == 1 &&
                 grad.Dimensions == 1
-                    ? Outer(ato, grad)
-                    : Matmul(ato, grad);
+                    ? Outer(ao.Transpose(), grad)
+                    : Matmul(ao.Transpose(), grad);
 
             return [da, db];
         }
