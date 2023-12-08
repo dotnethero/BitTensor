@@ -30,6 +30,13 @@ static class PythonModuleExtensions
         var array = scope.Eval<int[]>($"{jnptensor}.shape")!;
         return array;
     }
+    
+    public static Tensor GetTensor(this PyModule scope, string jnptensor)
+    {
+        var values = scope.Eval<float[]>($"{jnptensor}.flatten().tolist()")!;
+        var shape = scope.Eval<int[]>($"{jnptensor}.shape")!;
+        return new(shape, values);
+    }
 
     public static Tensor Get1D(this PyModule scope, string jnptensor)
     {

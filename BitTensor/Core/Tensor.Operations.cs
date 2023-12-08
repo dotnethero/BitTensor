@@ -2,26 +2,9 @@
 
 public partial class Tensor
 {
-    public static Tensor Add(Tensor a, Tensor b) // TODO: add compatibility like in numpy
+    public static Tensor Add(Tensor a, Tensor b)
     {
-        int[] shape;
-
-        if (a.Dimensions > b.Dimensions)
-        {
-            shape = a.Shape;
-            Shapes.EnsureShapesAreEqual(a.Shape[^b.Dimensions..], b.Shape);
-        }
-        else if (a.Dimensions < b.Dimensions)
-        {
-            shape = b.Shape;
-            Shapes.EnsureShapesAreEqual(a.Shape, b.Shape[^a.Dimensions..]);
-        }
-        else
-        {
-            // equal
-            shape = a.Shape;
-            Shapes.EnsureShapesAreEqual(a.Shape, b.Shape);
-        }
+        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
 
         return new(
             shape,
@@ -29,7 +12,7 @@ public partial class Tensor
             forward: static self => Ops.Add(self.A, self.B, self.Data),
             backward: static (grad, self) =>
             {
-                var agrad = ReduceLeft(grad, self.Dimensions - self.A.Dimensions);
+                var agrad = ReduceLeft(grad, self.Dimensions - self.A.Dimensions); // TODO: make compatible with jax
                 var bgrad = ReduceLeft(grad, self.Dimensions - self.B.Dimensions);
                 return [agrad, bgrad];
             });
@@ -79,39 +62,17 @@ public partial class Tensor
 
     public static Tensor Mul(Tensor a, Tensor b)
     {
-        if (ReferenceEquals(a, Tensor.One))
+        if (ReferenceEquals(a, One))
             return b;
 
-        if (ReferenceEquals(b, Tensor.One))
+        if (ReferenceEquals(b, One))
             return a;
 
         if (ReferenceEquals(a, b))
             return Square(a);
 
-        int[] shape;
-
-        switch (a.Size, b.Size)
-        {
-            case (1, 1):
-                shape = [];
-                break;
-
-            case (>1, 1):
-                shape = a.Shape;
-                break;
-
-            case (1, >1):
-                shape = b.Shape;
-                break;
-
-            default:
-                if (a.Size != b.Size)
-                    throw new InvalidOperationException($"a shape {a.Shape.Serialize()} != b shape {b.Shape.Serialize()}"); // TODO: check shapes
-
-                shape = b.Shape;
-                break;
-        }
-
+        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
+        
         return new(
             shape,
             children: [a, b],
