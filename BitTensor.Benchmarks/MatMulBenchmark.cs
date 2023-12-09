@@ -52,7 +52,7 @@ public class MatMulBenchmark
     public void MatMul_low_level()
     {
         var m = Ops.GetTransposeMatrix(y, [1, 0]);
-        Ops.ApplyMatrix(y.Data, m, yT.Data);
+        Ops.ApplyTransposeMatrix(y.Data, m, yT.Data);
         Ops.MatMulTransposed(x, yT, z.Data);
     }
     

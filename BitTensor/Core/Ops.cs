@@ -66,14 +66,55 @@ internal static unsafe class Ops
         }
     }
 
-    public static void Sum(Tensor a, float[] result) // TODO: support axis
+    public static void Sum(Tensor a, float[] result)
     {
         result[0] = TensorPrimitives.Sum(a.Values);
     }
-    
-    public static void Broadcast(Tensor a, float[] result) // TODO: support axis
+
+    public static void SumAxis(Tensor a, int[] axis, float[] result) // TODO: optimize
     {
-        Array.Fill(result, a.Values[0]);
+        var span = a.Values;
+        var strides = a.Shape.GetStrides();
+
+        var axis_shape = axis.Select(ax => a.Shape[ax]).ToArray();
+        var axis_strides = axis_shape.GetStrides();
+        var other_axis = a.Shape.Select((_, i) => i).Where(i => !axis.Contains(i)).ToArray();
+        var other_strides = other_axis.Select(ax => a.Shape[ax]).GetStrides();
+
+        var count = axis_shape.Product();
+        var iterations = a.Size / count;
+
+        for (var i = 0; i < iterations; ++i)
+        {
+            var temp1 = i;
+            var shift = 0;
+
+            for (var m = 0; m < other_strides.Length; m++)
+            {
+                var ax = other_axis[m];
+                var index = temp1 / other_strides[m];
+                temp1 -= index * other_strides[m];
+                shift += strides[ax] * index;
+            }
+
+            result[i] = 0;
+
+            for (var j = 0; j < count; ++j)
+            {
+                var temp2 = j;
+                var total = 0;
+
+                for (var k = 0; k < axis_strides.Length; k++)
+                {
+                    var ax = axis[k];
+                    var index = temp2 / axis_strides[k];
+                    temp2 -= index * axis_strides[k];
+                    total += strides[ax] * index;
+                }
+
+                result[i] += span[shift + total];
+            }
+        }
     }
 
     public static void ReduceLeft(Tensor a, int dimensions, float[] result)
@@ -86,6 +127,11 @@ internal static unsafe class Ops
             var slice = a.Values.Slice(i * size, size);
             TensorPrimitives.Add(result, slice, result);
         }
+    }
+    
+    public static void Broadcast(Tensor a, float[] result) // TODO: support axis
+    {
+        Array.Fill(result, a.Values[0]);
     }
 
     public static void MatMulTransposed(Tensor a, Tensor bT, float[] results)
@@ -182,7 +228,7 @@ internal static unsafe class Ops
         return matrix;
     }
     
-    public static void ApplyMatrix(float[] source, int[] matrix, float[] result)
+    public static void ApplyTransposeMatrix(float[] source, int[] matrix, float[] result)
     {
         var size = result.Length;
 
@@ -301,6 +347,8 @@ internal static unsafe class Ops
         }
     }
 
-    internal static Tensor[] NotSupported(Tensor grad, Tensor self) => 
+    internal static Tensor[] NotSupported(Tensor grad, Tensor self)
+    {
         throw new NotSupportedException("Operations is not supported");
+    }
 }

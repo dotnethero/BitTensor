@@ -6,14 +6,35 @@ namespace BitTensor.Core;
 [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
 internal static class Shapes
 {
-    public static int Product(this int[] items)
+    public static int Product(this IEnumerable<int> items)
     {
         var result = 1;
-        for (var i = 0; i < items.Length; i++)
+
+        foreach (var item in items)
         {
-            result *= items[i];
+            result *= item;
         }
+
         return result;
+    }
+
+    public static int[] GetStrides(this IEnumerable<int> shape)
+    {
+        var items = shape.ToArray();
+        if (items.Length == 0)
+            return Array.Empty<int>();
+
+        var dims = items.Length;
+        var strides = new int[dims];
+
+        strides[^1] = 1;
+
+        for (var i = dims - 2; i >= 0; --i)
+        {
+            strides[i] = strides[i + 1] * items[i + 1];
+        }
+
+        return strides;
     }
 
     public static bool AreEqual(int[] a, int[] b)

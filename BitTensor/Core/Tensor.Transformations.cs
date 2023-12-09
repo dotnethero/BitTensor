@@ -69,9 +69,6 @@ public partial class Tensor
 
     public Tensor Transpose(int[] axes)
     {
-        if (TransposeHint is not null)
-            return TransposeHint;
-
         ArgumentOutOfRangeException.ThrowIfNotEqual(axes.Length, Dimensions);
         ArgumentOutOfRangeException.ThrowIfNotEqual(new HashSet<int>(axes).Count, axes.Length);
         
@@ -94,8 +91,8 @@ public partial class Tensor
         return new(
             shape,
             children: [this],
-            forward: t => Ops.ApplyMatrix(this.Data, matrix, t.Data),
-            backward: Ops.NotSupported)
+            forward: self => Ops.ApplyTransposeMatrix(this.Data, matrix, self.Data),
+            backward: (grad, self) => [grad.Transpose(axes)])
             {
                 TransposeHint = this
             };

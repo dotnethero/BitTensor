@@ -19,7 +19,7 @@ public class Program
         Module_performace_inv();
     }
 
-    public static void Module_performace_inv() // TODO: (ADD) Shapes are incompatible: (5,10) and (5,1)
+    public static void Module_performace_inv()
     {
         const int batchDimension = 0;
 

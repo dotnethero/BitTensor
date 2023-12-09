@@ -32,8 +32,12 @@ public static class Auto
     {
         for (var i = 0; i < variables.Length; ++i)
         {
+            Shapes.EnsureShapesAreEqual(variables[i].Shape, gradients[i].Shape);
+
+            var vars = variables[i].Values;
             var gradient = gradients[i].Values;
-            TensorPrimitives.MultiplyAdd(gradient, -lr, variables[i].Values, variables[i].Data);
+
+            TensorPrimitives.MultiplyAdd(gradient, -lr, vars, variables[i].Data);
             variables[i].Invalidate();
         }
     }

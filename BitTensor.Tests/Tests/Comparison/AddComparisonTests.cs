@@ -1,7 +1,5 @@
-﻿using BitTensor.Core;
-using BitTensor.Core.Tests;
+﻿using BitTensor.Core.Tests;
 using NUnit.Framework;
-using NUnit.Framework.Interfaces;
 using Python.Runtime;
 
 namespace BitTensor.Tests.Comparison;

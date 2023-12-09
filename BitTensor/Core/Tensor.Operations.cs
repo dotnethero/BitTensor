@@ -12,9 +12,25 @@ public partial class Tensor
             forward: static self => Ops.Add(self.A, self.B, self.Data),
             backward: static (grad, self) =>
             {
-                var agrad = ReduceLeft(grad, self.Dimensions - self.A.Dimensions); // TODO: make compatible with jax
-                var bgrad = ReduceLeft(grad, self.Dimensions - self.B.Dimensions);
-                return [agrad, bgrad];
+                var a_bc_dims = new List<int>(self.Dimensions);
+                var b_bc_dims = new List<int>(self.Dimensions);
+
+                for (var i = 1; i <= self.Dimensions; i++)
+                {
+                    if (i > self.A.Dimensions || self.A.Shape[^i] != self.Shape[^i])
+                        a_bc_dims.Add(self.Dimensions - i);
+
+                    if (i > self.B.Dimensions || self.B.Shape[^i] != self.Shape[^i]) 
+                        b_bc_dims.Add(self.Dimensions - i);
+                }
+
+                var agrad = Sum(grad, axis: a_bc_dims.ToArray());
+                var bgrad = Sum(grad, axis: b_bc_dims.ToArray());
+                return
+                [
+                    agrad,
+                    bgrad,
+                ];
             });
     }
 
@@ -121,6 +137,18 @@ public partial class Tensor
             children: [a],
             forward: static self => Ops.Sum(self.A, self.Data),
             backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]);
+    
+    public static Tensor Sum(Tensor a, int[] axis) =>
+        new(shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
+            children: [a],
+            forward: self => Ops.SumAxis(self.A, axis, self.Data),
+            backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]); // TODO: double check
+    
+    public static Tensor SumKeepDims(Tensor a, int[] axis) =>
+        new(shape: a.Shape.Select((s, i) => axis.Contains(i) ? 1 : s).ToArray(),
+            children: [a],
+            forward: self => Ops.SumAxis(self.A, axis, self.Data),
+            backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]); // TODO: double check
 
     public static Tensor Broadcast(Tensor a, int[] shape)
     {
