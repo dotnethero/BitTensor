@@ -24,7 +24,7 @@ public partial class Tensor
             shape: Shape[indexes.Length..],
             children: [this],
             forward: t => {},
-            backward: Ops.NotSupported, 
+            backward: (grad, _) => [grad.GetSlice(Shape)], 
             values: Data[range]);
     }
 

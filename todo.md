@@ -1,7 +1,8 @@
 ## Basics
 
-* unit tests for all basic operations - WIP (matmul)
-* unit tests for all basic gradients - WIP (matmul)
+* unit tests for all basic operations - WIP (add, matmul, sum)
+* unit tests for all basic gradients - WIP (add, matmul)
+* unit tests for second order gradient
 * kernels as separate methods! (DONE)
 * propagation as separate methods! (HOLD)
 
@@ -12,13 +13,12 @@
   invalidate tree on variable change (DONE)
 * reduce number of tensors on reduce axis (DONE)
 * expand dimensions operation - WIP (prepend, append)
-* slice, expand and transpose gradients
-* sum tensor array oparation - WIP (check grad)
-* sum along axis operation
-* broadcasts for operations - WIP (matmul, add)
-* vector _x_ matrix - WIP (need second grad)
+* slice, expand and transpose gradients (DONE)
+* sum tensor array oparation - WIP (DONE) - optimize!
+* sum along axis operation (DONE)
+* broadcasts for operations - (DONE)
+* vector _x_ matrix - (DONE)
 * softmax, relu, cross_entropy
-* unit tests for second order gradient
 
 ## Stages
 
