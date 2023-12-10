@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace BitTensor.Models;
 
-public sealed record Compilation(Tensor Loss, Tensor[] Gradients);
+public sealed record Compilation(Tensor Loss, Tensor[] Gradients, Tensor Inputs, Tensor Desired);
 
 public abstract class Model : ILayer
 {
@@ -20,13 +20,24 @@ public abstract class Model : ILayer
         var diff = output - desired;
         var loss = Tensor.Sum(diff * diff) * 0.5f;
         var gradients = Auto.Grad(loss).By(Parameters);
-        return new(loss, gradients);
+        return new(loss, gradients, input, desired);
     }
 
-    public void Fit(Compilation compilation, float lr, int epochs, bool trace = false)
+    public void Fit(Compilation compilation, float lr, int epochs, bool shuffle = true, bool trace = false)
     {
+        var batchDim = 0;
+        var batchSize = compilation.Inputs.Shape[batchDim];
+        var batchIndexes = Enumerable.Range(0, batchSize).ToArray();
+
         for (var i = 0; i < epochs; i++)
         {
+            if (shuffle)
+            {
+                Random.Shared.Shuffle(batchIndexes);
+                compilation.Inputs.Shuffle(batchDim, batchIndexes);
+                compilation.Desired.Shuffle(batchDim, batchIndexes);
+            }
+
             if (trace && i % (epochs / 10) == 0)
             {
                 Console.WriteLine(compilation.Loss.Values.Scalar());

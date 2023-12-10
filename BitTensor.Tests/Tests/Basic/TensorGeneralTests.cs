@@ -26,7 +26,7 @@ class TensorGeneralTests
     }
 
     [Test]
-    public static void Should_train_XOR_to_baseline_accuracy() // TODO: add baseline
+    public static void Should_train_XOR_to_baseline_accuracy()
     {
         var x = Tensor.Create([[0, 0], [0, 1], [1, 0], [1, 1]]);
         var d = Tensor.Create([0, 1, 1, 0]).Reshape([4, 1]);
@@ -38,9 +38,10 @@ class TensorGeneralTests
         Console.WriteLine(test1);
 
         var compilation = model.Compile(x, d);
-        model.Fit(compilation, lr: 1e-2f, epochs: 2000, trace: true);
+        model.Fit(compilation, lr: 1e-2f, epochs: 2000, shuffle: true, trace: true);
         
-        var test2 = model.Compute(x).ToDataString();
+        var x_shuffle = Tensor.Create([[1, 0], [1, 1], [0, 0], [0, 1]]);
+        var test2 = model.Compute(x_shuffle).ToDataString();
 
         Console.WriteLine(test2);
 

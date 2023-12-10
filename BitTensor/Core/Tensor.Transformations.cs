@@ -3,6 +3,37 @@
 public partial class Tensor
 {
     public Tensor this[params int[] indexes] => GetSlice(indexes);
+    
+    public Tensor AppendDimension() => Reshape([..Shape, 1]);
+
+    public Tensor PrependDimension() => Reshape([1, ..Shape]);
+
+    public Tensor Shuffle(int dimension, int[] permutation)
+    {
+        if (permutation.Length != Shape[dimension])
+            throw new InvalidOperationException($"Invalid permutation size: {permutation.Length}, expected: {Shape[dimension]}");
+
+        EnsureHasUpdatedValues();
+
+        var data = new float[Size];
+        var span = Data.AsSpan();
+        var count = Shape.Take(dimension).Product();
+        var dimSize = Shape.Skip(dimension + 1).Product();
+        var dimCount = Shape[dimension];
+
+        for (var i = 0; i < count; i++)
+        for (var j = 0; j < dimCount; j++)
+        {
+            var k = permutation[j]; // new index
+            var src = span.Slice(i * dimSize * dimCount + j * dimSize, dimSize);
+            var dest = data.AsSpan(i * dimSize * dimCount + k * dimSize, dimSize);
+            src.CopyTo(dest);
+        }
+
+        Array.Copy(data, Data, Size);
+        Invalidate();
+        return this;
+    }
 
     public Tensor Reshape(int[] shape)
     {
@@ -27,10 +58,6 @@ public partial class Tensor
             backward: (grad, _) => [grad.GetSlice(Shape)], 
             values: Data[range]);
     }
-
-    public Tensor AppendDimension() => Reshape([..Shape, 1]);
-
-    public Tensor PrependDimension() => Reshape([1, ..Shape]);
 
     private Range GetSliceRange(int[] indexes)
     {
