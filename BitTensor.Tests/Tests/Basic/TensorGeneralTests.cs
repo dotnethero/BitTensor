@@ -38,11 +38,13 @@ class TensorGeneralTests
         Console.WriteLine(test1);
 
         var compilation = model.Compile(x, d);
-        model.Fit(compilation, lr: 1e-2f, epochs: 1000, trace: true);
+        model.Fit(compilation, lr: 1e-2f, epochs: 2000, trace: true);
         
         var test2 = model.Compute(x).ToDataString();
 
         Console.WriteLine(test2);
+
+        Assert.That(compilation.Loss.Values.Scalar(), Is.LessThan(1e-4f));
     }
 
 }

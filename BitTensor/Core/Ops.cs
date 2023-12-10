@@ -335,14 +335,14 @@ internal static unsafe class Ops
                 var aslice = a_span.Slice(ai * vstride, vstride);;
                 var bslice = b_span[bi];
                 var rslice = r_span.Slice(ri * vstride, vstride);
-                TensorPrimitives.Add(aslice, bslice, rslice);
+                scalarOp(aslice, bslice, rslice);
             }
             else // vectorize same part
             {
                 var aslice = a_span.Slice(ai * vstride, vstride);
                 var bslice = b_span.Slice(bi * vstride, vstride);
                 var rslice = r_span.Slice(ri * vstride, vstride);
-                TensorPrimitives.Add(aslice, bslice, rslice);
+                tensorOp(aslice, bslice, rslice);
             }
         }
     }
