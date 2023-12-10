@@ -215,16 +215,43 @@ class TensorCalculationTests
     [Test]
     public static void Test_linear_module()
     {
-        var x = Tensor.Random.Normal([5, 1000]);
-        var d = Tensor.Random.Normal([5, 1]);
+        const int inputCount = 1000;
+        const int outputCount = 2;
+        const int batchSize = 5;
+        const int dataDimension = 1;
+
+        var x = Tensor.Random.Normal([batchSize, inputCount]);
+        var d = Tensor.Random.Normal([batchSize, outputCount]);
+        var model = Model.Sequential(
+        [
+            new LinearLayer(x.Shape[dataDimension], d.Shape[dataDimension], Tensor.Sigmoid)
+        ]);
+
+        var compilation = model.Compile(x, d);
         var sw = Stopwatch.StartNew();
+        model.Fit(compilation, lr: 0.001f, epochs: 100);
+        Console.WriteLine(sw.Elapsed);
+    }
+    
+    [Test]
+    public void Test_linear_inv_module()
+    {
+        const int inputCount = 1000;
+        const int outputCount = 2;
+        const int batchSize = 5;
+        const int dataDimension = 0;
+
+        var x = Tensor.Random.Normal([batchSize, inputCount]).Transpose();
+        var d = Tensor.Random.Normal([batchSize, outputCount]).Transpose();
 
         var model = Model.Sequential(
         [
-            new LinearLayer(x.Shape[1], d.Shape[1], Tensor.Sigmoid)
+            new LinearLayerInv(x.Shape[dataDimension], d.Shape[dataDimension], Tensor.Sigmoid)
         ]);
+
         var compilation = model.Compile(x, d);
-        model.Fit(compilation, lr: 0.001f, epochs: 1000);
+        var sw = Stopwatch.StartNew();
+        model.Fit(compilation, lr: 0.001f, epochs: 100);
         Console.WriteLine(sw.Elapsed);
     }
 }

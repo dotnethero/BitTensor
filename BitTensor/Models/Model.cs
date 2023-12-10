@@ -25,17 +25,22 @@ public abstract class Model : ILayer
 
     public void Fit(Compilation compilation, float lr, int epochs, bool shuffle = true, bool trace = false)
     {
-        var batchDim = 0;
+        var batchDim = compilation.Inputs.BatchDimension;
         var batchSize = compilation.Inputs.Shape[batchDim];
         var batchIndexes = Enumerable.Range(0, batchSize).ToArray();
+        
+        void Shuffle()
+        {
+            Random.Shared.Shuffle(batchIndexes);
+            compilation.Inputs.Shuffle(batchDim, batchIndexes);
+            compilation.Desired.Shuffle(batchDim, batchIndexes);
+        }
 
         for (var i = 0; i < epochs; i++)
         {
             if (shuffle)
             {
-                Random.Shared.Shuffle(batchIndexes);
-                compilation.Inputs.Shuffle(batchDim, batchIndexes);
-                compilation.Desired.Shuffle(batchDim, batchIndexes);
+                Shuffle();
             }
 
             if (trace && i % (epochs / 10) == 0)
