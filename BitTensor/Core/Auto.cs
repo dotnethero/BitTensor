@@ -32,11 +32,8 @@ public static class Auto
     {
         for (var i = 0; i < variables.Length; ++i)
         {
-            Shapes.EnsureShapesAreEqual(variables[i].Shape, gradients[i].Shape);
-
             var vars = variables[i].Values;
             var gradient = gradients[i].Values;
-
             TensorPrimitives.MultiplyAdd(gradient, -lr, vars, variables[i].Data);
             variables[i].Invalidate();
         }
@@ -44,6 +41,9 @@ public static class Auto
 
     public static Dictionary<Tensor, Tensor> GetGradients(Tensor output)
     {
+        if (!output.IsScalar)
+            throw new InvalidOperationException($"Gradient only defined for scalar-output functions. Output had shape: {output.Shape.Serialize()}");
+
         var grads = new Dictionary<Tensor, Tensor>(16)
         {
             [output] = Tensor.One

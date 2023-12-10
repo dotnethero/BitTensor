@@ -28,8 +28,8 @@ public partial class Tensor
                 var bgrad = Sum(grad, axis: b_bc_dims.ToArray());
                 return
                 [
-                    agrad,
-                    bgrad,
+                    agrad.Reshape(self.A.Shape),
+                    bgrad.Reshape(self.B.Shape),
                 ];
             });
     }
@@ -104,10 +104,10 @@ public partial class Tensor
 
     public static Tensor Outer(Tensor a, Tensor b)
     {
-        if (a.Dimensions != 1)
+        if (!a.IsVector)
             throw new NotImplementedException("Only 1 dim outer product is supported");
 
-        if (b.Dimensions != 1)
+        if (!b.IsVector)
             throw new NotImplementedException("Only 1 dim outer product is supported");
 
         return new(
@@ -152,7 +152,7 @@ public partial class Tensor
 
     public static Tensor Broadcast(Tensor a, int[] shape)
     {
-        if (a.Dimensions > 0)
+        if (!a.IsScalar)
             throw new NotImplementedException($"Not implemented for {a.Dimensions} dims");
 
         return new(
@@ -181,7 +181,7 @@ public partial class Tensor
         // a shape: b1 * b2 * n * m
         // b shape: b1 * b2 * m * k
 
-        if (a.Dimensions == 0 || b.Dimensions == 0)
+        if (a.IsScalar || b.IsScalar)
         {
             return Mul(a, b);
         }
@@ -192,13 +192,13 @@ public partial class Tensor
         var ao = a;
         var bo = b;
 
-        if (a.Dimensions == 1)
+        if (a.IsVector)
         {
             a = a.PrependDimension();
             shrinkStart = 1;
         }
 
-        if (b.Dimensions == 1)
+        if (b.IsVector)
         {
             b = b.AppendDimension();
             shrinkEnd = 1;
@@ -222,14 +222,14 @@ public partial class Tensor
         Tensor[] MatMulBackward(Tensor grad, Tensor local)
         {
             var da =
-                bo.Dimensions == 1 &&
-                grad.Dimensions == 1
+                bo.IsVector &&
+                grad.IsVector
                     ? Outer(grad, bo.Transpose())
                     : Matmul(grad, bo.Transpose());
 
             var db =
-                ao.Dimensions == 1 &&
-                grad.Dimensions == 1
+                ao.IsVector &&
+                grad.IsVector
                     ? Outer(ao.Transpose(), grad)
                     : Matmul(ao.Transpose(), grad);
 

@@ -2,13 +2,18 @@
 
 public sealed partial class Tensor
 {
-    public static long MaxID;
+    internal static long MaxID;
 
     public long Id { get; }
     public int Size { get; }
     public int Dimensions { get; }
     public int[] Shape { get; }
     public float[] Data { get; }
+
+    // tensor properties
+    public bool IsEmpty => Size == 0;
+    public bool IsScalar => Dimensions == 0;
+    public bool IsVector => Dimensions == 1;
 
     // computation tree
     internal Tensor[] Children { get; } = [];

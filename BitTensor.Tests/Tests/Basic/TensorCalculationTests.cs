@@ -17,7 +17,7 @@ class TensorCalculationTests
         var a = Tensor.Create([1, 2, 3]);
         var b = Tensor.Create([3, 4, 5]);
         var c = Tensor.Create([-5, 0, 5]);
-        var y = a * a * b + c;
+        var y = Tensor.Sum(a * a * b + c);
 
         var dy = Auto.Grad(y);
 
@@ -181,7 +181,7 @@ class TensorCalculationTests
             [.2f, .1f, .4f]]);
 
         var z = Tensor.Matmul(w, x) + b;
-        var y = Tensor.Sigmoid(z);
+        var y = Tensor.Sum(Tensor.Sigmoid(z));
         var dydw = Auto.Grad(y).By(w);
 
         Console.WriteLine($"{y.ToDataString()}");

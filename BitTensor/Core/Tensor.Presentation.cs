@@ -8,12 +8,12 @@ public partial class Tensor
 
     public string ToDataString(int dimsPerLine = 1)
     {
-        if (Values.Length == 0)
+        if (IsEmpty)
         {
             return "[]";
         }
 
-        if (Dimensions == 0)
+        if (IsScalar)
         {
             return Values[0].ToString("0.00#");
         }
