@@ -71,64 +71,143 @@ internal static unsafe class Ops
         result[0] = TensorPrimitives.Sum(a.Values);
     }
 
-    public static void SumAxis(Tensor a, int[] axis, float[] result) // TODO: optimize
+    public static void SumAxis(Tensor a, HashSet<int> axis, float[] result)
     {
-        var span = a.Values;
-        var strides = a.Shape.GetStrides();
+        var dims = a.Dimensions;
+        var left = 0;
+        var right = 0;
 
-        var axis_shape = axis.Select(ax => a.Shape[ax]).ToArray();
-        var axis_strides = axis_shape.GetStrides();
-        var other_axis = a.Shape.Select((_, i) => i).Where(i => !axis.Contains(i)).ToArray();
-        var other_strides = other_axis.Select(ax => a.Shape[ax]).GetStrides();
+        for (var m = 0; m < dims && axis.Contains(m); m++) 
+            ++left;
 
-        var count = axis_shape.Product();
-        var iterations = a.Size / count;
+        for (var m = dims - 1; m >= 0 && axis.Contains(m); m--) 
+            ++right;
 
-        for (var i = 0; i < iterations; ++i)
+        if (right == dims)
         {
-            var temp1 = i;
-            var shift = 0;
+            Sum(a, result);
+            return;
+        }
 
-            for (var m = 0; m < other_strides.Length; m++)
+        a.EnsureHasUpdatedValues();
+        
+        if (right == axis.Count)
+        {
+            ReduceRight(a.Data, a.Shape, right, result);
+            return;
+        }
+        
+        if (left == axis.Count)
+        {
+            ReduceLeft(a.Data, a.Shape, left, result);
+            return;
+        }
+
+        // TODO: decide on the fly what is faster - left or right first
+        
+        if (right + left == axis.Count)
+        {
+            var reduced = a.Shape[..^right];
+            var next = new float[reduced.Product()];
+            ReduceRight(a.Data, a.Shape, right, next);
+            ReduceLeft(next, reduced, left, result);
+            return;
+        }
+
+        var temp = a.Data;
+        var shape = a.Shape;
+
+        if (right != 0)
+        {
+            var reduced = shape[..^right];
+            var next = new float[reduced.Product()];
+            ReduceRight(temp, shape, right, next);
+            temp = next;
+            shape = reduced;
+        }
+
+        if (left != 0)
+        {
+            var reduced = shape[left..];
+            var next = new float[reduced.Product()];
+            ReduceLeft(temp, shape, left, next);
+            temp = next;
+            shape = reduced;
+        }
+
+        var axisAfterReduce = axis.Select(ax => ax - left).ToHashSet();
+        SumNaive(temp, shape, axisAfterReduce, result);
+    }
+
+    private static void SumNaive(float[] data, int[] shape, HashSet<int> axis, float[] result)
+    {
+        Array.Clear(result);
+
+        var size = data.Length;
+        var dims = shape.Length;
+
+        var old_strides = shape.GetStrides();
+        var new_strides = new int[dims];
+        var new_stride = 1;
+        for (var m = dims - 1; m >= 0; --m)
+        {
+            if (!axis.Contains(m))
             {
-                var ax = other_axis[m];
-                var index = temp1 / other_strides[m];
-                temp1 -= index * other_strides[m];
-                shift += strides[ax] * index;
+                new_strides[m] = new_stride;
+                new_stride *= shape[m];
             }
+        }
 
-            result[i] = 0;
-
-            for (var j = 0; j < count; ++j)
+        fixed (float* ap = data, rp = result)
+        {
+            for (var i = 0; i < size; i++)
             {
-                var temp2 = j;
-                var total = 0;
-
-                for (var k = 0; k < axis_strides.Length; k++)
+                var index = 0;
+                var temp = i;
+                for (var m = 0; m < dims; m++)
                 {
-                    var ax = axis[k];
-                    var index = temp2 / axis_strides[k];
-                    temp2 -= index * axis_strides[k];
-                    total += strides[ax] * index;
+                    var dim_old = temp / old_strides[m];
+                    var dim_new = axis.Contains(m) ? 0 : dim_old;
+                    temp -= dim_old * old_strides[m];
+                    index += dim_new * new_strides[m];
                 }
 
-                result[i] += span[shift + total];
+                rp[index] += ap[i];
             }
         }
     }
 
-    public static void ReduceLeft(Tensor a, int dimensions, float[] result)
+    private static void ReduceLeft(float[] data, int[] shape, int dimensions, float[] result)
     {
         Array.Clear(result);
-        var count = a.Shape[..dimensions].Product();
-        var size = a.Shape[dimensions..].Product();
+
+        var count = shape[..dimensions].Product();
+        var size = shape[dimensions..].Product();
+        var values = data.AsSpan();
+
         for (var i = 0; i < count; i++)
         {
-            var slice = a.Values.Slice(i * size, size);
+            var slice = values.Slice(i * size, size);
             TensorPrimitives.Add(result, slice, result);
         }
     }
     
+    private static void ReduceRight(float[] data, int[] shape, int dimensions, float[] result)
+    {
+        var count = shape[..^dimensions].Product();
+        var size = shape[^dimensions..].Product();
+        var values = data.AsSpan();
+
+        fixed (float* rp = result)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                var slice = values.Slice(i * size, size);
+                rp[i] = TensorPrimitives.Sum(slice);
+            }
+        }
+    }
+
     public static void Broadcast(Tensor a, float[] result) // TODO: support axis
     {
         Array.Fill(result, a.Values[0]);

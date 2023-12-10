@@ -34,18 +34,6 @@ public partial class Tensor
             });
     }
 
-    public static Tensor ReduceLeft(Tensor a, int dimensions) =>
-        (a.Dimensions - dimensions) switch
-        {
-            <0 => throw new InvalidOperationException($"Too much dimensions to reduce: {dimensions}"),
-            0 => Sum(a),
-            _ => new(
-                shape: a.Shape[dimensions..],
-                children: [a],
-                forward: self => Ops.ReduceLeft(self.A, dimensions, self.Data),
-                backward: static (grad, self) => [grad]) // Not sure about this
-        };
-
     public static Tensor Add(float a, Tensor b) => Add(b, a);
 
     public static Tensor Add(Tensor a, float b) =>
@@ -132,23 +120,28 @@ public partial class Tensor
                 backward: (grad, _) => [grad * power * Pow(a, power - 1)])
         };
 
-    public static Tensor Sum(Tensor a) => // TODO: axis
+    public static Tensor Sum(Tensor a) =>
         new(shape: [],
             children: [a],
             forward: static self => Ops.Sum(self.A, self.Data),
             backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]);
-    
-    public static Tensor Sum(Tensor a, int[] axis) =>
-        new(shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
+
+    public static Tensor Sum(Tensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
+
+    private static Tensor Sum(Tensor a, HashSet<int> axis)
+    {
+        if (axis.Count == 0)
+            return a;
+
+        if (axis.Count == a.Dimensions)
+            return Sum(a);
+
+        return new(
+            shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
             children: [a],
             forward: self => Ops.SumAxis(self.A, axis, self.Data),
-            backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]); // TODO: double check
-    
-    public static Tensor SumKeepDims(Tensor a, int[] axis) =>
-        new(shape: a.Shape.Select((s, i) => axis.Contains(i) ? 1 : s).ToArray(),
-            children: [a],
-            forward: self => Ops.SumAxis(self.A, axis, self.Data),
-            backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]); // TODO: double check
+            backward: Ops.NotSupported);
+    }
 
     public static Tensor Broadcast(Tensor a, int[] shape)
     {

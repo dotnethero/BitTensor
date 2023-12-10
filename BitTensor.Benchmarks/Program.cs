@@ -1,4 +1,4 @@
 ﻿using BenchmarkDotNet.Running;
 using BitTensor.Benchmarks;
 
-BenchmarkRunner.Run<MatMulBenchmark>();
+BenchmarkRunner.Run<LinearLayerBenchmark>();

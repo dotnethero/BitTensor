@@ -18,11 +18,11 @@ class TensorGeneralTests
         var model = new TestModel(x.Shape[1], 7, d.Shape[1]);
         var compilation = model.Compile(x, d);
 
-        Assert.That(Tensor.MaxID, Is.EqualTo(50));
+        Assert.That(Tensor.MaxID, Is.EqualTo(46));
 
         model.Fit(compilation, lr: 1e-2f, epochs: 1000);
 
-        Assert.That(Tensor.MaxID, Is.EqualTo(50));
+        Assert.That(Tensor.MaxID, Is.EqualTo(46));
     }
 
     [Test]
