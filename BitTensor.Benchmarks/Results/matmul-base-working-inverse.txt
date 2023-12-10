@@ -1,0 +1,12 @@
+| Method              | N  | Mean       | Error       | StdDev    | Median     |
+|-------------------- |--- |-----------:|------------:|----------:|-----------:|
+| MatMul_cheat        | 6  |   131.4 ns |    26.03 ns |   6.76 ns |   130.7 ns |
+| MatMul_just_forward | 6  |   138.0 ns |    20.58 ns |   5.35 ns |   136.9 ns |
+| MatMul_low_level    | 6  |   175.4 ns |    20.75 ns |   3.21 ns |   175.2 ns |
+| MatMul_realistic    | 6  |   326.4 ns |   643.00 ns | 166.99 ns |   417.4 ns |
+| MatMul_allocate     | 6  | 3,466.0 ns |   998.19 ns | 259.23 ns | 3,511.6 ns |
+| MatMul_cheat        | 20 |   125.3 ns |    31.99 ns |   8.31 ns |   121.9 ns |
+| MatMul_just_forward | 20 |   128.5 ns |    21.04 ns |   3.26 ns |   128.5 ns |
+| MatMul_low_level    | 20 |   184.0 ns |    35.96 ns |   9.34 ns |   178.2 ns |
+| MatMul_realistic    | 20 |   285.6 ns |   785.26 ns | 203.93 ns |   416.5 ns |
+| MatMul_allocate     | 20 | 3,129.1 ns | 1,028.73 ns | 159.20 ns | 3,147.8 ns |

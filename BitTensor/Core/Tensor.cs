@@ -16,7 +16,7 @@ public sealed partial class Tensor
     public bool IsVector => Dimensions == 1;
     
     // utility
-    public int BatchDimension { get; init; } = 0;
+    public int BatchDimension { get; set; } = 0;
 
     // computation tree
     internal Tensor[] Children { get; } = [];

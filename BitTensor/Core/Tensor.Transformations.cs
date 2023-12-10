@@ -121,8 +121,7 @@ public partial class Tensor
             forward: self => Ops.ApplyTransposeMatrix(this.Data, matrix, self.Data),
             backward: (grad, self) => [grad.Transpose(axes)])
             {
-                TransposeHint = this,
-                BatchDimension = axes[BatchDimension]
+                TransposeHint = this
             };
     }
 }

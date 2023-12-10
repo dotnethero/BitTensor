@@ -244,6 +244,9 @@ class TensorCalculationTests
         var x = Tensor.Random.Normal([batchSize, inputCount]).Transpose();
         var d = Tensor.Random.Normal([batchSize, outputCount]).Transpose();
 
+        x.BatchDimension = 1;
+        d.BatchDimension = 1;
+
         var model = Model.Sequential(
         [
             new LinearLayerInv(x.Shape[dataDimension], d.Shape[dataDimension], Tensor.Sigmoid)
