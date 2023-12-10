@@ -54,7 +54,10 @@ public class MatMulBenchmark
     [Benchmark]
     public void MatMul_allocate()
     {
-        var w = Tensor.Matmul(x, y); // allocation overhead
+        x.Dependents.Clear(); // untracked
+        y.Dependents.Clear();
+
+        var w = Tensor.Matmul(x, y);
         w.EnsureHasUpdatedValues();
     }
 
