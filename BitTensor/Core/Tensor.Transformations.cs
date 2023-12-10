@@ -17,8 +17,8 @@ public partial class Tensor
 
         var data = new float[Size];
         var span = Data.AsSpan();
-        var count = Shape.Take(dimension).Product();
-        var dimSize = Shape.Skip(dimension + 1).Product();
+        var count = Shape[..dimension].Product();
+        var dimSize = Shape[(dimension+1)..].Product();
         var dimCount = Shape[dimension];
 
         for (var i = 0; i < count; i++)
@@ -37,7 +37,8 @@ public partial class Tensor
 
     public Tensor Reshape(int[] shape)
     {
-        ArgumentOutOfRangeException.ThrowIfNotEqual(shape.Product(), Size);
+        if (shape.Product() != Size)
+            throw new InvalidOperationException($"Shape {shape.Serialize()} does not produce {Size} size");
 
         return new(
             shape,
@@ -61,7 +62,8 @@ public partial class Tensor
 
     private Range GetSliceRange(int[] indexes)
     {
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(indexes.Length, Dimensions);
+        if (indexes.Length > Dimensions)
+            throw new InvalidOperationException($"Index {indexes.Serialize()} is not valid for {Shape.Serialize()} shape");
 
         var flat = 0;
         var shift = 1;
@@ -80,35 +82,48 @@ public partial class Tensor
         if (TransposeHint is not null)
             return TransposeHint;
 
-        if (Dimensions < 2)
+        var dims = Dimensions;
+        if (dims < 2)
             return this;
 
-        var axes = new int[Dimensions];
-        for (var i = 0; i < Dimensions; i++)
+        var axes = new int[dims];
+        for (var i = 0; i < dims; i++)
         {
             axes[i] = i;
         }
 
-        axes[^1] = Dimensions - 2;
-        axes[^2] = Dimensions - 1;
+        axes[^1] = dims - 2;
+        axes[^2] = dims - 1;
         return Transpose(axes);
     }
 
-    public Tensor Transpose(int[] axes)
+    public unsafe Tensor Transpose(int[] axes)
     {
-        ArgumentOutOfRangeException.ThrowIfNotEqual(axes.Length, Dimensions);
-        ArgumentOutOfRangeException.ThrowIfNotEqual(new HashSet<int>(axes).Count, axes.Length);
-        
-        if (Dimensions < 2)
+        var dims = Dimensions;
+        if (dims < 2)
             return this;
 
-        var shape = new int[Dimensions];
-        for (var i = 0; i < Dimensions; i++)
+        if (axes.Length != dims)
+            throw new InvalidOperationException($"Axis {axes.Serialize()} is not valid argument for {Shape.Serialize()} shape tensor");
+
+        if (!axes.IsElementsUnique())
+            throw new InvalidOperationException($"Axis {axes.Serialize()} does not contain all axes for {Shape.Serialize()} shape tensor");
+
+        var shape = new int[dims];
+        var countNon1 = 0;
+        fixed (int* sh = Shape, sh_new = shape, ax = axes)
         {
-            shape[i] = Shape[axes[i]];
+            for (var i = 0; i < dims; i++)
+            {
+                var d = sh[ax[i]];
+                if (d > 1) 
+                    ++countNon1;
+
+                sh_new[i] = d;
+            }
         }
-        
-        if (shape.Count(ax => ax > 1) <= 1)
+
+        if (countNon1 <= 1)
         {
             return Reshape(shape);
         }

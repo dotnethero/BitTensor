@@ -197,12 +197,15 @@ public partial class Tensor
             shrinkEnd = 1;
         }
 
-        if (a.Shape[^1] != b.Shape[^2])
+        var (az2, az1) = a.LastTwo;
+        var (bz2, bz1) = b.LastTwo;
+
+        if (az1 != bz2)
             throw new InvalidOperationException($"MATMUL: Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
 
         var bT = b.Transpose();
 
-        int[] shape = [..a.Shape[..^1], b.Shape[^1]];
+        int[] shape = [..a.Shape[..^1], bz1];
 
         shape = shape[shrinkStart..^shrinkEnd];
 

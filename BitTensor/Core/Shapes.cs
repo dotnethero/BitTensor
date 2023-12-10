@@ -6,32 +6,56 @@ namespace BitTensor.Core;
 [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
 internal static class Shapes
 {
-    public static int Product(this IEnumerable<int> items)
+    public static unsafe int Product(this int[] shape)
     {
+        var dims = shape.Length;
         var result = 1;
 
-        foreach (var item in items)
+        fixed (int* sh = shape)
         {
-            result *= item;
+            for (var i = dims - 1; i >= 0; --i)
+            {
+                result *= sh[i];
+            }
         }
 
         return result;
     }
 
-    public static int[] GetStrides(this IEnumerable<int> shape)
+    public static unsafe bool IsElementsUnique(this int[] shape)
     {
-        var items = shape.ToArray();
-        if (items.Length == 0)
-            return Array.Empty<int>();
+        var dims = shape.Length;
 
-        var dims = items.Length;
+        fixed (int* sh = shape)
+        {
+            for (var i = 0; i < dims; ++i)
+            for (var j = 0; j < i; ++j)
+            {
+                if (sh[i] == sh[j])
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    public static unsafe int[] GetStrides(this int[] shape)
+    {
+        var dims = shape.Length;
+        if (dims == 0)
+            return [];
+
         var strides = new int[dims];
 
-        strides[^1] = 1;
-
-        for (var i = dims - 2; i >= 0; --i)
+        fixed (int* sh = shape, st = strides)
         {
-            strides[i] = strides[i + 1] * items[i + 1];
+            st[dims - 1] = 1;
+
+            for (var i = dims - 2; i >= 0; --i)
+            {
+                st[i] = st[i + 1] * sh[i + 1];
+            }
         }
 
         return strides;

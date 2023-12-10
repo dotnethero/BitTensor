@@ -1,39 +1,87 @@
-﻿namespace BitTensor.Core;
+﻿#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
+
+using System.Runtime.CompilerServices;
+
+namespace BitTensor.Core;
 
 public sealed partial class Tensor
 {
     internal static long MaxID;
 
-    public long Id { get; }
-    public int Size { get; }
-    public int Dimensions { get; }
-    public int[] Shape { get; }
-    public float[] Data { get; }
+    public readonly long Id;
+    public readonly int Size;
+    public readonly int Dimensions;
+    public readonly int[] Shape;
+    public readonly float[] Data;
 
     // tensor properties
-    public bool IsEmpty => Size == 0;
-    public bool IsScalar => Dimensions == 0;
-    public bool IsVector => Dimensions == 1;
-    
+    public bool IsEmpty
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Size == 0;
+    }
+
+    public bool IsScalar
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Dimensions == 0;
+    }
+
+    public bool IsVector
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Dimensions == 1;
+    }
+
+    public unsafe (int z2, int z1) LastTwo
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            fixed (int* sh = Shape)
+                return (
+                    sh[Dimensions - 2],
+                    sh[Dimensions - 1]);
+        }
+    }
+
     // utility
     public int BatchDimension { get; set; } = 0;
 
     // computation tree
-    internal Tensor[] Children { get; } = [];
-    internal HashSet<Tensor> Dependents { get; } = [];
-    internal ForwardFunction? Forward { get; }
-    internal BackwardFunction? Backward { get; }
-    internal bool Outdated { get; private set; }
+    internal readonly Tensor[] Children = [];
+    internal readonly List<Tensor> Dependents = new(2); // TODO: make custom collection
+    internal readonly ForwardFunction? Forward;
+    internal readonly BackwardFunction? Backward;
+    internal bool Outdated;
     
     // cache
     internal Tensor? TransposeHint { get; init; }
 
     // helpers
-    internal Tensor A => Children[0];
-    internal Tensor B => Children[1];
+    internal unsafe Tensor A
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            fixed(Tensor* c = Children)
+                return c[0];
+        }
+    }
+
+    internal unsafe Tensor B
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            fixed(Tensor* c = Children)
+                return c[1];
+        }
+    }
 
     public ReadOnlySpan<float> Values
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             EnsureHasUpdatedValues();
@@ -65,40 +113,43 @@ public sealed partial class Tensor
         Dimensions = shape.Length;
     }
 
-    internal Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward) : this(shape)
+    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward) : this(shape)
     {
         Children = children;
         Forward = forward;
         Backward = backward;
         Outdated = true;
 
-        foreach (var child in Children)
-        {
-            child.Dependents.Add(this);
-        }
+        fixed(Tensor* c = Children)
+            for (var i = Children.Length - 1; i >= 0; i--)
+            {
+                c[i].Dependents.Add(this);
+            }
     }
 
-    internal Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, float[] values) : this(shape, values)
+    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, float[] values) : this(shape, values)
     {
         Children = children;
         Forward = forward;
         Backward = backward;
         Outdated = true; // TODO: not true for real
-
-        foreach (var child in Children)
-        {
-            child.Dependents.Add(this);
-        }
+        
+        fixed(Tensor* c = Children)
+            for (var i = Children.Length - 1; i >= 0; i--)
+            {
+                c[i].Dependents.Add(this);
+            }
     }
 
-    internal void EnsureHasUpdatedValues()
+    internal unsafe void EnsureHasUpdatedValues()
     {
         if (!Outdated) return;
 
-        foreach (var child in Children)
-        {
-            child.EnsureHasUpdatedValues();
-        }
+        fixed(Tensor* c = Children)
+            for (var i = Children.Length - 1; i >= 0; i--)
+            {
+                c[i].EnsureHasUpdatedValues();;
+            }
 
         Forward?.Invoke(this);
         Outdated = false;
