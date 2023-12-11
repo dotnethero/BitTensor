@@ -8,7 +8,7 @@ public partial class Tensor
 
     public Tensor PrependDimension() => Reshape([1, ..Shape]);
 
-    public Tensor Shuffle(int dimension, int[] permutation)
+    public unsafe Tensor Shuffle(int dimension, int[] permutation)
     {
         if (permutation.Length != Shape[dimension])
             throw new InvalidOperationException($"Invalid permutation size: {permutation.Length}, expected: {Shape[dimension]}");
@@ -21,16 +21,17 @@ public partial class Tensor
         var dimSize = Shape[(dimension+1)..].Product();
         var dimCount = Shape[dimension];
 
-        for (var i = 0; i < count; i++)
-        for (var j = 0; j < dimCount; j++)
-        {
-            var k = permutation[j]; // new index
-            var src = span.Slice(i * dimSize * dimCount + j * dimSize, dimSize);
-            var dest = data.AsSpan(i * dimSize * dimCount + k * dimSize, dimSize);
-            src.CopyTo(dest);
-        }
+        fixed(int* p = permutation)
+            for (var i = 0; i < count; i++)
+            for (var j = 0; j < dimCount; j++)
+            {
+                var k = p[j]; // new index
+                var src = span.Slice(i * dimSize * dimCount + j * dimSize, dimSize);
+                var dest = data.AsSpan(i * dimSize * dimCount + k * dimSize, dimSize);
+                src.CopyTo(dest);
+            }
 
-        Array.Copy(data, Data, Size);
+        Data = data;
         Invalidate();
         return this;
     }

@@ -7,12 +7,12 @@ namespace BitTensor.Core;
 public sealed partial class Tensor
 {
     internal static long MaxID;
+    internal float[] Data;
 
     public readonly long Id;
     public readonly int Size;
     public readonly int Dimensions;
     public readonly int[] Shape;
-    public readonly float[] Data;
 
     // tensor properties
     public bool IsEmpty
@@ -56,7 +56,7 @@ public sealed partial class Tensor
     internal bool Outdated;
     
     // cache
-    internal Tensor? TransposeHint { get; init; }
+    internal Tensor? TransposeHint;
 
     // helpers
     internal unsafe Tensor A
@@ -157,9 +157,9 @@ public sealed partial class Tensor
 
     internal void Invalidate()
     {
-        foreach (var dependent in Dependents)
+        for (var i = Dependents.Count - 1; i >= 0; i--)
         {
-            dependent.Invalidate();
+            Dependents[i].Invalidate();
         }
 
         Outdated = true;
