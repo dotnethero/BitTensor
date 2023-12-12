@@ -1,0 +1,34 @@
+| Method                | BatchSize | InputCount | OutputCount | Mean      | Error      | StdDev    | Median    |
+|---------------------- |---------- |----------- |------------ |----------:|-----------:|----------:|----------:|
+| Module_performace     | 1         | 10         | 10          |  3.169 ms |  0.1885 ms | 0.0489 ms |  3.176 ms |
+| Module_performace_inv | 1         | 10         | 10          |  3.016 ms |  0.7366 ms | 0.1913 ms |  2.918 ms |
+| Module_performace     | 1         | 10         | 100         |  2.457 ms |  0.3318 ms | 0.0862 ms |  2.479 ms |
+| Module_performace_inv | 1         | 10         | 100         |  9.500 ms | 27.7674 ms | 7.2111 ms |  4.417 ms |
+| Module_performace     | 1         | 100        | 10          |  9.585 ms |  4.0848 ms | 1.0608 ms |  9.782 ms |
+| Module_performace_inv | 1         | 100        | 10          |  4.750 ms |  5.2091 ms | 1.3528 ms |  5.314 ms |
+| Module_performace     | 1         | 100        | 100         | 12.650 ms | 18.2396 ms | 4.7368 ms | 14.158 ms |
+| Module_performace_inv | 1         | 100        | 100         |  7.572 ms |  5.4021 ms | 1.4029 ms |  6.610 ms |
+| Module_performace     | 1         | 1000       | 10          | 14.797 ms | 18.7308 ms | 4.8643 ms | 17.016 ms |
+| Module_performace     | 1         | 1000       | 10          | 12.096 ms | 18.3717 ms | 4.7711 ms |  9.582 ms |
+| Module_performace_inv | 1         | 1000       | 10          |  7.687 ms |  0.7739 ms | 0.1198 ms |  7.718 ms |
+| Module_performace_inv | 1         | 1000       | 10          |  7.678 ms |  0.5622 ms | 0.0870 ms |  7.692 ms |
+| Module_performace     | 1         | 1000       | 100         | 45.328 ms |  2.6116 ms | 0.4042 ms | 45.304 ms |
+| Module_performace     | 1         | 1000       | 100         | 48.738 ms |  2.1100 ms | 0.5480 ms | 48.806 ms |
+| Module_performace_inv | 1         | 1000       | 100         | 36.472 ms |  2.1615 ms | 0.5613 ms | 36.699 ms |
+| Module_performace_inv | 1         | 1000       | 100         | 36.231 ms |  2.3907 ms | 0.6208 ms | 36.049 ms |
+| Module_performace     | 10        | 10         | 10          |  2.280 ms | 12.0582 ms | 1.8660 ms |  1.394 ms |
+| Module_performace_inv | 10        | 10         | 10          |  2.093 ms |  7.4269 ms | 1.1493 ms |  1.655 ms |
+| Module_performace     | 10        | 10         | 100         |  5.942 ms |  0.4306 ms | 0.1118 ms |  5.932 ms |
+| Module_performace_inv | 10        | 10         | 100         | 10.871 ms |  8.4433 ms | 2.1927 ms | 11.293 ms |
+| Module_performace     | 10        | 100        | 10          |  5.476 ms |  3.0474 ms | 0.7914 ms |  5.849 ms |
+| Module_performace_inv | 10        | 100        | 10          |  5.237 ms |  7.2004 ms | 1.1143 ms |  5.783 ms |
+| Module_performace     | 10        | 100        | 100         | 19.919 ms |  7.0891 ms | 1.8410 ms | 19.259 ms |
+| Module_performace_inv | 10        | 100        | 100         | 17.084 ms |  0.5564 ms | 0.1445 ms | 17.135 ms |
+| Module_performace     | 10        | 1000       | 10          | 16.260 ms |  0.8698 ms | 0.2259 ms | 16.276 ms |
+| Module_performace     | 10        | 1000       | 10          | 17.070 ms |  2.1409 ms | 0.5560 ms | 17.084 ms |
+| Module_performace_inv | 10        | 1000       | 10          | 26.637 ms |  0.2511 ms | 0.0389 ms | 26.651 ms |
+| Module_performace_inv | 10        | 1000       | 10          | 26.756 ms |  1.3148 ms | 0.3414 ms | 26.651 ms |
+| Module_performace     | 10        | 1000       | 100         | 92.793 ms |  0.3944 ms | 0.1024 ms | 92.838 ms |
+| Module_performace     | 10        | 1000       | 100         | 93.923 ms |  3.8082 ms | 0.9890 ms | 93.934 ms |
+| Module_performace_inv | 10        | 1000       | 100         | 76.925 ms |  2.4073 ms | 0.6252 ms | 77.273 ms |
+| Module_performace_inv | 10        | 1000       | 100         | 77.799 ms |  3.5500 ms | 0.5494 ms | 77.915 ms |

@@ -21,6 +21,26 @@ internal static class Shapes
 
         return result;
     }
+    
+    public static unsafe (int batch, int rows, int columns) GetBatchRowsColumns(int[] shape)
+    {
+        var dims = shape.Length;
+        var batch = 1;
+        var rows = 0;
+        var columns = 0;
+
+        fixed (int* sh = shape)
+        {
+            for (var i = dims - 3; i >= 0; --i)
+            {
+                batch *= sh[i];
+            }
+            rows = sh[dims - 2];
+            columns = sh[dims - 1];
+        }
+
+        return (batch, rows, columns);
+    }
 
     public static unsafe bool IsElementsUnique(this int[] shape)
     {

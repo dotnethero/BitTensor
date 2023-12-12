@@ -213,6 +213,65 @@ internal static unsafe class Ops
         Array.Fill(result, a.Values[0]);
     }
 
+    public static void Dot(Tensor a, Tensor b, float[] results)
+    {
+        results[0] = TensorPrimitives.Dot(a.Values, b.Values);
+    }
+
+    public static void MatVecMul(Tensor a, Tensor b, float[] results)
+    {
+        var (batchCount, rowCount, rowSize) = Shapes.GetBatchRowsColumns(a.Shape);
+
+        a.EnsureHasUpdatedValues();
+        b.EnsureHasUpdatedValues();
+
+        var col = b.Data.AsSpan();
+
+        fixed (float* rp = results)
+        {
+            for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
+            {
+                var batchSize = rowSize * rowCount;
+                var batchStride = batchIndex * rowCount;
+                var batch = a.Data.AsSpan(batchIndex * batchSize, batchSize);
+
+                for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
+                {
+                    var row = batch.Slice(rowIndex * rowSize, rowSize);
+                    var dot = TensorPrimitives.Dot(row, col);
+                    rp[batchStride + rowIndex] = dot;
+                }
+            }
+        }
+    }
+
+    public static void VecMatMul(Tensor a, Tensor bT, float[] results)
+    {
+        var (batchCount, colCount, rowSize) = Shapes.GetBatchRowsColumns(bT.Shape);
+
+        a.EnsureHasUpdatedValues();
+        bT.EnsureHasUpdatedValues();
+
+        var row = a.Data.AsSpan();
+
+        fixed (float* rp = results)
+        {
+            for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
+            {
+                var batchSize = colCount * rowSize;
+                var batchStride = batchIndex * colCount;
+                var batch = bT.Data.AsSpan(batchIndex * batchSize, batchSize);
+
+                for (var colIndex = 0; colIndex < colCount; ++colIndex)
+                {
+                    var col = batch.Slice(colIndex * rowSize, rowSize);
+                    var dot = TensorPrimitives.Dot(row, col);
+                    rp[batchStride + colIndex] = dot;
+                }
+            }
+        }
+    }
+
     public static void MatMulTransposed(Tensor a, Tensor bT, float[] results)
     {
         var rowCount = a.Shape[^2];

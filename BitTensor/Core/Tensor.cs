@@ -6,6 +6,8 @@ namespace BitTensor.Core;
 
 public sealed partial class Tensor
 {
+    private readonly Lazy<Tensor> transposeLazy;
+
     internal static long MaxID;
     internal float[] Data;
 
@@ -13,6 +15,22 @@ public sealed partial class Tensor
     public readonly int Size;
     public readonly int Dimensions;
     public readonly int[] Shape;
+    
+    public ReadOnlySpan<float> Values
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get
+        {
+            EnsureHasUpdatedValues();
+            return Data;
+        }
+    }
+
+    public Tensor T
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => TransposeHint ?? transposeLazy.Value;
+    }
 
     // tensor properties
     public bool IsEmpty
@@ -33,16 +51,16 @@ public sealed partial class Tensor
         get => Dimensions == 1;
     }
 
-    public unsafe (int z2, int z1) LastTwo
+    public bool IsRow
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            fixed (int* sh = Shape)
-                return (
-                    sh[Dimensions - 2],
-                    sh[Dimensions - 1]);
-        }
+        get => Dimensions > 0 && LastDimension == Size;
+    }
+    
+    public bool IsColumn
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Dimensions > 1 && PrevDimension == Size;
     }
 
     // utility
@@ -59,36 +77,11 @@ public sealed partial class Tensor
     internal Tensor? TransposeHint;
 
     // helpers
-    internal unsafe Tensor A
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            fixed(Tensor* c = Children)
-                return c[0];
-        }
-    }
+    internal readonly Tensor A = null!;
+    internal readonly Tensor B = null!;
+    internal readonly int LastDimension;
+    internal readonly int PrevDimension;
 
-    internal unsafe Tensor B
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            fixed(Tensor* c = Children)
-                return c[1];
-        }
-    }
-
-    public ReadOnlySpan<float> Values
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get
-        {
-            EnsureHasUpdatedValues();
-            return Data;
-        }
-    }
-    
     internal Tensor(int[] shape)
     {
         var size = shape.Product();
@@ -98,6 +91,17 @@ public sealed partial class Tensor
         Size = size;
         Shape = shape;
         Dimensions = shape.Length;
+
+        if (Dimensions > 0)
+        {
+            LastDimension = Shape[Dimensions - 1];
+        }
+        if (Dimensions > 1)
+        {
+            PrevDimension = Shape[Dimensions - 2];
+        }
+
+        transposeLazy = new(Transpose);
     }
     
     internal Tensor(int[] shape, float[] values)
@@ -111,6 +115,17 @@ public sealed partial class Tensor
         Size = size;
         Shape = shape;
         Dimensions = shape.Length;
+        
+        if (Dimensions > 0)
+        {
+            LastDimension = Shape[Dimensions - 1];
+        }
+        if (Dimensions > 1)
+        {
+            PrevDimension = Shape[Dimensions - 2];
+        }
+
+        transposeLazy = new(Transpose);
     }
 
     internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward) : this(shape)
@@ -120,11 +135,22 @@ public sealed partial class Tensor
         Backward = backward;
         Outdated = true;
 
-        fixed(Tensor* c = Children)
-            for (var i = Children.Length - 1; i >= 0; i--)
+        fixed (Tensor* c = Children)
+        {
+            var count = Children.Length;
+            if (count > 0)
+            {
+                A = c[0];
+            }
+            if (count > 1)
+            {
+                B = c[1];
+            }
+            for (var i = count - 1; i >= 0; i--)
             {
                 c[i].Dependents.Add(this);
             }
+        }
     }
 
     internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, float[] values) : this(shape, values)
@@ -133,14 +159,26 @@ public sealed partial class Tensor
         Forward = forward;
         Backward = backward;
         Outdated = true; // TODO: not true for real
-        
-        fixed(Tensor* c = Children)
+
+        fixed (Tensor* c = Children)
+        {
+            var count = Children.Length;
+            if (count > 0)
+            {
+                A = c[0];
+            }
+            if (count > 1)
+            {
+                B = c[1];
+            }
             for (var i = Children.Length - 1; i >= 0; i--)
             {
                 c[i].Dependents.Add(this);
             }
+        }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal unsafe void EnsureHasUpdatedValues()
     {
         if (!Outdated) return;
@@ -155,6 +193,7 @@ public sealed partial class Tensor
         Outdated = false;
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     internal void Invalidate()
     {
         for (var i = Dependents.Count - 1; i >= 0; i--)

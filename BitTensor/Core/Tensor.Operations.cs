@@ -171,65 +171,96 @@ public partial class Tensor
 
     public static Tensor Matmul(Tensor a, Tensor b)
     {
-        // a shape: b1 * b2 * n * m
-        // b shape: b1 * b2 * m * k
-
         if (a.IsScalar || b.IsScalar)
-        {
             return Mul(a, b);
+
+        if (a.IsVector && b.IsVector)
+        {
+            Shapes.EnsureShapesAreEqual(a.Shape, b.Shape);
+
+            return new(
+                [],
+                children: [a, b],
+                forward: static self => Ops.Dot(self.A, self.B, self.Data),
+                backward: MatMulBackward);
         }
-
-        var shrinkStart = 0;
-        var shrinkEnd = 0;
-
-        var ao = a;
-        var bo = b;
-
+        
         if (a.IsVector)
         {
-            a = a.PrependDimension();
-            shrinkStart = 1;
-        }
+            if (a.Size != b.NextToLastDimension)
+                throw new NotCompatibleShapesException(a, b);
 
+            return new(
+                b.Shape[1..],
+                children: [a, b],
+                forward: static self => Ops.VecMatMul(self.A, self.B.T, self.Data),
+                backward: MatMulBackward);
+        }
+        
         if (b.IsVector)
         {
-            b = b.AppendDimension();
-            shrinkEnd = 1;
+            if (a.LastDimension != b.Size)
+                throw new NotCompatibleShapesException(a, b);
+
+            return new(
+                a.Shape[..^1],
+                children: [a, b],
+                forward: static self => Ops.MatVecMul(self.A, self.B, self.Data),
+                backward: MatMulBackward);
         }
 
-        var (az2, az1) = a.LastTwo;
-        var (bz2, bz1) = b.LastTwo;
+        
+        if (a.LastDimension != b.NextToLastDimension)
+            throw new InvalidOperationException($"Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
 
-        if (az1 != bz2)
-            throw new InvalidOperationException($"MATMUL: Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
+        if (a.IsRow && b.IsColumn)
+        {
+            return new(
+                [1, 1],
+                children: [a, b],
+                forward: static self => Ops.Dot(self.A, self.B.T, self.Data),
+                backward: MatMulBackward);
+        }
 
-        var bT = b.Transpose();
+        if (a.IsRow)
+        {
+            return new(
+                [1, ..b.Shape[1..]],
+                children: [a, b],
+                forward: static self => Ops.VecMatMul(self.A, self.B.T, self.Data),
+                backward: MatMulBackward);
+        }
 
-        int[] shape = [..a.Shape[..^1], bz1];
-
-        shape = shape[shrinkStart..^shrinkEnd];
+        if (b.IsColumn)
+        {
+            return new(
+                [..a.Shape[..^1], 1],
+                children: [a, b],
+                forward: static self => Ops.MatVecMul(self.A, self.B, self.Data),
+                backward: MatMulBackward);
+        }
 
         return new(
-            shape,
+            [..a.Shape[..^1], b.LastDimension],
             children: [a, b],
-            forward: self => Ops.MatMulTransposed(a, bT, self.Data), // closure b transposed
+            forward: static self => Ops.MatMulTransposed(self.A, self.B.T, self.Data),
             backward: MatMulBackward);
-
-        Tensor[] MatMulBackward(Tensor grad, Tensor local)
-        {
-            var da =
-                bo.IsVector &&
-                grad.IsVector
-                    ? Outer(grad, bo.Transpose())
-                    : Matmul(grad, bo.Transpose());
-
-            var db =
-                ao.IsVector &&
-                grad.IsVector
-                    ? Outer(ao.Transpose(), grad)
-                    : Matmul(ao.Transpose(), grad);
-
-            return [da, db];
-        }
     }
+
+    private static Tensor[] MatMulBackward(Tensor grad, Tensor self) =>
+    [
+        grad.IsVector && self.B.IsVector
+            ? Outer(grad, self.B.T)
+            : Matmul(grad, self.B.T),
+
+        grad.IsVector && self.A.IsVector
+            ? Outer(self.A.T, grad)
+            : Matmul(self.A.T, grad)
+    ];
+}
+
+public class NotCompatibleShapesException : Exception
+{
+    public NotCompatibleShapesException(Tensor a, Tensor b) : 
+        base($"Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}") { }
 }
