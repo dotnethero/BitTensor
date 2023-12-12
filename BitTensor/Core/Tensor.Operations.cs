@@ -187,7 +187,7 @@ public partial class Tensor
         
         if (a.IsVector)
         {
-            if (a.Size != b.NextToLastDimension)
+            if (a.Size != b.PrevDimension)
                 throw new NotCompatibleShapesException(a, b);
 
             return new(
@@ -210,7 +210,7 @@ public partial class Tensor
         }
 
         
-        if (a.LastDimension != b.NextToLastDimension)
+        if (a.LastDimension != b.PrevDimension)
             throw new InvalidOperationException($"Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
 
         if (a.IsRow && b.IsColumn)

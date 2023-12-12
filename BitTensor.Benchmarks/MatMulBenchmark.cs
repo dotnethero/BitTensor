@@ -4,7 +4,7 @@ using BitTensor.Core;
 
 namespace BitTensor.Benchmarks;
 
-[SimpleJob(RunStrategy.Monitoring, launchCount: 1, warmupCount: 1, iterationCount: 3, invocationCount: 10_000_000)]
+[SimpleJob(RunStrategy.Monitoring, launchCount: 1, warmupCount: 3, iterationCount: 5, invocationCount: 10_000_000)]
 public class MatMulBenchmark
 {
     private readonly Tensor x;

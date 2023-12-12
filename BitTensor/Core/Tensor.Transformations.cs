@@ -80,9 +80,6 @@ public partial class Tensor
 
     public Tensor Transpose()
     {
-        if (TransposeHint is not null)
-            return TransposeHint;
-
         var dims = Dimensions;
         if (dims < 2)
             return this;
@@ -137,7 +134,7 @@ public partial class Tensor
             forward: self => Ops.ApplyTransposeMatrix(this.Data, matrix, self.Data),
             backward: (grad, self) => [grad.Transpose(axes)])
             {
-                TransposeHint = this
+                TransposeLazy = new(this)
             };
     }
 }
