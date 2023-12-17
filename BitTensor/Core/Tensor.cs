@@ -14,6 +14,7 @@ public sealed partial class Tensor
     public readonly int Size;
     public readonly int Dimensions;
     public readonly int[] Shape;
+    public readonly int[] Strides;
     
     public ReadOnlySpan<float> Values
     {
@@ -65,6 +66,7 @@ public sealed partial class Tensor
         Data = values ?? new float[size];
         Size = size;
         Shape = shape;
+        Strides = shape.GetStrides();
         Dimensions = shape.Length;
         
         IsEmpty = Size == 0;

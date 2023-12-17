@@ -126,4 +126,68 @@ class MatmulComparisonTests
             TensorAsserts.ValuesAreEqual(cb_true, cb);
         });
     }
+
+    [Test]
+    // Simple cases
+    [TestCase(new[] { 1 }, new[] { 1 })] // Scalar multiplication
+    [TestCase(new[] { 2, 3 }, new[] { 3, 4 })] // Regular matrix multiplication
+
+    // Vector and matrix multiplication
+    [TestCase(new[] { 3 }, new[] { 3, 2 })] // Vector and matrix
+    [TestCase(new[] { 2, 3 }, new[] { 3 })] // Matrix and vector
+
+    // Broadcasting cases
+    [TestCase(new[] { 2, 1 }, new[] { 1, 2 })] // Broadcasting with different dimensions
+    [TestCase(new[] { 1, 3 }, new[] { 3, 2 })] // Broadcasting with a vector
+    [TestCase(new[] { 4, 1, 3 }, new[] { 3, 5 })] // Broadcasting in batched dimensions
+    [TestCase(new[] { 1, 4, 3 }, new[] { 3, 2 })] // Broadcasting in batched dimensions
+
+    // Batched multiplication cases
+    [TestCase(new[] { 5, 2, 3 }, new[] { 3, 4 })] // Batched matrix multiplication
+    [TestCase(new[] { 5, 2, 3 }, new[] { 5, 3, 4 })] // Batched matrix multiplication with same batch size
+    [TestCase(new[] { 3, 1, 2, 3 }, new[] { 3, 3, 4 })] // Higher-dimensional batched multiplication
+    [TestCase(new[] { 2, 3, 1, 3 }, new[] { 2, 3, 3, 4 })] // Higher-dimensional batched multiplication with same batch size
+
+    // More complex cases combining broadcasting and batching
+    [TestCase(new[] { 1, 2, 3 }, new[] { 5, 3, 4 })]
+    [TestCase(new[] { 6, 1, 2, 3 }, new[] { 3, 5 })]
+    [TestCase(new[] { 3, 1, 2, 3 }, new[] { 3, 8, 3, 4 })]
+    [TestCase(new[] { 2, 3, 1, 3 }, new[] { 2, 1, 3, 4 })]
+
+    // Corrected complex cases combining broadcasting and batching
+    [TestCase(new[] { 5, 3, 4 }, new[] { 1, 4, 2 })]
+    [TestCase(new[] { 6, 1, 2, 3 }, new[] { 1, 3, 4 })]
+    [TestCase(new[] { 3, 2, 2, 3 }, new[] { 2, 3, 4 })]
+    [TestCase(new[] { 2, 3, 4, 3 }, new[] { 2, 3, 3, 5 })]
+
+    // Flipped dimensions for complex cases
+    [TestCase(new[] { 1, 4, 3 }, new[] { 5, 3, 4 })]
+    [TestCase(new[] { 5, 3, 4 }, new[] { 6, 1, 4, 3 })]
+    [TestCase(new[] { 2, 3, 4 }, new[] { 3, 2, 4, 3 })]
+    [TestCase(new[] { 2, 3, 3, 4 }, new[] { 2, 3, 4, 3 })]
+    public void Compare_matmul_different_shapes(int[] a, int[] b)
+    {
+        using var scope = Py.CreateScope();
+        using var _ = Py.GIL(); 
+        
+        var x_py_shape = $"[{string.Join(",", a)}]";
+        var y_py_shape = $"[{string.Join(",", b)}]";
+
+        scope.ExecuteJax(
+            $"""
+             key = jax.random.PRNGKey(0)
+             xk, yk = jax.random.split(key)
+             x = jax.random.normal(xk, {x_py_shape})
+             y = jax.random.normal(yk, {y_py_shape})
+             d = jnp.matmul(x, y)
+             """);
+
+        var x = scope.GetTensor("x");
+        var y = scope.GetTensor("y");
+        var d = scope.GetTensor("d");
+        var z = Tensor.Matmul(x, y);
+
+        TensorAsserts.ShapesAreEqual(d, z);
+        TensorAsserts.ValuesAreEqual(d, z);
+    }
 }

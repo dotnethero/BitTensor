@@ -1,4 +1,5 @@
 ﻿using System.Numerics.Tensors;
+using System.Runtime.CompilerServices;
 
 namespace BitTensor.Core;
 
@@ -7,36 +8,43 @@ internal delegate void TensorScalarOperation(ReadOnlySpan<float> a, float b, Spa
 
 internal static unsafe class Ops
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Negate(Tensor a, float[] result)
     {
         TensorPrimitives.Negate(a.Values, result);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Sigmoid(Tensor a, float[] result)
     {
         TensorPrimitives.Sigmoid(a.Values, result);
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Tanh(Tensor a, float[] result)
     {
         TensorPrimitives.Tanh(a.Values, result);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Add(Tensor a, float b, float[] result)
     {
         TensorPrimitives.Add(a.Values, b, result);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Add(Tensor a, Tensor b, float[] result)
     {
         BroadcastBinary(a, b, result, TensorPrimitives.Add, TensorPrimitives.Add);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Multiply(Tensor a, float b, float[] result)
     {
         TensorPrimitives.Multiply(a.Values, b, result);
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Multiply(Tensor a, Tensor b, float[] result)
     {
         BroadcastBinary(a, b, result, TensorPrimitives.Multiply, TensorPrimitives.Multiply);
@@ -66,6 +74,7 @@ internal static unsafe class Ops
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Sum(Tensor a, float[] result)
     {
         result[0] = TensorPrimitives.Sum(a.Values);
@@ -208,11 +217,13 @@ internal static unsafe class Ops
         }
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Broadcast(Tensor a, float[] result) // TODO: support axis
     {
         Array.Fill(result, a.Values[0]);
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Dot(Tensor a, Tensor b, float[] results)
     {
         results[0] = TensorPrimitives.Dot(a.Values, b.Values);
@@ -274,9 +285,39 @@ internal static unsafe class Ops
 
     public static void MatMulTransposed(Tensor a, Tensor bT, float[] results)
     {
+        var batchDims = Math.Max(a.Dimensions, bT.Dimensions) - 2;
+
+        var aBatchShapeOrig = a.Shape[..^2];
+        var bBatchShapeOrig = bT.Shape[..^2];
+
+        var aBatchShape = new int[batchDims];
+        var bBatchShape = new int[batchDims];
+        var rBatchShape = new int[batchDims];
+
+        for (var i = 0; i < batchDims; ++i)
+        {
+            var ai = i >= aBatchShapeOrig.Length ? 1 : aBatchShapeOrig[^(i+1)];
+            var bi = i >= bBatchShapeOrig.Length ? 1 : bBatchShapeOrig[^(i+1)];
+            aBatchShape[^(i+1)] = ai;
+            bBatchShape[^(i+1)] = bi;
+            rBatchShape[^(i+1)] = ai >= bi ? ai : bi;
+        }
+
+        var aStrides = aBatchShape.GetStrides();
+        var bStrides = bBatchShape.GetStrides();
+        var rStrides = rBatchShape.GetStrides();
+        
+        for (var i = 0; i < batchDims; ++i)
+        {
+            if (aBatchShape[i] == 1)
+                aStrides[i] = 0;
+
+            if (bBatchShape[i] == 1)
+                bStrides[i] = 0;
+        }
+
+        var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
         var rowCount = a.Shape[^2];
-        var batchDim = a.Shape[..^2];
-        var batchCount = batchDim.Product();
 
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
@@ -285,26 +326,47 @@ internal static unsafe class Ops
         {
             for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
             {
+                var (aIndex, bIndex) = GetIndexes(batchIndex, aStrides, bStrides, rStrides);
                 for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
                 {
-                    MatMulRow(a, bT, batchIndex, rowIndex, results);
+                    MatMulRow(a, bT, aIndex, bIndex, batchIndex, rowIndex, results);
                 }
             }
         }
         else
         {
-            Parallel.For(0, batchCount * rowCount, i => MatMulRowP(a, bT, i, rowCount, results));
+            Parallel.For(0, batchCount * rowCount, i => MatMulRowP(a, bT, i, rowCount, results, aStrides, bStrides, rStrides));
         }
     }
 
-    private static void MatMulRowP(Tensor a, Tensor bT, int compoundIndex, int rowCount, float[] results)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static (int aIndex, int bIndex) GetIndexes(int batchIndex, int[] aStrides, int[] bStrides, int[] rStrides)
+    {
+        var batchDims = rStrides.Length;
+        var aIndex = 0;
+        var bIndex = 0;
+        var leftover = batchIndex;
+        for (var i = 0; i < batchDims; ++i)
+        {
+            var di = leftover / rStrides[i]; // dimension index
+            aIndex += aStrides[i] * di;
+            bIndex += bStrides[i] * di;
+            leftover -= di * rStrides[i];
+        }
+
+        return (aIndex, bIndex);
+    }
+
+    private static void MatMulRowP(Tensor a, Tensor bT, int compoundIndex, int rowCount, float[] results, int[] aStrides, int[] bStrides, int[] rStrides)
     {
         var batchIndex = compoundIndex / rowCount;
         var rowIndex = compoundIndex - rowCount * batchIndex;
-        MatMulRow(a, bT, batchIndex, rowIndex, results);
+        var (aIndex, bIndex) = GetIndexes(batchIndex, aStrides, bStrides, rStrides);
+        MatMulRow(a, bT, aIndex, bIndex, batchIndex, rowIndex, results);
     }
 
-    private static void MatMulRow(Tensor a, Tensor bT, int batchIndex, int rowIndex, float[] results)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static void MatMulRow(Tensor a, Tensor bT, int aIndex, int bIndex, int batchIndex, int rowIndex, float[] results)
     {
         var rowSize = a.Shape[^1];
         var rowCount = a.Shape[^2];
@@ -314,8 +376,8 @@ internal static unsafe class Ops
         var rightSize = colCount * rowSize;
         var batchSize = rowCount * colCount;
 
-        var left = a.Data.AsSpan(batchIndex * leftSize, leftSize);
-        var right = bT.Data.AsSpan(batchIndex * rightSize, rightSize);
+        var left = a.Data.AsSpan(aIndex * leftSize, leftSize);
+        var right = bT.Data.AsSpan(bIndex * rightSize, rightSize);
 
         fixed (float* rp = results)
         {

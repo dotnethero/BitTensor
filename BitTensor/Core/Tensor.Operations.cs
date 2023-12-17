@@ -240,8 +240,10 @@ public partial class Tensor
                 backward: MatMulBackward);
         }
 
+        var batchDimensions = Shapes.EnsureShapesAreCompatible(a.Shape[..^2], b.Shape[..^2]);
+
         return new(
-            [..a.Shape[..^1], b.LastDimension],
+            [..batchDimensions, a.PrevDimension, b.LastDimension],
             children: [a, b],
             forward: static self => Ops.MatMulTransposed(self.A, self.B.T, self.Data),
             backward: MatMulBackward);
