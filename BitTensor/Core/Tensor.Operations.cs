@@ -12,20 +12,10 @@ public partial class Tensor
             forward: static self => Ops.Add(self.A, self.B, self.Data),
             backward: static (grad, self) =>
             {
-                var a_bc_dims = new List<int>(self.Dimensions);
-                var b_bc_dims = new List<int>(self.Dimensions);
-
-                for (var i = 1; i <= self.Dimensions; i++)
-                {
-                    if (i > self.A.Dimensions || self.A.Shape[^i] != self.Shape[^i])
-                        a_bc_dims.Add(self.Dimensions - i);
-
-                    if (i > self.B.Dimensions || self.B.Shape[^i] != self.Shape[^i]) 
-                        b_bc_dims.Add(self.Dimensions - i);
-                }
-
-                var agrad = Sum(grad, axis: a_bc_dims.ToArray());
-                var bgrad = Sum(grad, axis: b_bc_dims.ToArray());
+                var adims = Shapes.GetBroadcastedAxis(self.A.Shape, self.Shape);
+                var bdims = Shapes.GetBroadcastedAxis(self.B.Shape, self.Shape);
+                var agrad = Sum(grad, axis: adims);
+                var bgrad = Sum(grad, axis: bdims);
                 return
                 [
                     agrad.Reshape(self.A.Shape),
@@ -249,16 +239,29 @@ public partial class Tensor
             backward: MatMulBackward);
     }
 
-    private static Tensor[] MatMulBackward(Tensor grad, Tensor self) =>
-    [
-        grad.IsVector && self.B.IsVector
-            ? Outer(grad, self.B.T)
-            : Matmul(grad, self.B.T),
+    private static Tensor[] MatMulBackward(Tensor grad, Tensor self)
+    {
+        var aBatchShape = self.A.Dimensions <= 2 ? [] : self.A.Shape[..^2];
+        var bBatchShape = self.B.Dimensions <= 2 ? [] : self.B.Shape[..^2];
+        var rBatchShape = self.Dimensions <= 2 ? [] : self.Shape[..^2];
 
-        grad.IsVector && self.A.IsVector
+        var adims = Shapes.GetBroadcastedAxis(aBatchShape, rBatchShape);
+        var bdims = Shapes.GetBroadcastedAxis(bBatchShape, rBatchShape);
+
+        var agrad = grad.IsVector && self.B.IsVector
+            ? Outer(grad, self.B.T)
+            : Sum(Matmul(grad, self.B.T), axis: adims).Reshape(self.A.Shape);
+
+        var bgrad = grad.IsVector && self.A.IsVector
             ? Outer(self.A.T, grad)
-            : Matmul(self.A.T, grad)
-    ];
+            : Sum(Matmul(self.A.T, grad), axis: bdims).Reshape(self.B.Shape);
+
+        return
+        [
+            agrad,
+            bgrad
+        ];
+    }
 }
 
 public class NotCompatibleShapesException : Exception
