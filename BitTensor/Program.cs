@@ -10,7 +10,13 @@ public class Program
 {
     public static void Main()
     {
-        // Mojo_fun();
+        // [50, 1000, 1000] @ [5, 1, 1000, 1000] = 00:00:22.4988747
+        var a = Tensor.Random.Normal([50, 1000, 1000]);
+        var b = Tensor.Random.Normal([5, 1, 1000, 1000]);
+        var sw = Stopwatch.StartNew();
+        var c = Tensor.Matmul(a, b);
+        Console.WriteLine(c.Values[0]);
+        Console.WriteLine(sw.Elapsed);
     }
 
     public static void Mojo_fun()

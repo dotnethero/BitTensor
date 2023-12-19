@@ -283,50 +283,24 @@ internal static unsafe class Ops
         }
     }
 
+    public static void MatMulTiled(Tensor a, Tensor b, float[] results)
+    {
+
+    }
+
     public static void MatMulTransposed(Tensor a, Tensor bT, float[] results)
     {
-        var batchDims = Math.Max(a.Dimensions, bT.Dimensions) - 2;
-
-        var aBatchShapeOrig = a.Shape[..^2];
-        var bBatchShapeOrig = bT.Shape[..^2];
-
-        var aBatchShape = new int[batchDims];
-        var bBatchShape = new int[batchDims];
-        var rBatchShape = new int[batchDims];
-
-        for (var i = 0; i < batchDims; ++i)
-        {
-            var ai = i >= aBatchShapeOrig.Length ? 1 : aBatchShapeOrig[^(i+1)];
-            var bi = i >= bBatchShapeOrig.Length ? 1 : bBatchShapeOrig[^(i+1)];
-            aBatchShape[^(i+1)] = ai;
-            bBatchShape[^(i+1)] = bi;
-            rBatchShape[^(i+1)] = ai >= bi ? ai : bi;
-        }
-
-        var aStrides = aBatchShape.GetStrides();
-        var bStrides = bBatchShape.GetStrides();
-        var rStrides = rBatchShape.GetStrides();
-        
-        for (var i = 0; i < batchDims; ++i)
-        {
-            if (aBatchShape[i] == 1)
-                aStrides[i] = 0;
-
-            if (bBatchShape[i] == 1)
-                bStrides[i] = 0;
-        }
-
-        var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
+        var plan = PlanBatches(a, bT);
         var rowCount = a.Shape[^2];
 
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
-        if (batchCount * rowCount < 16)
+        if (plan.BatchCount * rowCount < 16)
         {
-            for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
+            for (var batchIndex = 0; batchIndex < plan.BatchCount; batchIndex++)
             {
-                var (aIndex, bIndex) = GetIndexes(batchIndex, aStrides, bStrides, rStrides);
+                var (aIndex, bIndex) = plan.GetIndexes(batchIndex);
                 for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
                 {
                     MatMulRow(a, bT, aIndex, bIndex, batchIndex, rowIndex, results);
@@ -335,33 +309,15 @@ internal static unsafe class Ops
         }
         else
         {
-            Parallel.For(0, batchCount * rowCount, i => MatMulRowP(a, bT, i, rowCount, results, aStrides, bStrides, rStrides));
+            Parallel.For(0, plan.BatchCount * rowCount, i => MatMulRowP(plan, a, bT, results, i, rowCount));
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (int aIndex, int bIndex) GetIndexes(int batchIndex, int[] aStrides, int[] bStrides, int[] rStrides)
-    {
-        var batchDims = rStrides.Length;
-        var aIndex = 0;
-        var bIndex = 0;
-        var leftover = batchIndex;
-        for (var i = 0; i < batchDims; ++i)
-        {
-            var di = leftover / rStrides[i]; // dimension index
-            aIndex += aStrides[i] * di;
-            bIndex += bStrides[i] * di;
-            leftover -= di * rStrides[i];
-        }
-
-        return (aIndex, bIndex);
-    }
-
-    private static void MatMulRowP(Tensor a, Tensor bT, int compoundIndex, int rowCount, float[] results, int[] aStrides, int[] bStrides, int[] rStrides)
+    private static void MatMulRowP(BatchPlan plan, Tensor a, Tensor bT, float[] results, int compoundIndex, int rowCount)
     {
         var batchIndex = compoundIndex / rowCount;
         var rowIndex = compoundIndex - rowCount * batchIndex;
-        var (aIndex, bIndex) = GetIndexes(batchIndex, aStrides, bStrides, rStrides);
+        var (aIndex, bIndex) = plan.GetIndexes(batchIndex);
         MatMulRow(a, bT, aIndex, bIndex, batchIndex, rowIndex, results);
     }
 
@@ -544,6 +500,67 @@ internal static unsafe class Ops
                 var rslice = r_span.Slice(ri * vstride, vstride);
                 tensorOp(aslice, bslice, rslice);
             }
+        }
+    }
+    
+    private static BatchPlan PlanBatches(Tensor a, Tensor b)
+    {
+        var batchDims = Math.Max(a.Dimensions, b.Dimensions) - 2;
+
+        var aBatchShapeOrig = a.Shape[..^2];
+        var bBatchShapeOrig = b.Shape[..^2];
+
+        var aBatchShape = new int[batchDims];
+        var bBatchShape = new int[batchDims];
+        var rBatchShape = new int[batchDims];
+
+        for (var i = 0; i < batchDims; ++i)
+        {
+            var ai = i >= aBatchShapeOrig.Length ? 1 : aBatchShapeOrig[^(i+1)];
+            var bi = i >= bBatchShapeOrig.Length ? 1 : bBatchShapeOrig[^(i+1)];
+            aBatchShape[^(i+1)] = ai;
+            bBatchShape[^(i+1)] = bi;
+            rBatchShape[^(i+1)] = ai >= bi ? ai : bi;
+        }
+
+        var aStrides = aBatchShape.GetStrides();
+        var bStrides = bBatchShape.GetStrides();
+        var rStrides = rBatchShape.GetStrides();
+        
+        for (var i = 0; i < batchDims; ++i)
+        {
+            if (aBatchShape[i] == 1)
+                aStrides[i] = 0;
+
+            if (bBatchShape[i] == 1)
+                bStrides[i] = 0;
+        }
+
+        var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
+        return new(batchCount, aStrides, bStrides, rStrides);
+    }
+    
+    private class BatchPlan(int batchCount, int[] aStrides, int[] bStrides, int[] rStrides)
+    {
+        public readonly int BatchCount = batchCount;
+        public readonly int Dimensions = rStrides.Length;
+
+        public (int aIndex, int bIndex) GetIndexes(int batchIndex)
+        {
+            var aIndex = 0;
+            var bIndex = 0;
+            var leftover = batchIndex;
+            fixed (int* ap = aStrides, bp = bStrides, rp = rStrides)
+            {
+                for (var i = 0; i < Dimensions; ++i)
+                {
+                    var di = leftover / rp[i]; // dimension index
+                    aIndex += ap[i] * di;
+                    bIndex += bp[i] * di;
+                    leftover -= di * rp[i];
+                }
+            }
+            return (aIndex, bIndex);
         }
     }
 

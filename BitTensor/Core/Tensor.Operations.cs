@@ -235,7 +235,7 @@ public partial class Tensor
         return new(
             [..batchDimensions, a.PrevDimension, b.LastDimension],
             children: [a, b],
-            forward: static self => Ops.MatMulTransposed(self.A, self.B.T, self.Data),
+            forward: static self => Ops.MatMulTiled(self.A, self.B, self.Data),
             backward: MatMulBackward);
     }
 
