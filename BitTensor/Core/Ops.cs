@@ -285,85 +285,40 @@ internal static unsafe class Ops
 
     public static void MatMulTransposed(Tensor a, Tensor bT, float[] results)
     {
-        var batchDims = Math.Max(a.Dimensions, bT.Dimensions) - 2;
-
-        var aBatchShapeOrig = a.Shape[..^2];
-        var bBatchShapeOrig = bT.Shape[..^2];
-
-        var aBatchShape = new int[batchDims];
-        var bBatchShape = new int[batchDims];
-        var rBatchShape = new int[batchDims];
-
-        for (var i = 0; i < batchDims; ++i)
-        {
-            var ai = i >= aBatchShapeOrig.Length ? 1 : aBatchShapeOrig[^(i+1)];
-            var bi = i >= bBatchShapeOrig.Length ? 1 : bBatchShapeOrig[^(i+1)];
-            aBatchShape[^(i+1)] = ai;
-            bBatchShape[^(i+1)] = bi;
-            rBatchShape[^(i+1)] = ai >= bi ? ai : bi;
-        }
-
-        var aStrides = aBatchShape.GetStrides();
-        var bStrides = bBatchShape.GetStrides();
-        var rStrides = rBatchShape.GetStrides();
-        
-        for (var i = 0; i < batchDims; ++i)
-        {
-            if (aBatchShape[i] == 1)
-                aStrides[i] = 0;
-
-            if (bBatchShape[i] == 1)
-                bStrides[i] = 0;
-        }
-
-        var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
-        var rowCount = a.Shape[^2];
-
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
-        if (batchCount * rowCount < 16)
+        var strides = GetBatchStrides(a, bT);
+
+        ParallelOptions options = new();
+        Parallel.ForEach(GetMatMulRows(strides, a, bT, results), options, MatMulRowP);
+    }
+
+    private record MatMulRowInputs(Tensor A, Tensor B, float[] Results, int AIndex, int BIndex, int BatchIndex, int RowIndex);
+
+    private static IEnumerable<MatMulRowInputs> GetMatMulRows(BatchStrides strides, Tensor a, Tensor b, float[] results)
+    {
+        var rowCount = a.Shape[^2];
+        var iterator = new MatMulRowInputs(a, b, results, 0, 0, 0, 0);
+        for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
         {
-            for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
+            for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
-                var (aIndex, bIndex) = GetIndexes(batchIndex, aStrides, bStrides, rStrides);
-                for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
+                var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
+                yield return iterator with
                 {
-                    MatMulRow(a, bT, aIndex, bIndex, batchIndex, rowIndex, results);
-                }
+                    AIndex = aIndex,
+                    BIndex = bIndex,
+                    BatchIndex = batchIndex,
+                    RowIndex = rowIndex
+                };
             }
         }
-        else
-        {
-            Parallel.For(0, batchCount * rowCount, i => MatMulRowP(a, bT, i, rowCount, results, aStrides, bStrides, rStrides));
-        }
     }
-
+    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static (int aIndex, int bIndex) GetIndexes(int batchIndex, int[] aStrides, int[] bStrides, int[] rStrides)
-    {
-        var batchDims = rStrides.Length;
-        var aIndex = 0;
-        var bIndex = 0;
-        var leftover = batchIndex;
-        for (var i = 0; i < batchDims; ++i)
-        {
-            var di = leftover / rStrides[i]; // dimension index
-            aIndex += aStrides[i] * di;
-            bIndex += bStrides[i] * di;
-            leftover -= di * rStrides[i];
-        }
-
-        return (aIndex, bIndex);
-    }
-
-    private static void MatMulRowP(Tensor a, Tensor bT, int compoundIndex, int rowCount, float[] results, int[] aStrides, int[] bStrides, int[] rStrides)
-    {
-        var batchIndex = compoundIndex / rowCount;
-        var rowIndex = compoundIndex - rowCount * batchIndex;
-        var (aIndex, bIndex) = GetIndexes(batchIndex, aStrides, bStrides, rStrides);
-        MatMulRow(a, bT, aIndex, bIndex, batchIndex, rowIndex, results);
-    }
+    private static void MatMulRowP(MatMulRowInputs inputs) => 
+        MatMulRow(inputs.A, inputs.B, inputs.AIndex, inputs.BIndex, inputs.BatchIndex, inputs.RowIndex, inputs.Results);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void MatMulRow(Tensor a, Tensor bT, int aIndex, int bIndex, int batchIndex, int rowIndex, float[] results)
@@ -532,7 +487,7 @@ internal static unsafe class Ops
 
             if (ones > sames) // vectorize scalar
             {
-                var aslice = a_span.Slice(ai * vstride, vstride);;
+                var aslice = a_span.Slice(ai * vstride, vstride);
                 var bslice = b_span[bi];
                 var rslice = r_span.Slice(ri * vstride, vstride);
                 scalarOp(aslice, bslice, rslice);
@@ -546,9 +501,71 @@ internal static unsafe class Ops
             }
         }
     }
+    
+    private class BatchStrides(int batchCount, int[] aStrides, int[] bStrides, int[] rStrides)
+    {
+        public readonly int BatchCount = batchCount;
+        public readonly int Dimensions = rStrides.Length;
 
+        public (int aIndex, int bIndex) ConvertIndex(int batchIndex)
+        {
+            var aIndex = 0;
+            var bIndex = 0;
+            var leftover = batchIndex;
+            fixed (int* ap = aStrides, bp = bStrides, rp = rStrides)
+            {
+                for (var i = 0; i < Dimensions; ++i)
+                {
+                    var di = leftover / rp[i]; // dimension index
+                    aIndex += ap[i] * di;
+                    bIndex += bp[i] * di;
+                    leftover -= di * rp[i];
+                }
+            }
+            return (aIndex, bIndex);
+        }
+    }
+
+    private static BatchStrides GetBatchStrides(Tensor a, Tensor b)
+    {
+        var batchDims = Math.Max(a.Dimensions, b.Dimensions) - 2;
+
+        var aBatchShapeOrig = a.Shape[..^2];
+        var bBatchShapeOrig = b.Shape[..^2];
+
+        var aBatchShape = new int[batchDims];
+        var bBatchShape = new int[batchDims];
+        var rBatchShape = new int[batchDims];
+
+        for (var i = 0; i < batchDims; ++i)
+        {
+            var ai = i >= aBatchShapeOrig.Length ? 1 : aBatchShapeOrig[^(i+1)];
+            var bi = i >= bBatchShapeOrig.Length ? 1 : bBatchShapeOrig[^(i+1)];
+            aBatchShape[^(i+1)] = ai;
+            bBatchShape[^(i+1)] = bi;
+            rBatchShape[^(i+1)] = ai >= bi ? ai : bi;
+        }
+
+        var aStrides = aBatchShape.GetStrides();
+        var bStrides = bBatchShape.GetStrides();
+        var rStrides = rBatchShape.GetStrides();
+        
+        for (var i = 0; i < batchDims; ++i)
+        {
+            if (aBatchShape[i] == 1)
+                aStrides[i] = 0;
+
+            if (bBatchShape[i] == 1)
+                bStrides[i] = 0;
+        }
+
+        var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
+        return new(batchCount, aStrides, bStrides, rStrides);
+    }
+    
     internal static Tensor[] NotSupported(Tensor grad, Tensor self)
     {
         throw new NotSupportedException("Operations is not supported");
     }
 }
+
