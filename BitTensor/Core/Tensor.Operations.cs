@@ -9,7 +9,7 @@ public partial class Tensor
         return new(
             shape,
             children: [a, b],
-            forward: static self => Ops.Add(self.A, self.B, self.Data),
+            forward: static self => Ops.Add(self.A, self.B, self),
             backward: static (grad, self) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(self.A.Shape, self.Shape);
@@ -29,14 +29,14 @@ public partial class Tensor
     public static Tensor Add(Tensor a, float b) =>
         new(shape: a.Shape,
             children: [a],
-            forward: self => Ops.Add(self.A, b, self.Data),
+            forward: self => Ops.Add(self.A, b, self),
             backward: static (grad, _) => [grad]);
 
 
     public static Tensor Negate(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Ops.Negate(self.A, self.Data),
+            forward: static self => Ops.Negate(self.A, self),
             backward: static (grad, _) => [-grad]);
 
     public static Tensor Mul(float a, Tensor b) => Mul(b, a);
@@ -50,7 +50,7 @@ public partial class Tensor
             _ => new(
                 shape: a.Shape,
                 children: [a],
-                forward: self => Ops.Multiply(self.A, b, self.Data),
+                forward: self => Ops.Multiply(self.A, b, self),
                 backward: (grad, _) => [b * grad])
         };
 
@@ -70,14 +70,14 @@ public partial class Tensor
         return new(
             shape,
             children: [a, b],
-            forward: static self => Ops.Multiply(self.A, self.B, self.Data),
+            forward: static self => Ops.Multiply(self.A, self.B, self),
             backward: static (grad, self) => [self.B * grad, self.A * grad]);
     }
 
     public static Tensor Square(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Ops.Multiply(self.A, self.A, self.Data),
+            forward: static self => Ops.Multiply(self.A, self.A, self),
             backward: static (grad, self) => [grad * self.A * 2]);
 
     public static Tensor Outer(Tensor a, Tensor b)
@@ -91,7 +91,7 @@ public partial class Tensor
         return new(
             shape: [a.Size, b.Size],
             children: [a, b],
-            forward: static self => Ops.Outer(self.A, self.B, self.Data),
+            forward: static self => Ops.Outer(self.A, self.B, self),
             backward: static (grad, self) => [
                 Matmul(grad, self.A), 
                 Matmul(grad.Transpose(), self.B)]);
@@ -106,14 +106,14 @@ public partial class Tensor
             _ => new(
                 shape: a.Shape,
                 children: [a],
-                forward: self => Ops.Power(self.A, power, self.Data),
+                forward: self => Ops.Power(self.A, power, self),
                 backward: (grad, _) => [grad * power * Pow(a, power - 1)])
         };
 
     public static Tensor Sum(Tensor a) =>
         new(shape: [],
             children: [a],
-            forward: static self => Ops.Sum(self.A, self.Data),
+            forward: static self => Ops.Sum(self.A, self),
             backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]);
 
     public static Tensor Sum(Tensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
@@ -129,7 +129,7 @@ public partial class Tensor
         return new(
             shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
             children: [a],
-            forward: self => Ops.SumAxis(self.A, axis, self.Data),
+            forward: self => Ops.SumAxis(self.A, axis, self),
             backward: Ops.NotSupported);
     }
 
@@ -141,7 +141,7 @@ public partial class Tensor
         return new(
             shape: shape,
             children: [a],
-            forward: static self => Ops.Broadcast(self.A, self.Data),
+            forward: static self => Ops.Broadcast(self.A, self),
             backward: Ops.NotSupported);
     }
 
@@ -150,13 +150,13 @@ public partial class Tensor
     public static Tensor Sigmoid(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Ops.Sigmoid(self.A, self.Data),
+            forward: static self => Ops.Sigmoid(self.A, self),
             backward: static (grad, self) => [grad * self * (1f - self)]);
 
     public static Tensor Tanh(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Ops.Tanh(self.A, self.Data),
+            forward: static self => Ops.Tanh(self.A, self),
             backward: static (grad, self) => [grad * (1f - Square(self))]);
 
     public static Tensor Matmul(Tensor a, Tensor b)
@@ -171,7 +171,7 @@ public partial class Tensor
             return new(
                 [],
                 children: [a, b],
-                forward: static self => Ops.Dot(self.A, self.B, self.Data),
+                forward: static self => Ops.Dot(self.A, self.B, self),
                 backward: MatMulBackward);
         }
         
@@ -183,7 +183,7 @@ public partial class Tensor
             return new(
                 b.Shape[1..],
                 children: [a, b],
-                forward: static self => Ops.VecMatMul(self.A, self.B.T, self.Data),
+                forward: static self => Ops.VecMatMul(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
         
@@ -195,7 +195,7 @@ public partial class Tensor
             return new(
                 a.Shape[..^1],
                 children: [a, b],
-                forward: static self => Ops.MatVecMul(self.A, self.B, self.Data),
+                forward: static self => Ops.MatVecMul(self.A, self.B, self),
                 backward: MatMulBackward);
         }
 
@@ -208,7 +208,7 @@ public partial class Tensor
             return new(
                 [1, 1],
                 children: [a, b],
-                forward: static self => Ops.Dot(self.A, self.B.T, self.Data),
+                forward: static self => Ops.Dot(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
 
@@ -217,7 +217,7 @@ public partial class Tensor
             return new(
                 [1, ..b.Shape[1..]],
                 children: [a, b],
-                forward: static self => Ops.VecMatMul(self.A, self.B.T, self.Data),
+                forward: static self => Ops.VecMatMul(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
 
@@ -226,7 +226,7 @@ public partial class Tensor
             return new(
                 [..a.Shape[..^1], 1],
                 children: [a, b],
-                forward: static self => Ops.MatVecMul(self.A, self.B, self.Data),
+                forward: static self => Ops.MatVecMul(self.A, self.B, self),
                 backward: MatMulBackward);
         }
 
@@ -235,7 +235,7 @@ public partial class Tensor
         return new(
             [..batchDimensions, a.PrevDimension, b.LastDimension],
             children: [a, b],
-            forward: static self => Ops.MatMulTransposed(self.A, self.B.T, self.Data),
+            forward: static self => Ops.MatMulTransposed(self.A, self.B.T, self),
             backward: MatMulBackward);
     }
 

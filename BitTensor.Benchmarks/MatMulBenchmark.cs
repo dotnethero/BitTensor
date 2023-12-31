@@ -30,7 +30,7 @@ public class MatMulBenchmark
     [Benchmark]
     public void MatMul_cheat()
     {
-        Ops.MatMulTransposed(x, y, z.Data); // only last operation
+        Ops.MatMulTransposed(x, y, z); // only last operation
     }
     
     [Benchmark]
@@ -44,7 +44,7 @@ public class MatMulBenchmark
     {
         var m = Ops.GetTransposeMatrix(y, [1, 0]);
         Ops.ApplyTransposeMatrix(y.Data, m, yT.Data);
-        Ops.MatMulTransposed(x, yT, z.Data);
+        Ops.MatMulTransposed(x, yT, z);
     }
     
     [Benchmark]

@@ -9,50 +9,50 @@ internal delegate void TensorScalarOperation(ReadOnlySpan<float> a, float b, Spa
 internal static unsafe class Ops
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Negate(Tensor a, float[] result)
+    public static void Negate(Tensor a, Tensor result)
     {
-        TensorPrimitives.Negate(a.Values, result);
+        TensorPrimitives.Negate(a.Values, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sigmoid(Tensor a, float[] result)
+    public static void Sigmoid(Tensor a, Tensor result)
     {
-        TensorPrimitives.Sigmoid(a.Values, result);
+        TensorPrimitives.Sigmoid(a.Values, result.Data);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Tanh(Tensor a, float[] result)
+    public static void Tanh(Tensor a, Tensor result)
     {
-        TensorPrimitives.Tanh(a.Values, result);
+        TensorPrimitives.Tanh(a.Values, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add(Tensor a, float b, float[] result)
+    public static void Add(Tensor a, float b, Tensor result)
     {
-        TensorPrimitives.Add(a.Values, b, result);
+        TensorPrimitives.Add(a.Values, b, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add(Tensor a, Tensor b, float[] result)
+    public static void Add(Tensor a, Tensor b, Tensor result)
     {
         BroadcastBinary(a, b, result, TensorPrimitives.Add, TensorPrimitives.Add);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Multiply(Tensor a, float b, float[] result)
+    public static void Multiply(Tensor a, float b, Tensor result)
     {
-        TensorPrimitives.Multiply(a.Values, b, result);
+        TensorPrimitives.Multiply(a.Values, b, result.Data);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Multiply(Tensor a, Tensor b, float[] result)
+    public static void Multiply(Tensor a, Tensor b, Tensor result)
     {
         BroadcastBinary(a, b, result, TensorPrimitives.Multiply, TensorPrimitives.Multiply);
     }
 
-    public static void Power(Tensor a, float power, float[] result)
+    public static void Power(Tensor a, float power, Tensor result)
     {
-        fixed (float* ap = a.Values, rp = result)
+        fixed (float* ap = a.Values, rp = result.Data)
         {
             for (var i = 0; i < a.Size; i++)
             {
@@ -61,9 +61,9 @@ internal static unsafe class Ops
         }
     }
     
-    public static void Outer(Tensor a, Tensor b, float[] result)
+    public static void Outer(Tensor a, Tensor b, Tensor result)
     {
-        var span = result.AsSpan();
+        var span = result.Data.AsSpan();
 
         fixed (float* ap = a.Values)
         {
@@ -75,12 +75,12 @@ internal static unsafe class Ops
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sum(Tensor a, float[] result)
+    public static void Sum(Tensor a, Tensor result)
     {
-        result[0] = TensorPrimitives.Sum(a.Values);
+        result.Data[0] = TensorPrimitives.Sum(a.Values);
     }
 
-    public static void SumAxis(Tensor a, HashSet<int> axis, float[] result)
+    public static void SumAxis(Tensor a, HashSet<int> axis, Tensor result)
     {
         var dims = a.Dimensions;
         var left = 0;
@@ -102,13 +102,13 @@ internal static unsafe class Ops
         
         if (right == axis.Count)
         {
-            ReduceRight(a.Data, a.Shape, right, result);
+            ReduceRight(a.Data, a.Shape, right, result.Data);
             return;
         }
         
         if (left == axis.Count)
         {
-            ReduceLeft(a.Data, a.Shape, left, result);
+            ReduceLeft(a.Data, a.Shape, left, result.Data);
             return;
         }
 
@@ -119,7 +119,7 @@ internal static unsafe class Ops
             var reduced = a.Shape[..^right];
             var next = new float[reduced.Product()];
             ReduceRight(a.Data, a.Shape, right, next);
-            ReduceLeft(next, reduced, left, result);
+            ReduceLeft(next, reduced, left, result.Data);
             return;
         }
 
@@ -145,7 +145,7 @@ internal static unsafe class Ops
         }
 
         var axisAfterReduce = axis.Select(ax => ax - left).ToHashSet();
-        SumNaive(temp, shape, axisAfterReduce, result);
+        SumNaive(temp, shape, axisAfterReduce, result.Data);
     }
 
     private static void SumNaive(float[] data, int[] shape, HashSet<int> axis, float[] result)
@@ -218,18 +218,18 @@ internal static unsafe class Ops
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Broadcast(Tensor a, float[] result) // TODO: support axis
+    public static void Broadcast(Tensor a, Tensor result) // TODO: support axis
     {
-        Array.Fill(result, a.Values[0]);
+        Array.Fill(result.Data, a.Values[0]);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Dot(Tensor a, Tensor b, float[] results)
+    public static void Dot(Tensor a, Tensor b, Tensor result)
     {
-        results[0] = TensorPrimitives.Dot(a.Values, b.Values);
+        result.Data[0] = TensorPrimitives.Dot(a.Values, b.Values);
     }
 
-    public static void MatVecMul(Tensor a, Tensor b, float[] results)
+    public static void MatVecMul(Tensor a, Tensor b, Tensor result)
     {
         var (batchCount, rowCount, rowSize) = Shapes.GetBatchRowsColumns(a.Shape);
 
@@ -238,7 +238,7 @@ internal static unsafe class Ops
 
         var col = b.Data.AsSpan();
 
-        fixed (float* rp = results)
+        fixed (float* rp = result.Data)
         {
             for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
             {
@@ -256,7 +256,7 @@ internal static unsafe class Ops
         }
     }
 
-    public static void VecMatMul(Tensor a, Tensor bT, float[] results)
+    public static void VecMatMul(Tensor a, Tensor bT, Tensor result)
     {
         var (batchCount, colCount, rowSize) = Shapes.GetBatchRowsColumns(bT.Shape);
 
@@ -265,7 +265,7 @@ internal static unsafe class Ops
 
         var row = a.Data.AsSpan();
 
-        fixed (float* rp = results)
+        fixed (float* rp = result.Data)
         {
             for (var batchIndex = 0; batchIndex < batchCount; batchIndex++)
             {
@@ -283,33 +283,40 @@ internal static unsafe class Ops
         }
     }
 
-    public static void MatMulTransposed(Tensor a, Tensor bT, float[] results)
+    public static void MatMulTransposed(Tensor a, Tensor bT, Tensor result)
     {
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
-        var strides = GetBatchStrides(a, bT);
+        var strides = Batching.GetBatchStrides(a, bT);
 
         ParallelOptions options = new();
-        Parallel.ForEach(GetMatMulRows(strides, a, bT, results), options, MatMulRowP);
+        Parallel.ForEach(GetMatMulAtoms(strides, a, bT, result), options, MatMulRow);
     }
 
-    private record MatMulRowInputs(Tensor A, Tensor B, float[] Results, int AIndex, int BIndex, int BatchIndex, int RowIndex);
+    private readonly record struct MatMulAtom(
+        Tensor A,
+        Tensor B,
+        Tensor Result,
+        int BatchIndexA = 0,
+        int BatchIndexB = 0,
+        int BatchIndexR = 0,
+        int RowIndex = 0);
 
-    private static IEnumerable<MatMulRowInputs> GetMatMulRows(BatchStrides strides, Tensor a, Tensor b, float[] results)
+    private static IEnumerable<MatMulAtom> GetMatMulAtoms(BatchStrides strides, Tensor a, Tensor b, Tensor r)
     {
         var rowCount = a.Shape[^2];
-        var iterator = new MatMulRowInputs(a, b, results, 0, 0, 0, 0);
+        var iterator = new MatMulAtom(a, b, r);
         for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
         {
+            var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
             for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
             {
-                var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
                 yield return iterator with
                 {
-                    AIndex = aIndex,
-                    BIndex = bIndex,
-                    BatchIndex = batchIndex,
+                    BatchIndexA = aIndex,
+                    BatchIndexB = bIndex,
+                    BatchIndexR = batchIndex,
                     RowIndex = rowIndex
                 };
             }
@@ -317,36 +324,32 @@ internal static unsafe class Ops
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MatMulRowP(MatMulRowInputs inputs) => 
-        MatMulRow(inputs.A, inputs.B, inputs.AIndex, inputs.BIndex, inputs.BatchIndex, inputs.RowIndex, inputs.Results);
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MatMulRow(Tensor a, Tensor bT, int aIndex, int bIndex, int batchIndex, int rowIndex, float[] results)
+    private static void MatMulRow(MatMulAtom inputs)
     {
-        var rowSize = a.Shape[^1];
-        var rowCount = a.Shape[^2];
-        var colCount = bT.Shape[^2];
+        var rowSize = inputs.A.Shape[^1];
+        var rowCount = inputs.A.Shape[^2];
+        var colCount = inputs.B.Shape[^2];
 
         var leftSize = rowCount * rowSize;
         var rightSize = colCount * rowSize;
         var batchSize = rowCount * colCount;
 
-        var left = a.Data.AsSpan(aIndex * leftSize, leftSize);
-        var right = bT.Data.AsSpan(bIndex * rightSize, rightSize);
+        var left = inputs.A.Data.AsSpan(inputs.BatchIndexA * leftSize, leftSize);
+        var right = inputs.B.Data.AsSpan(inputs.BatchIndexB * rightSize, rightSize);
 
-        fixed (float* rp = results)
+        fixed (float* rp = inputs.Result.Data)
         {
-            var row = left.Slice(rowIndex * rowSize, rowSize);
+            var row = left.Slice(inputs.RowIndex * rowSize, rowSize);
 
             for (var colIndex = 0; colIndex < colCount; ++colIndex)
             {
                 var col = right.Slice(colIndex * rowSize, rowSize);
                 var dot = TensorPrimitives.Dot(row, col);
-                rp[batchIndex * batchSize + rowIndex * colCount + colIndex] = dot;
+                rp[inputs.BatchIndexR * batchSize + inputs.RowIndex * colCount + colIndex] = dot;
             }
         }
     }
-    
+
     public static int[] GetTransposeMatrix(Tensor tensor, int[] axes)
     {
         var dims = tensor.Dimensions;
@@ -383,7 +386,7 @@ internal static unsafe class Ops
         return matrix;
     }
     
-    public static void ApplyTransposeMatrix(float[] source, int[] matrix, float[] result)
+    public static void ApplyTransposeMatrix(ReadOnlySpan<float> source, int[] matrix, Span<float> result)
     {
         var size = result.Length;
 
@@ -395,7 +398,7 @@ internal static unsafe class Ops
             }
     }
     
-    private static void BroadcastBinary(Tensor a, Tensor b, float[] result, TensorTensorOperation tensorOp, TensorScalarOperation scalarOp)
+    private static void BroadcastBinary(Tensor a, Tensor b, Tensor result, TensorTensorOperation tensorOp, TensorScalarOperation scalarOp)
     {
         var total = Math.Max(a.Dimensions, b.Dimensions);
         var ars = new int[total]; // reversed shapes
@@ -469,7 +472,7 @@ internal static unsafe class Ops
 
         var a_span = a.Values;
         var b_span = b.Values;
-        var r_span = result.AsSpan();
+        var r_span = result.Data.AsSpan();
         var r_count = rrs[vdims..].Product();
 
         for (var ri = 0; ri < r_count; ri++)
@@ -502,70 +505,8 @@ internal static unsafe class Ops
         }
     }
     
-    private class BatchStrides(int batchCount, int[] aStrides, int[] bStrides, int[] rStrides)
-    {
-        public readonly int BatchCount = batchCount;
-        public readonly int Dimensions = rStrides.Length;
-
-        public (int aIndex, int bIndex) ConvertIndex(int batchIndex)
-        {
-            var aIndex = 0;
-            var bIndex = 0;
-            var leftover = batchIndex;
-            fixed (int* ap = aStrides, bp = bStrides, rp = rStrides)
-            {
-                for (var i = 0; i < Dimensions; ++i)
-                {
-                    var di = leftover / rp[i]; // dimension index
-                    aIndex += ap[i] * di;
-                    bIndex += bp[i] * di;
-                    leftover -= di * rp[i];
-                }
-            }
-            return (aIndex, bIndex);
-        }
-    }
-
-    private static BatchStrides GetBatchStrides(Tensor a, Tensor b)
-    {
-        var batchDims = Math.Max(a.Dimensions, b.Dimensions) - 2;
-
-        var aBatchShapeOrig = a.Shape[..^2];
-        var bBatchShapeOrig = b.Shape[..^2];
-
-        var aBatchShape = new int[batchDims];
-        var bBatchShape = new int[batchDims];
-        var rBatchShape = new int[batchDims];
-
-        for (var i = 0; i < batchDims; ++i)
-        {
-            var ai = i >= aBatchShapeOrig.Length ? 1 : aBatchShapeOrig[^(i+1)];
-            var bi = i >= bBatchShapeOrig.Length ? 1 : bBatchShapeOrig[^(i+1)];
-            aBatchShape[^(i+1)] = ai;
-            bBatchShape[^(i+1)] = bi;
-            rBatchShape[^(i+1)] = ai >= bi ? ai : bi;
-        }
-
-        var aStrides = aBatchShape.GetStrides();
-        var bStrides = bBatchShape.GetStrides();
-        var rStrides = rBatchShape.GetStrides();
-        
-        for (var i = 0; i < batchDims; ++i)
-        {
-            if (aBatchShape[i] == 1)
-                aStrides[i] = 0;
-
-            if (bBatchShape[i] == 1)
-                bStrides[i] = 0;
-        }
-
-        var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
-        return new(batchCount, aStrides, bStrides, rStrides);
-    }
-    
     internal static Tensor[] NotSupported(Tensor grad, Tensor self)
     {
         throw new NotSupportedException("Operations is not supported");
     }
 }
-

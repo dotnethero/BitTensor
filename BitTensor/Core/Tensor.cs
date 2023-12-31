@@ -15,7 +15,7 @@ public sealed partial class Tensor
     public readonly int Dimensions;
     public readonly int[] Shape;
     public readonly int[] Strides;
-    
+
     public ReadOnlySpan<float> Values
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
