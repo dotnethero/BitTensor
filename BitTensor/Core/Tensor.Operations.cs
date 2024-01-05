@@ -129,7 +129,7 @@ public partial class Tensor
         return new(
             shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
             children: [a],
-            forward: self => Ops.SumAxis(self.A, axis, self),
+            forward: self => Ops.Sum(self.A, axis, self),
             backward: Ops.NotSupported);
     }
 

@@ -17,16 +17,22 @@ public class Program
 
     public static void Mojo_fun()
     {
+        // Batch: 1 | Times: 64
         // 58.11505425282896 GFLOP/s
         // 65.23007074673644 GFLOP/s
         // 64.27012281384961 GFLOP/s
 
+        // Batch: 64 | Times: 1
+        // 30.809862242058195 GFLOP/s
+        // 36.263178080156166 GFLOP/s
+        // 34.75909077578663 GFLOP/s
+
         const int m = 1024;
         const int n = 1024;
         const int k = 1024;
-        const int q = 64;
+        const int q = 1;
 
-        const int times = 1;
+        const int times = 256;
 
         var x = Tensor.Random.Uniform([q, m, n]);
         var y = Tensor.Random.Uniform([q, n, k]).Transpose();
