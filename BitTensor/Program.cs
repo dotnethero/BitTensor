@@ -65,5 +65,6 @@ public class Program
         var s = sw.Elapsed;
         var gflops = (2 / s.TotalSeconds * m * n * k) / 1e9 * times * batches;
         Console.WriteLine($"{s} @ {m}x{n}x{k}, times={times}, batches={batches}, {gflops:0.00} GFLOP/s");
+        Console.WriteLine(s);
     }
 }
