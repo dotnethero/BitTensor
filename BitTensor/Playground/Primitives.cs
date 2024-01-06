@@ -26,6 +26,6 @@ public static class Primitives
         Operations.AggregateTernary<MultiplyAddOperator>(a, b);
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float DotFused(ReadOnlySpan<float> a, ReadOnlySpan<float> b) =>
+    public static float DotFma(ReadOnlySpan<float> a, ReadOnlySpan<float> b) =>
         Operations.AggregateTernary<MultiplyAddFmaOperator>(a, b);
 }

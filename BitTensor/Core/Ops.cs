@@ -194,7 +194,7 @@ internal static unsafe class Ops
 
     private static IEnumerable<MatMulAtom> GetMatMulAtoms(BatchStrides strides, Tensor a, Tensor b, Tensor r)
     {
-        var rowCount = a.Shape[^2];
+        var rowCount = a.PrevDimension;
         var iterator = new MatMulAtom(a, b, r);
         for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
         {
@@ -215,9 +215,9 @@ internal static unsafe class Ops
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static void MatMulRow(MatMulAtom inputs)
     {
-        var rowSize = inputs.A.Shape[^1];
-        var rowCount = inputs.A.Shape[^2];
-        var colCount = inputs.B.Shape[^2];
+        var rowSize = inputs.A.LastDimension;
+        var rowCount = inputs.A.PrevDimension;
+        var colCount = inputs.B.PrevDimension;
 
         var leftSize = rowCount * rowSize;
         var rightSize = colCount * rowSize;

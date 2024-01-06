@@ -11,7 +11,7 @@ public class Program
 {
     public static void Main()
     {
-        Bench(1024, 1024, 1024, 1, 1); // warmup
+        Bench(1024, 1024, 1024, 8, 2); // warmup
 
         Console.WriteLine();
 
@@ -27,15 +27,15 @@ public class Program
 
         Console.WriteLine();
         
-        Bench(128, 128, 128, 8, 8);
-        Bench(128, 128, 128, 64, 1);
-        Bench(128, 128, 128, 1, 64);
-
-        Console.WriteLine();
-        
         Bench(256, 256, 256, 8, 8);
         Bench(256, 256, 256, 64, 1);
         Bench(256, 256, 256, 1, 64);
+        
+        Console.WriteLine();
+        
+        Bench(128, 128, 128, 8, 8);
+        Bench(128, 128, 128, 64, 1);
+        Bench(128, 128, 128, 1, 64);
 
         Console.WriteLine();
 
