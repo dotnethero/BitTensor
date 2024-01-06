@@ -1,5 +1,6 @@
 ﻿using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
+using BitTensor.Playground;
 
 namespace BitTensor.Core;
 
@@ -152,8 +153,10 @@ internal static unsafe class Ops
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
+        var rowCount = a.PrevDimension;
+        var colCount = a.LastDimension;
         var strides = Batching.GetBatchStrides(a, bT, ..^2);
-        if (strides.BatchCount > 16)
+        if (strides.BatchCount * rowCount > 64 && colCount > 64)
         {
             ParallelOptions options = new();
             Parallel.ForEach(GetMatMulAtoms(strides, a, bT, result), options, MatMulRow);
@@ -165,7 +168,19 @@ internal static unsafe class Ops
                 MatMulRow(atom);
             }
         }
+    }
 
+    public static void MatMulTransposedST(Tensor a, Tensor bT, Tensor result)
+    {
+        a.EnsureHasUpdatedValues();
+        bT.EnsureHasUpdatedValues();
+
+        var strides = Batching.GetBatchStrides(a, bT, ..^2);
+
+        foreach (var atom in GetMatMulAtoms(strides, a, bT, result))
+        {
+            MatMulRow(atom);
+        }
     }
 
     private readonly record struct MatMulAtom(
@@ -218,7 +233,7 @@ internal static unsafe class Ops
             for (var colIndex = 0; colIndex < colCount; ++colIndex)
             {
                 var col = right.Slice(colIndex * rowSize, rowSize);
-                var dot = TensorPrimitives.Dot(row, col);
+                var dot = Primitives.Dot(row, col);
                 rp[inputs.BatchIndexR * batchSize + inputs.RowIndex * colCount + colIndex] = dot;
             }
         }
