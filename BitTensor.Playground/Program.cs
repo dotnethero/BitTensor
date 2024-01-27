@@ -1,4 +1,5 @@
-﻿using BitTensor.Core;
+﻿using System.Diagnostics;
+using BitTensor.Core;
 using BitTensor.Native;
 
 namespace BitTensor.Playground
@@ -7,26 +8,24 @@ namespace BitTensor.Playground
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello, World!");
-
             GemmExample();
         }
 
         private static void GemmExample()
         {
-            const int m = 2;
-            const int n = 3;
-            const int k = 4;
+            const int m = 1024 * 10;
+            const int n = 1024 * 10;
+            const int k = 1024 * 10;
 
-            var a = Tensor.Random.Uniform([m, n]);
-            var b = Tensor.Random.Uniform([n, k]);
-            var c = Tensor.Zeros([m, k]);
-            var d = Tensor.Matmul(a, b).T;
-
-            Gemm(a, b, c);
-
-            var cr = c.Values;
-            var dr = d.Values;
+            for (var i = 0; i < 4; i++)
+            {
+                var a = Tensor.Random.Uniform([m, n]);
+                var b = Tensor.Random.Uniform([n, k]);
+                var c = Tensor.Zeros([m, k]);
+                var sw = Stopwatch.StartNew();
+                Gemm(a, b, c);
+                Console.WriteLine($"{sw.Elapsed} total");
+            }
         }
         
         private static void Gemm(Tensor a, Tensor b, Tensor r)
@@ -60,6 +59,8 @@ namespace BitTensor.Playground
             var alpha = 1.0f;
             var beta = 0.0f;
 
+            var sw = Stopwatch.StartNew();
+
             cuBLAS.cublasSgemm_v2(
                 context, 
                 cublasOperation_t.CUBLAS_OP_T,
@@ -77,6 +78,12 @@ namespace BitTensor.Playground
             {
                 CUDA.cudaMemcpy(vc, dc, mu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
             }
+
+            var s = sw.Elapsed;
+            var gflops = (2 / s.TotalSeconds * mi * ni * ki) / 1e9;
+
+            Console.WriteLine($"{gflops:0.00} GFLOP/s");
+            Console.WriteLine($"{s} to result");
 
             CUDA.cudaFree(da);
             CUDA.cudaFree(db);
