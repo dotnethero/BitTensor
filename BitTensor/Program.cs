@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("BitTensor.Tests")]
 [assembly: InternalsVisibleTo("BitTensor.Benchmarks")]
+[assembly: InternalsVisibleTo("BitTensor.Playground")]
 
 namespace BitTensor;
 
