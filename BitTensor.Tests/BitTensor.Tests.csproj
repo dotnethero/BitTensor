@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <Platforms>AnyCPU</Platforms>
     <RootNamespace>BitTensor</RootNamespace>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BitTensor.Native\BitTensor.Native.csproj" />
     <ProjectReference Include="..\BitTensor\BitTensor.csproj" />
   </ItemGroup>
 

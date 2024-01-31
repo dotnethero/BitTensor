@@ -19,4 +19,10 @@ static class TensorAsserts
             expected.Values.ToArray(), 
             actual.Values.ToArray(),
             new ValuesComparer());
+
+    public  static void ValuesAreEqual(Tensor expected, Tensor actual, float tolerance) =>
+        CollectionAssert.AreEqual(
+            expected.Values.ToArray(), 
+            actual.Values.ToArray(),
+            new ValuesComparer(tolerance));
 }

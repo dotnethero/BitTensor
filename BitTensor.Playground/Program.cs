@@ -22,6 +22,7 @@ namespace BitTensor.Playground
                 var a = Tensor.Random.Uniform([m, n]);
                 var b = Tensor.Random.Uniform([n, k]);
                 var c = Tensor.Zeros([m, k]);
+                var d = Tensor.Matmul(a, b);
                 var sw = Stopwatch.StartNew();
                 Gemm(a, b, c);
                 Console.WriteLine($"{sw.Elapsed} total");
@@ -43,10 +44,12 @@ namespace BitTensor.Playground
             float* da;
             float* db;
             float* dc;
+            float* dr;
 
             CUDA.cudaMalloc((void**)&da, mu * nu * sizeof(float));
             CUDA.cudaMalloc((void**)&db, nu * ku * sizeof(float));
-            CUDA.cudaMalloc((void**)&dc, mu * ku * sizeof(float));
+            CUDA.cudaMalloc((void**)&dc, mu * ku * sizeof(float)); // column-major result
+            CUDA.cudaMalloc((void**)&dr, mu * ku * sizeof(float));
 
             fixed (float*
                    va = a.Values,
@@ -56,8 +59,8 @@ namespace BitTensor.Playground
                 CUDA.cudaMemcpy(db, vb, nu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyHostToDevice);
             }
 
-            var alpha = 1.0f;
-            var beta = 0.0f;
+            var one = 1.0f;
+            var zero = 0.0f;
 
             var sw = Stopwatch.StartNew();
 
@@ -68,15 +71,30 @@ namespace BitTensor.Playground
                 mi,
                 ki,
                 ni,
-                &alpha, 
+                &one, 
                 da, ni, // m * n
                 db, ki, // n * k
-                &beta, 
+                &zero, 
                 dc, mi); // m * k
+
+            cuBLAS.cublasSgeam(
+                context,
+                cublasOperation_t.CUBLAS_OP_T,
+                cublasOperation_t.CUBLAS_OP_N,
+                mi,
+                ki,
+                &one,
+                dc,
+                mi,
+                &zero,
+                (float*)0, 
+                ki,
+                dr,
+                ki);
 
             fixed (float* vc = r.Data)
             {
-                CUDA.cudaMemcpy(vc, dc, mu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
+                CUDA.cudaMemcpy(vc, dr, mu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
             }
 
             var s = sw.Elapsed;
