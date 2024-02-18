@@ -1,4 +1,4 @@
-# BitTensor
+# BitTensor - Tensor computation library for .NET
 
 BitTensor is a high-performance, easy-to-use tensor library designed for machine learning applications. It provides a comprehensive set of operations, including arithmetic operations, matrix manipulations, and automatic differentiation, making it ideal for building and training neural networks.
 
