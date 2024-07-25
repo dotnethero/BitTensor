@@ -1,4 +1,5 @@
-﻿using BitTensor.Core;
+﻿using BitTensor.Abstractions;
+using BitTensor.Core;
 using BitTensor.Units;
 
 namespace BitTensor.Models;
