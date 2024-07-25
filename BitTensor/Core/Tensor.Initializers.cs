@@ -1,4 +1,6 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
 
 public partial class Tensor
 {

@@ -1,4 +1,4 @@
-﻿namespace BitTensor.Core;
+﻿namespace BitTensor.Abstractions;
 
 /// <summary>
 /// Activation function

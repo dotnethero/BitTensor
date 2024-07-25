@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using BitTensor.Abstractions;
 using BitTensor.Core;
 using BitTensor.Models;
 using BitTensor.Units;
@@ -206,7 +207,7 @@ class TensorCalculationTests
 
         for (var i = 0; i < steps; ++i)
         {
-            Auto.ApplyGradients(unit.Parameters, gradients, lr);
+            Updates.ApplyGradients(unit.Parameters, gradients, lr);
         }
 
         Console.WriteLine(sw.Elapsed);

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
 
 namespace BitTensor.Core;
 

@@ -1,6 +1,7 @@
 ﻿#pragma warning disable CS8500 // This takes the address of, gets the size of, or declares a pointer to a managed type
 
 using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
 
 namespace BitTensor.Core;
 

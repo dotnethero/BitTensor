@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using BitTensor.Abstractions;
+using NUnit.Framework;
 
 // ReSharper disable once CheckNamespace
 

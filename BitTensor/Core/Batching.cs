@@ -1,4 +1,6 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
 
 internal readonly unsafe struct BatchStrides(int batchCount, int[] aStrides, int[] bStrides, int[] rStrides)
 {

@@ -1,4 +1,6 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
 
 public partial class Tensor
 {
@@ -101,7 +103,7 @@ public partial class Tensor
         if (axes.Length != dims)
             throw new InvalidOperationException($"Axis {axes.Serialize()} is not valid argument for {Shape.Serialize()} shape tensor");
 
-        if (!axes.IsElementsUnique())
+        if (!axes.AreElementsUnique())
             throw new InvalidOperationException($"Axis {axes.Serialize()} does not contain all axes for {Shape.Serialize()} shape tensor");
 
         var shape = new int[dims];

@@ -16,7 +16,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Benchmarks", "Bit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Native", "BitTensor.Native\BitTensor.Native.csproj", "{3BD9C0E9-CF19-451F-B1F5-05D890D0E046}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.Playground", "BitTensor.Playground\BitTensor.Playground.csproj", "{07105965-1DA1-4992-BB8D-28383DEB5295}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Playground", "BitTensor.Playground\BitTensor.Playground.csproj", "{07105965-1DA1-4992-BB8D-28383DEB5295}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.Abstractions", "BitTensor.Abstractions\BitTensor.Abstractions.csproj", "{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.Core", "BitTensor.Core\BitTensor.Core.csproj", "{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C8A97435-FCA0-4C11-A23B-F986FA3A9601}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,9 +50,21 @@ Global
 		{07105965-1DA1-4992-BB8D-28383DEB5295}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07105965-1DA1-4992-BB8D-28383DEB5295}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07105965-1DA1-4992-BB8D-28383DEB5295}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1F93C3BA-EE74-4C9B-9019-19E06C3088F5} = {C8A97435-FCA0-4C11-A23B-F986FA3A9601}
+		{A7934191-8FE9-41C8-A4F6-3E8FFB118F04} = {C8A97435-FCA0-4C11-A23B-F986FA3A9601}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DCF36EF3-B1E3-4628-B7AA-C4F16E6A0D43}
