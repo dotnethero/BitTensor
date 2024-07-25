@@ -55,7 +55,7 @@ public class Program
     {
         var x = Tensor.Random.Uniform([batches, m, n]);
         var y = Tensor.Random.Uniform([batches, n, k]).T;
-        var z = Tensor.Empty([batches, m, k]);
+        var z = Tensor.Allocate([batches, m, k]);
 
         var sw = Stopwatch.StartNew();
         for (var i = 0; i < times; i++)

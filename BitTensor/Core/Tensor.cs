@@ -7,7 +7,7 @@ namespace BitTensor.Core;
 public sealed partial class Tensor
 {
     internal static long MaxID;
-    internal IAllocation? Allocation;
+    internal IAllocation Allocation;
     internal Lazy<Tensor> TransposeLazy;
 
     public readonly long Id;
@@ -19,7 +19,7 @@ public sealed partial class Tensor
     public Span<float> Data
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Allocation!.Data;
+        get => Allocation.Data;
     }
 
     public ReadOnlySpan<float> Values
@@ -61,12 +61,16 @@ public sealed partial class Tensor
     internal readonly BackwardFunction? Backward;
     internal bool Outdated;
 
-    internal unsafe Tensor(int[] shape, IAllocation? allocation = null)
+    internal unsafe Tensor(int[] shape, IAllocator? allocator = null) : this(shape, (allocator ?? HostAllocator.Instance).Allocate(shape.Product()))
+    {
+    }
+
+    internal unsafe Tensor(int[] shape, IAllocation allocation)
     {
         var size = shape.Product();
 
         Id = Interlocked.Increment(ref MaxID);
-        Allocation = allocation ?? new HostAllocation(size);
+        Allocation = allocation;
         Size = size;
         Shape = shape;
         Strides = shape.GetStrides();
@@ -92,8 +96,33 @@ public sealed partial class Tensor
         
         TransposeLazy = new(Transpose);
     }
-    
-    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, IAllocation? allocation = null) : this(shape, allocation)
+
+    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, IAllocator? allocator = null) : this(shape, allocator)
+    {
+        Children = children;
+        Forward = forward;
+        Backward = backward;
+        Outdated = true;
+
+        fixed (Tensor* c = Children)
+        {
+            var count = Children.Length;
+            if (count > 0)
+            {
+                A = c[0];
+            }
+            if (count > 1)
+            {
+                B = c[1];
+            }
+            for (var i = Children.Length - 1; i >= 0; i--)
+            {
+                c[i].Dependents.Add(this);
+            }
+        }
+    }
+
+    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, IAllocation allocation) : this(shape, allocation)
     {
         Children = children;
         Forward = forward;

@@ -6,8 +6,8 @@ public partial class Tensor
 
     public static Tensor One { get; } = Create(1);
     
-    public static Tensor Empty(int[] shape) =>
-        new(shape, new HostAllocation(shape.Product()));
+    public static Tensor Allocate(int[] shape) =>
+        new(shape);
 
     public static Tensor FromArray(int[] shape, float[] values) => 
         new(shape, new HostAllocation(values));
