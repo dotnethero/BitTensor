@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BitTensor.Core\BitTensor.Core.csproj" />
-    <ProjectReference Include="..\BitTensor.Native\BitTensor.Native.csproj" />
+    <ProjectReference Include="..\BitTensor.Native\BitTensor.CUDA.csproj" />
     <ProjectReference Include="..\BitTensor\BitTensor.csproj" />
   </ItemGroup>
 

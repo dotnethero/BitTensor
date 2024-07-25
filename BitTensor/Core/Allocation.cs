@@ -1,20 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
 
 namespace BitTensor.Core;
 
 #pragma warning disable CS8500
-
-public interface IAllocation
-{
-    Span<float> Data { get; }
-    void CopyToDevice(float[] source);
-    void CopyToHost(float[] destination);
-}
-
-public interface IAllocator
-{
-    IAllocation Allocate(int size);
-}
 
 internal readonly struct HostAllocation(float[] data) : IAllocation
 {
@@ -24,15 +13,15 @@ internal readonly struct HostAllocation(float[] data) : IAllocation
         get => data;
     }
 
-    public void CopyToDevice(float[] values)
-    {
-    }
-
-    public void CopyToHost(float[] destination)
-    {
-    }
-
     public HostAllocation(int size) : this(new float[size])
+    {
+    }
+
+    public void CopyToDevice(ReadOnlySpan<float> source)
+    {
+    }
+
+    public void CopyToHost(Span<float> destination)
     {
     }
 }

@@ -13,4 +13,8 @@
     <None Remove="converter\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
+  </ItemGroup>
+
 </Project>

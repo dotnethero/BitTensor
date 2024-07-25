@@ -14,15 +14,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Benchmarks", "BitTensor.Benchmarks\BitTensor.Benchmarks.csproj", "{945295A6-408B-4E52-8656-91D1826D9BA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Native", "BitTensor.Native\BitTensor.Native.csproj", "{3BD9C0E9-CF19-451F-B1F5-05D890D0E046}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA", "BitTensor.Native\BitTensor.CUDA.csproj", "{3BD9C0E9-CF19-451F-B1F5-05D890D0E046}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Playground", "BitTensor.Playground\BitTensor.Playground.csproj", "{07105965-1DA1-4992-BB8D-28383DEB5295}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.Abstractions", "BitTensor.Abstractions\BitTensor.Abstractions.csproj", "{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Abstractions", "BitTensor.Abstractions\BitTensor.Abstractions.csproj", "{1F93C3BA-EE74-4C9B-9019-19E06C3088F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.Core", "BitTensor.Core\BitTensor.Core.csproj", "{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Core", "BitTensor.Core\BitTensor.Core.csproj", "{A7934191-8FE9-41C8-A4F6-3E8FFB118F04}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{C8A97435-FCA0-4C11-A23B-F986FA3A9601}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{C8A97435-FCA0-4C11-A23B-F986FA3A9601}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +63,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{3BD9C0E9-CF19-451F-B1F5-05D890D0E046} = {C8A97435-FCA0-4C11-A23B-F986FA3A9601}
 		{1F93C3BA-EE74-4C9B-9019-19E06C3088F5} = {C8A97435-FCA0-4C11-A23B-F986FA3A9601}
 		{A7934191-8FE9-41C8-A4F6-3E8FFB118F04} = {C8A97435-FCA0-4C11-A23B-F986FA3A9601}
 	EndGlobalSection

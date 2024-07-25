@@ -1,6 +1,6 @@
-﻿using System.Runtime.CompilerServices;
-using BitTensor.Core;
-using BitTensor.Native;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
+using static BitTensor.CUDA.Interop.cudaRT;
 
 namespace BitTensor.Playground;
 
@@ -25,7 +25,7 @@ internal readonly unsafe struct DebugDeviceAllocation : IAllocation, IDisposable
     {
         float* handle;
 
-        CUDA.cudaMalloc((void**)&handle, size * sizeof(float));
+        cudaMalloc((void**)&handle, size * sizeof(float));
 
         _size = size;
         _data = handle;
@@ -34,31 +34,31 @@ internal readonly unsafe struct DebugDeviceAllocation : IAllocation, IDisposable
         Array.Fill(_copy, -1);
     }
     
-    public void CopyToHost(float[] destination)
+    public void CopyToHost(Span<float> destination)
     {
         if (destination.Length != (int)_size)
             throw new ArgumentException($"Destination array size ({destination.Length}) not equal to allocated array size ({_size})");
 
         fixed (float* dp = destination)
         {
-            CUDA.cudaMemcpy(dp, _data, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
+            cudaMemcpy(dp, _data, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
         }
     }
 
-    public void CopyToDevice(float[] source)
+    public void CopyToDevice(ReadOnlySpan<float> source)
     {
         if (source.Length != (int)_size)
             throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({_size})");
 
         fixed (float* sp = source)
         {
-            CUDA.cudaMemcpy(_data, sp, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyHostToDevice);
+            cudaMemcpy(_data, sp, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyHostToDevice);
         }
     }
 
     public void Dispose()
     {
-        CUDA.cudaFree(_data);
+        cudaFree(_data);
     }
 }
 

@@ -5,7 +5,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.Core;
 
-public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensor<Tensor>
+public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<Tensor>
 {
     internal IAllocation Allocation;
     internal Lazy<Tensor> TransposeLazy;

@@ -1,7 +1,12 @@
 ﻿using System.Diagnostics;
 using BitTensor.Core;
 using BitTensor.Core.Tests;
-using BitTensor.Native;
+using BitTensor.CUDA.Interop;
+using static BitTensor.CUDA.Interop.cudaRT;
+using static BitTensor.CUDA.Interop.cudaMemcpyKind;
+using static BitTensor.CUDA.Interop.cuBLAS;
+using static BitTensor.CUDA.Interop.cublasStatus_t;
+using static BitTensor.CUDA.Interop.cublasOperation_t;
 using NUnit.Framework;
 
 namespace BitTensor.Tests.Native;
@@ -44,26 +49,26 @@ unsafe class NativeComparisonTests
         float* dc;
         float* dr;
 
-        CUDA.cudaMalloc((void**)&da, mu * nu * sizeof(float));
-        CUDA.cudaMalloc((void**)&db, nu * ku * sizeof(float));
-        CUDA.cudaMalloc((void**)&dc, mu * ku * sizeof(float)); // column-major result
-        CUDA.cudaMalloc((void**)&dr, mu * ku * sizeof(float));
+        cudaMalloc((void**)&da, mu * nu * sizeof(float));
+        cudaMalloc((void**)&db, nu * ku * sizeof(float));
+        cudaMalloc((void**)&dc, mu * ku * sizeof(float)); // column-major result
+        cudaMalloc((void**)&dr, mu * ku * sizeof(float));
 
         fixed (float*
                va = a.Values,
                vb = b.Values)
         {
-            CUDA.cudaMemcpy(da, va, mu * nu * sizeof(float), cudaMemcpyKind.cudaMemcpyHostToDevice);
-            CUDA.cudaMemcpy(db, vb, nu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyHostToDevice);
+            cudaMemcpy(da, va, mu * nu * sizeof(float), cudaMemcpyHostToDevice);
+            cudaMemcpy(db, vb, nu * ku * sizeof(float), cudaMemcpyHostToDevice);
         }
 
         var one = 1.0f;
         var zero = 0.0f;
 
-        cuBLAS.cublasSgemm_v2(
+        cublasSgemm_v2(
             context,
-            cublasOperation_t.CUBLAS_OP_T,
-            cublasOperation_t.CUBLAS_OP_T,
+            CUBLAS_OP_T,
+            CUBLAS_OP_T,
             mi,
             ki,
             ni,
@@ -73,10 +78,10 @@ unsafe class NativeComparisonTests
             &zero,
             dc, mi); // m * k
 
-        cuBLAS.cublasSgeam(
+        cublasSgeam(
             context,
-            cublasOperation_t.CUBLAS_OP_T,
-            cublasOperation_t.CUBLAS_OP_N,
+            CUBLAS_OP_T,
+            CUBLAS_OP_N,
             mi,
             ki,
             &one,
@@ -90,22 +95,22 @@ unsafe class NativeComparisonTests
 
         fixed (float* vc = r.Data)
         {
-            CUDA.cudaMemcpy(vc, dr, mu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
+            cudaMemcpy(vc, dr, mu * ku * sizeof(float), cudaMemcpyDeviceToHost);
         }
 
-        CUDA.cudaFree(da);
-        CUDA.cudaFree(db);
-        CUDA.cudaFree(dc);
+        cudaFree(da);
+        cudaFree(db);
+        cudaFree(dc);
 
-        cuBLAS.cublasDestroy_v2(context);
+        cublasDestroy_v2(context);
     }
 
     private static cublasContext* CreateContext()
     {
         cublasContext* handle;
 
-        var status = cuBLAS.cublasCreate_v2(&handle);
-        if (status != cublasStatus_t.CUBLAS_STATUS_SUCCESS)
+        var status = cublasCreate_v2(&handle);
+        if (status != CUBLAS_STATUS_SUCCESS)
             throw new InvalidOperationException(status.ToString());
 
         return handle;
