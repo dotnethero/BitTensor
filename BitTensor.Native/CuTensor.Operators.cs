@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace BitTensor.CUDA;
 
-namespace BitTensor.CUDA;
-
-public partial class CuTensor
+public partial class CuTensor // Operators
 {
     public static CuTensor operator +(CuTensor a, CuTensor b)
     {
