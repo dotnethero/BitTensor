@@ -2,8 +2,8 @@
 
 public partial class Tensor
 {
-    public Tensor this[params int[] indexes] => GetSlice(indexes);
-    
+    public float this[params int[] indexes] => GetScalar(indexes);
+
     public Tensor AppendDimension() => Reshape([..Shape, 1]);
 
     public Tensor PrependDimension() => Reshape([1, ..Shape]);
@@ -16,7 +16,7 @@ public partial class Tensor
         EnsureHasUpdatedValues();
 
         var data = new float[Size];
-        var span = Data.AsSpan();
+        var span = Data;
         var count = Shape[..dimension].Product();
         var dimSize = Shape[(dimension+1)..].Product();
         var dimCount = Shape[dimension];
@@ -31,7 +31,7 @@ public partial class Tensor
                 src.CopyTo(dest);
             }
 
-        Data = data;
+        Allocation = new HostAllocation(data);
         Invalidate();
         return this;
     }
@@ -46,21 +46,18 @@ public partial class Tensor
             children: [this],
             forward: t => {},
             backward: (grad, _) => [grad.Reshape(Shape)],
-            values: Data);
+            allocation: Allocation);
     }
-    
-    public Tensor GetSlice(int[] indexes)
+
+    public float GetScalar(int[] indexes)
     {
+        if (indexes.Length != Dimensions)
+            throw new InvalidOperationException($"Index {indexes.Serialize()} is not valid for {Shape.Serialize()} shape");
+
         var range = GetSliceRange(indexes);
 
-        return new(
-            shape: Shape[indexes.Length..],
-            children: [this],
-            forward: t => {},
-            backward: (grad, _) => [grad.GetSlice(Shape)], 
-            values: Data[range]);
+        return Data[range.Start];
     }
-
     private Range GetSliceRange(int[] indexes)
     {
         if (indexes.Length > Dimensions)

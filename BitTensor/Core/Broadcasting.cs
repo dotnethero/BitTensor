@@ -79,7 +79,7 @@ internal class Broadcasting
 
         var a_span = a.Values;
         var b_span = b.Values;
-        var r_span = result.Data.AsSpan();
+        var r_span = result.Data;
         var r_count = rrs[vdims..].Product();
 
         for (var ri = 0; ri < r_count; ri++)

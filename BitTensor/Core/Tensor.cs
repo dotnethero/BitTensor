@@ -7,7 +7,7 @@ namespace BitTensor.Core;
 public sealed partial class Tensor
 {
     internal static long MaxID;
-    internal float[] Data;
+    internal IAllocation? Allocation;
     internal Lazy<Tensor> TransposeLazy;
 
     public readonly long Id;
@@ -15,6 +15,12 @@ public sealed partial class Tensor
     public readonly int Dimensions;
     public readonly int[] Shape;
     public readonly int[] Strides;
+
+    public Span<float> Data
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Allocation!.Data;
+    }
 
     public ReadOnlySpan<float> Values
     {
@@ -54,16 +60,13 @@ public sealed partial class Tensor
     internal readonly ForwardFunction? Forward;
     internal readonly BackwardFunction? Backward;
     internal bool Outdated;
-    
-    internal unsafe Tensor(int[] shape, float[]? values = null)
+
+    internal unsafe Tensor(int[] shape, IAllocation? allocation = null)
     {
         var size = shape.Product();
 
-        if (values != null && values.Length != size)
-            throw new InvalidOperationException("Can not fit");
-
         Id = Interlocked.Increment(ref MaxID);
-        Data = values ?? new float[size];
+        Allocation = allocation ?? new HostAllocation(size);
         Size = size;
         Shape = shape;
         Strides = shape.GetStrides();
@@ -89,8 +92,8 @@ public sealed partial class Tensor
         
         TransposeLazy = new(Transpose);
     }
-
-    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, float[]? values = null) : this(shape, values)
+    
+    internal unsafe Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, IAllocation? allocation = null) : this(shape, allocation)
     {
         Children = children;
         Forward = forward;
@@ -125,7 +128,6 @@ public sealed partial class Tensor
             for (var i = Children.Length - 1; i >= 0; i--)
             {
                 c[i].EnsureHasUpdatedValues();
-                ;
             }
         }
 

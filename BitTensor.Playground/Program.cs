@@ -92,6 +92,8 @@ namespace BitTensor.Playground
                 dr,
                 ki);
 
+            CUDA.cudaDeviceSynchronize();
+
             fixed (float* vc = r.Data)
             {
                 CUDA.cudaMemcpy(vc, dr, mu * ku * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);

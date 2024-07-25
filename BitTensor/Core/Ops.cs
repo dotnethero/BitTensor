@@ -61,7 +61,7 @@ internal static unsafe class Ops
     
     public static void Outer(Tensor a, Tensor b, Tensor result)
     {
-        var span = result.Data.AsSpan();
+        var span = result.Data;
 
         fixed (float* ap = a.Values)
         {
@@ -85,7 +85,7 @@ internal static unsafe class Ops
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void Broadcast(Tensor a, Tensor result) // TODO: support axis
     {
-        Array.Fill(result.Data, a.Values[0]);
+        result.Data.Fill(a.Values[0]);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,7 +101,7 @@ internal static unsafe class Ops
         a.EnsureHasUpdatedValues();
         b.EnsureHasUpdatedValues();
 
-        var col = b.Data.AsSpan();
+        var col = b.Data;
 
         fixed (float* rp = result.Data)
         {
@@ -109,7 +109,7 @@ internal static unsafe class Ops
             {
                 var batchSize = rowSize * rowCount;
                 var batchStride = batchIndex * rowCount;
-                var batch = a.Data.AsSpan(batchIndex * batchSize, batchSize);
+                var batch = a.Data.Slice(batchIndex * batchSize, batchSize);
 
                 for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
                 {
@@ -128,7 +128,7 @@ internal static unsafe class Ops
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
-        var row = a.Data.AsSpan();
+        var row = a.Data;
 
         fixed (float* rp = result.Data)
         {
@@ -136,7 +136,7 @@ internal static unsafe class Ops
             {
                 var batchSize = colCount * rowSize;
                 var batchStride = batchIndex * colCount;
-                var batch = bT.Data.AsSpan(batchIndex * batchSize, batchSize);
+                var batch = bT.Data.Slice(batchIndex * batchSize, batchSize);
 
                 for (var colIndex = 0; colIndex < colCount; ++colIndex)
                 {
@@ -223,8 +223,8 @@ internal static unsafe class Ops
         var rightSize = colCount * rowSize;
         var batchSize = rowCount * colCount;
 
-        var left = inputs.A.Data.AsSpan(inputs.BatchIndexA * leftSize, leftSize);
-        var right = inputs.B.Data.AsSpan(inputs.BatchIndexB * rightSize, rightSize);
+        var left = inputs.A.Data.Slice(inputs.BatchIndexA * leftSize, leftSize);
+        var right = inputs.B.Data.Slice(inputs.BatchIndexB * rightSize, rightSize);
 
         fixed (float* rp = inputs.Result.Data)
         {
