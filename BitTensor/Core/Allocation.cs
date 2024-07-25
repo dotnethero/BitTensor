@@ -4,12 +4,12 @@ namespace BitTensor.Core;
 
 #pragma warning disable CS8500
 
-internal interface IAllocation
+public interface IAllocation
 {
     Span<float> Data { get; }
 }
 
-internal interface IAllocator
+public interface IAllocator
 {
     IAllocation Allocate(int size);
 }

@@ -8,7 +8,9 @@ namespace BitTensor.Playground
     {
         static void Main(string[] args)
         {
-            GemmExample();
+            var t = new Tensor([10, 10, 3], DebugDeviceAllocator.Instance);
+
+            Console.WriteLine(t.ToDataString());
         }
 
         private static void GemmExample()
