@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace BitTensor.Core;
 
-public sealed partial class Tensor : AbstractTensorNode<Tensor>
+public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensor<Tensor>
 {
     internal IAllocation Allocation;
     internal Lazy<Tensor> TransposeLazy;

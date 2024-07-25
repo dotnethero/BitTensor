@@ -2,6 +2,21 @@
 
 namespace BitTensor.Core;
 
+public interface ITensor<T> where T : ITensor<T>
+{
+    static abstract T operator +(T a, T b);
+    static abstract T operator +(T a, float b);
+    static abstract T operator +(float a, T b);
+    static abstract T operator -(T a, T b);
+    static abstract T operator -(T a, float b);
+    static abstract T operator -(float a, T b);
+    static abstract T operator *(T a, T b);
+    static abstract T operator *(T a, float b);
+    static abstract T operator *(float a, T b);
+    static abstract T operator ^(T a, float b);
+    static abstract T operator -(T a);
+}
+
 public abstract class AbstractTensor
 {
     internal static long MaxID;
@@ -51,31 +66,31 @@ public abstract class AbstractTensor
     }
 }
 
-public abstract class AbstractTensorNode<TUnit> : AbstractTensor where TUnit : AbstractTensorNode<TUnit>
+public abstract class AbstractTensorNode<T> : AbstractTensor where T : AbstractTensorNode<T>
 {
     /// <summary>
     /// Function that recalculates tensor values based on computation tree
     /// </summary>
     /// <param name="self">Tensor itself</param>
-    public delegate void ForwardFunction(TUnit self);
+    public delegate void ForwardFunction(T self);
 
     /// <summary>
     /// Function that transforms tensor gradient to children gradients
     /// </summary>
     /// <param name="grad">Parent gradient</param>
     /// <param name="self">Tensor itself</param>
-    public delegate TUnit[] BackwardFunction(TUnit grad, TUnit self);
+    public delegate T[] BackwardFunction(T grad, T self);
 
     // helpers
-    protected internal readonly TUnit A = null!;
-    protected internal readonly TUnit B = null!;
-    protected internal readonly TUnit C = null!;
+    protected internal readonly T A = null!;
+    protected internal readonly T B = null!;
+    protected internal readonly T C = null!;
 
     // computation tree
-    protected internal readonly TUnit[] Children;
+    protected internal readonly T[] Children;
     protected internal readonly ForwardFunction? Forward;
     protected internal readonly BackwardFunction? Backward;
-    protected internal readonly List<AbstractTensorNode<TUnit>> Dependents = new(3);
+    protected internal readonly List<AbstractTensorNode<T>> Dependents = new(3);
     protected internal bool Outdated;
 
     protected internal AbstractTensorNode(int[] shape) : base(shape)
@@ -83,7 +98,7 @@ public abstract class AbstractTensorNode<TUnit> : AbstractTensor where TUnit : A
         Children = [];
     }
 
-    protected internal AbstractTensorNode(int[] shape, TUnit[] children, ForwardFunction forward, BackwardFunction backward) : base(shape)
+    protected internal AbstractTensorNode(int[] shape, T[] children, ForwardFunction forward, BackwardFunction backward) : base(shape)
     {
         Children = children;
         Forward = forward;
@@ -120,7 +135,7 @@ public abstract class AbstractTensorNode<TUnit> : AbstractTensor where TUnit : A
             child.EnsureHasUpdatedValues();
         }
 
-        Forward?.Invoke((TUnit)this);
+        Forward?.Invoke((T)this);
         Outdated = false;
     }
 
