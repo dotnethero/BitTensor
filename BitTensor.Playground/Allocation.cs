@@ -10,15 +10,13 @@ internal readonly unsafe struct DebugDeviceAllocation : IAllocation, IDisposable
     private readonly float* _data;
     private readonly float[] _copy;
 
+    public float* Pointer => _data;
+
     public Span<float> Data
     {
         get
         {
-            fixed (float* cp = _copy)
-            {
-                CUDA.cudaMemcpy(cp, _data, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
-            }
-
+            CopyToHost(_copy);
             return _copy;
         }
     }
@@ -34,6 +32,28 @@ internal readonly unsafe struct DebugDeviceAllocation : IAllocation, IDisposable
         _copy = new float[_size];
 
         Array.Fill(_copy, -1);
+    }
+    
+    public void CopyToHost(float[] destination)
+    {
+        if (destination.Length != (int)_size)
+            throw new ArgumentException($"Destination array size ({destination.Length}) not equal to allocated array size ({_size})");
+
+        fixed (float* dp = destination)
+        {
+            CUDA.cudaMemcpy(dp, _data, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyDeviceToHost);
+        }
+    }
+
+    public void CopyToDevice(float[] source)
+    {
+        if (source.Length != (int)_size)
+            throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({_size})");
+
+        fixed (float* sp = source)
+        {
+            CUDA.cudaMemcpy(_data, sp, _size * sizeof(float), cudaMemcpyKind.cudaMemcpyHostToDevice);
+        }
     }
 
     public void Dispose()

@@ -7,6 +7,8 @@ namespace BitTensor.Core;
 public interface IAllocation
 {
     Span<float> Data { get; }
+    void CopyToDevice(float[] source);
+    void CopyToHost(float[] destination);
 }
 
 public interface IAllocator
@@ -20,6 +22,14 @@ internal readonly struct HostAllocation(float[] data) : IAllocation
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => data;
+    }
+
+    public void CopyToDevice(float[] values)
+    {
+    }
+
+    public void CopyToHost(float[] destination)
+    {
     }
 
     public HostAllocation(int size) : this(new float[size])
