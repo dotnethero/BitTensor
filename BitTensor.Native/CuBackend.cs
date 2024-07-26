@@ -61,7 +61,28 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
 
     public static void ExecuteAdd(CuTensor a, float b, CuTensor output)
     {
-        throw new NotImplementedException();
+        using var scope = new CublasScope();
+
+        cublasCopyEx(
+            scope.Context,
+            a.Size,
+            a.Handle,
+            cudaDataType_t.CUDA_R_32F,
+            1,
+            output.Handle,
+            cudaDataType_t.CUDA_R_32F,
+            1);
+
+        using var ones = CuTensor.Ones(a.Shape); // TODO: remove allocation
+
+        cublasSaxpy_v2(
+            scope.Context,
+            output.Size,
+            &b,
+            ones.Handle,
+            1,
+            output.Handle,
+            1);
     }
 
     public static void ExecuteMultiply(CuTensor a, CuTensor b, CuTensor output)
