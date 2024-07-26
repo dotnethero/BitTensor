@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using BitTensor.Abstractions;
 using BitTensor.Core;
+using BitTensor.CUDA;
 using BitTensor.CUDA.Interop;
 using static BitTensor.CUDA.Interop.cudaRT;
 using static BitTensor.CUDA.Interop.cudaMemcpyKind;
@@ -9,31 +10,6 @@ using static BitTensor.CUDA.Interop.cublasStatus_t;
 using static BitTensor.CUDA.Interop.cublasOperation_t;
 
 namespace BitTensor.Playground;
-
-internal static class CuTensor
-{
-    public static Tensor FromArray(int[] shape, float[] values)
-    {
-        var allocation = DebugDeviceAllocator.Instance.Allocate(values.Length);
-        allocation.CopyToDevice(values);
-        return new Tensor(shape, allocation);
-    }
-
-    public static Tensor Create(float[] values) =>
-        FromArray(shape: [values.Length], values);
-
-    public static Tensor Mul(Tensor a, Tensor b)
-    {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
-        
-        return new(
-            shape,
-            children: [a, b],
-            forward: static self => CuTensorOps.Multiply(self.A, self.B, self),
-            backward: static (grad, self) => [self.B * grad, self.A * grad],
-            allocator: DebugDeviceAllocator.Instance);
-    }
-}
 
 internal static unsafe class CuTensorOps
 {
@@ -63,11 +39,18 @@ internal unsafe class Program
 {
     static void Main(string[] args)
     {
-        var a = CuTensor.Create([1, 2, 3]);
-        var b = CuTensor.Create([3, 4, 5]);
-        var c = CuTensor.Mul(a, b);
+        using var a = CuTensor.Create([1, 2, 3]);
+        using var b = CuTensor.Create([3, 4, 5]);
+        using var c = a * b;
 
-        Console.WriteLine(c.ToDataString());
+        var data = new float[c.Size];
+
+        c.EnsureHasUpdatedValues();
+        c.CopyToHost(data);
+
+        var output = Tensor.FromArray(c.Shape, data);
+
+        Console.WriteLine(output.ToDataString());
     }
 
     private static void GemmExample()
