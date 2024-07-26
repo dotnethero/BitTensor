@@ -3,7 +3,10 @@ using BitTensor.CUDA.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor : AbstractTensorNode<CuTensor>, ITensor<CuTensor>, IDeviceArray
+public unsafe partial class CuTensor : 
+    AbstractTensorNode<CuTensor>, 
+    ITensorNode<CuTensor>, ITensor<CuTensor>, 
+    IDeviceArray
 {
     internal readonly float* Handle;
 
@@ -20,6 +23,11 @@ public unsafe partial class CuTensor : AbstractTensorNode<CuTensor>, ITensor<CuT
     internal CuTensor(int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
     {
         Handle = CuAllocator.Allocate(Size);
+    }
+
+    public static CuTensor Create(int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward)
+    {
+        return new CuTensor(shape, children, forward, backward);
     }
 
     public void CopyToHost(Span<float> destination)

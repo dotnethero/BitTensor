@@ -2,6 +2,6 @@
 
 public interface IDeviceArray : IDisposable
 {
-    unsafe void CopyToHost(Span<float> destination);
-    unsafe void CopyToDevice(ReadOnlySpan<float> source);
+    void CopyToHost(Span<float> destination);
+    void CopyToDevice(ReadOnlySpan<float> source);
 }

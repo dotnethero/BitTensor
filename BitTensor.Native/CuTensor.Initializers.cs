@@ -7,6 +7,17 @@ public partial class CuTensor // Initializers
     public static CuTensor Zero => Create(0);
 
     public static CuTensor One => Create(1);
+    
+    public static CuTensor Ones(int[] shape) => Fill(shape, 1f);
+
+    public static CuTensor Zeros(int[] shape) => Fill(shape, 0f);
+
+    public static CuTensor Fill(int[] shape, float value)
+    {
+        var values = new float[shape.Product()];
+        Array.Fill(values, value); // TODO: use CUDA
+        return new(shape, values);
+    }
 
     public static CuTensor Create(float value) => 
         new(shape: [], values: [value]);

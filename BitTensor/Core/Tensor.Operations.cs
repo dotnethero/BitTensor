@@ -180,7 +180,7 @@ public partial class Tensor
         if (a.IsVector)
         {
             if (a.Size != b.PrevDimension)
-                throw new NotCompatibleShapesException(a, b);
+                throw new NotCompatibleShapesException(a.Shape, b.Shape);
 
             return new(
                 b.Shape[1..],
@@ -192,7 +192,7 @@ public partial class Tensor
         if (b.IsVector)
         {
             if (a.LastDimension != b.Size)
-                throw new NotCompatibleShapesException(a, b);
+                throw new NotCompatibleShapesException(a.Shape, b.Shape);
 
             return new(
                 a.Shape[..^1],
@@ -203,7 +203,7 @@ public partial class Tensor
 
         
         if (a.LastDimension != b.PrevDimension)
-            throw new InvalidOperationException($"Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
+            throw new NotCompatibleShapesException(a.Shape, b.Shape);
 
         if (a.IsRow && b.IsColumn)
         {
@@ -269,10 +269,4 @@ public partial class Tensor
     {
         Ops.Add(this, value, this);
     }
-}
-
-public class NotCompatibleShapesException : Exception
-{
-    public NotCompatibleShapesException(Tensor a, Tensor b) : 
-        base($"Shapes are incompatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}") { }
 }

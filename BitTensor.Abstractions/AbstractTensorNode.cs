@@ -2,6 +2,11 @@
 
 namespace BitTensor.Abstractions;
 
+public interface ITensorNode<T> where T : AbstractTensorNode<T>
+{
+    static abstract T Create(int[] shape, T[] children, AbstractTensorNode<T>.ForwardFunction forward, AbstractTensorNode<T>.BackwardFunction backward);
+}
+
 public abstract class AbstractTensorNode<T> : AbstractTensor where T : AbstractTensorNode<T>
 {
     /// <summary>
