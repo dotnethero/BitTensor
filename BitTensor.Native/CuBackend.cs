@@ -4,6 +4,9 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA;
 
+using static cublasOperation_t;
+using static cublasFillMode_t;
+
 using static cuBLAS;
 
 public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
@@ -35,7 +38,25 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
 
     public static void ExecuteAdd(CuTensor a, CuTensor b, CuTensor output)
     {
-        throw new NotImplementedException();
+        using var scope = new CublasScope();
+
+        var alpha = 1.0f;
+        var beta = 1.0f;
+
+        cublasSgeam(
+            scope.Context,
+            CUBLAS_OP_N,
+            CUBLAS_OP_N,
+            a.Size,
+            1,
+            &alpha,
+            a.Handle,
+            a.Size,
+            &beta,
+            b.Handle,
+            b.Size,
+            output.Handle,
+            output.Size);
     }
 
     public static void ExecuteAdd(CuTensor a, float b, CuTensor output)
@@ -47,25 +68,22 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
     {
         using var scope = new CublasScope();
 
-        const int incx = 1;
-        const int incy = 1;
-
         var alpha = 1.0f;
         var beta = 0.0f;
 
         cublasSsbmv_v2(
             scope.Context, 
-            cublasFillMode_t.CUBLAS_FILL_MODE_UPPER, 
+            CUBLAS_FILL_MODE_UPPER, 
             a.Size, 
             0, 
             &alpha, 
             a.Handle, 
             1, 
             b.Handle,
-            incx,
+            1,
             &beta,
             output.Handle,
-            incy);
+            1);
     }
 
     public static void ExecuteMultiply(CuTensor a, float b, CuTensor output)

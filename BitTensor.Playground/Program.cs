@@ -18,10 +18,12 @@ internal unsafe class Program
         using var a = CuTensor.Create([1, 2, 3]);
         using var b = CuTensor.Create([3, 4, 5]);
         using var c = a * b;
+        using var d = a + b;
 
-        var output = ToHost(c);
-
-        Console.WriteLine(output.ToDataString());
+        Console.WriteLine(ToHost(a).ToDataString());
+        Console.WriteLine(ToHost(b).ToDataString());
+        Console.WriteLine(ToHost(c).ToDataString());
+        Console.WriteLine(ToHost(d).ToDataString());
     }
 
     private static Tensor ToHost(CuTensor c)
