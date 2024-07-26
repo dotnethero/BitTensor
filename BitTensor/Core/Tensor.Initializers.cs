@@ -12,7 +12,7 @@ public partial class Tensor
         new(shape);
 
     public static Tensor FromArray(int[] shape, float[] values) => 
-        new(shape, new HostAllocation(values));
+        new(shape, values);
 
     public static Tensor Create(float value) =>
         FromArray(shape: [], [value]);

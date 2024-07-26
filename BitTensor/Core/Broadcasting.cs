@@ -100,14 +100,14 @@ internal class Broadcasting
             {
                 var aslice = a_span.Slice(ai * vstride, vstride);
                 var bslice = b_span[bi];
-                var rslice = r_span.Slice(ri * vstride, vstride);
+                var rslice = r_span.AsSpan(ri * vstride, vstride);
                 TOperator.Execute(aslice, bslice, rslice);
             }
             else // vectorize same part
             {
                 var aslice = a_span.Slice(ai * vstride, vstride);
                 var bslice = b_span.Slice(bi * vstride, vstride);
-                var rslice = r_span.Slice(ri * vstride, vstride);
+                var rslice = r_span.AsSpan(ri * vstride, vstride);
                 TOperator.Execute(aslice, bslice, rslice);
             }
         }

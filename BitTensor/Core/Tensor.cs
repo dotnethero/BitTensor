@@ -7,14 +7,8 @@ namespace BitTensor.Core;
 
 public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<Tensor>
 {
-    internal IAllocation Allocation;
+    internal float[] Data;
     internal Lazy<Tensor> TransposeLazy;
-
-    public Span<float> Data
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Allocation.Data;
-    }
 
     public ReadOnlySpan<float> Values
     {
@@ -35,27 +29,15 @@ public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<
     // utility
     public int BatchDimension = 0;
 
-    internal Tensor(int[] shape, IAllocator? allocator = null) : base(shape)
+    internal Tensor(int[] shape, float[]? values = null) : base(shape)
     {
-        Allocation = (allocator ?? HostAllocator.Instance).Allocate(shape.Product());
+        Data = values ?? new float[Size];
         TransposeLazy = new(Transpose);
     }
 
-    internal Tensor(int[] shape, IAllocation allocation) : base(shape)
+    internal Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, float[]? values = null) : base(shape, children, forward, backward)
     {
-        Allocation = allocation;
-        TransposeLazy = new(Transpose);
-    }
-
-    internal Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, IAllocator? allocator = null) : base(shape, children, forward, backward)
-    {
-        Allocation = (allocator ?? HostAllocator.Instance).Allocate(shape.Product());
-        TransposeLazy = new(Transpose);
-    }
-
-    internal Tensor(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward, IAllocation allocation) : base(shape, children, forward, backward)
-    {
-        Allocation = allocation;
+        Data = values ?? new float[Size];
         TransposeLazy = new(Transpose);
     }
 }

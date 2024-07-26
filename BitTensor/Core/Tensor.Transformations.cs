@@ -28,12 +28,12 @@ public partial class Tensor
             for (var j = 0; j < dimCount; j++)
             {
                 var k = p[j]; // new index
-                var src = span.Slice(i * dimSize * dimCount + j * dimSize, dimSize);
+                var src = span.AsSpan(i * dimSize * dimCount + j * dimSize, dimSize);
                 var dest = data.AsSpan(i * dimSize * dimCount + k * dimSize, dimSize);
                 src.CopyTo(dest);
             }
 
-        Allocation = new HostAllocation(data);
+        Data = data;
         Invalidate();
         return this;
     }
@@ -48,7 +48,7 @@ public partial class Tensor
             children: [this],
             forward: t => {},
             backward: (grad, _) => [grad.Reshape(Shape)],
-            allocation: Allocation);
+            values: Data);
     }
 
     public float GetScalar(int[] indexes)
