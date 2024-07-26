@@ -35,6 +35,8 @@ public unsafe partial class CuTensor :
         if (destination.Length != Size)
             throw new ArgumentException($"Destination array size ({destination.Length}) not equal to allocated array size ({Size})");
 
+        EnsureHasUpdatedValues();
+
         CuMemory.CopyToHost(Handle, destination, Size);
     }
 

@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
-using BitTensor.Abstractions;
 using BitTensor.Core;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Interop;
+
 using static BitTensor.CUDA.Interop.cudaRT;
 using static BitTensor.CUDA.Interop.cudaMemcpyKind;
 using static BitTensor.CUDA.Interop.cuBLAS;
@@ -10,30 +10,6 @@ using static BitTensor.CUDA.Interop.cublasStatus_t;
 using static BitTensor.CUDA.Interop.cublasOperation_t;
 
 namespace BitTensor.Playground;
-
-internal static unsafe class CuTensorOps
-{
-    public static void Multiply(Tensor a, Tensor b, Tensor result)
-    {
-        cublasContext* handle;
-
-        var status = cublasCreate_v2(&handle);
-        if (status != CUBLAS_STATUS_SUCCESS)
-            throw new InvalidOperationException(status.ToString());
-
-        var da = ((DebugDeviceAllocation)a.Allocation).Pointer;
-        var db = ((DebugDeviceAllocation)b.Allocation).Pointer;
-        var dc = ((DebugDeviceAllocation)result.Allocation).Pointer;
-
-        float alpha = 1.0f;
-        float beta = 0.0f;
-        const int incx = 1;
-        const int incy = 1;
-        cublasSsbmv_v2(handle, cublasFillMode_t.CUBLAS_FILL_MODE_UPPER, a.Size, 0, &alpha, da, 1, db, incx, &beta, dc, incy);
-
-        cublasDestroy_v2(handle);
-    }
-}
 
 internal unsafe class Program
 {
@@ -43,14 +19,18 @@ internal unsafe class Program
         using var b = CuTensor.Create([3, 4, 5]);
         using var c = a * b;
 
-        var data = new float[c.Size];
-
-        c.EnsureHasUpdatedValues();
-        c.CopyToHost(data);
-
-        var output = Tensor.FromArray(c.Shape, data);
+        var output = ToHost(c);
 
         Console.WriteLine(output.ToDataString());
+    }
+
+    private static Tensor ToHost(CuTensor c)
+    {
+        var data = new float[c.Size];
+
+        c.CopyToHost(data);
+
+        return Tensor.FromArray(c.Shape, data);
     }
 
     private static void GemmExample()
