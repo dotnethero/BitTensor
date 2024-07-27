@@ -10,7 +10,6 @@ public partial class CuTensor :
     AbstractTensorNode<CuTensor>, 
     ITensorNode<CuTensor>, 
     ITensor<CuTensor>,
-    IAccumulator<CuTensor>,
     IHasAllocator<CuTensor>,
     IDeviceArray
 {
@@ -46,7 +45,7 @@ public partial class CuTensor :
         Buffer = accelerator.Allocate1D<float>(Size);
     }
 
-    internal CuTensor(CuTensor tensor, int[] shape) : base(shape, [tensor], self => {}, (grad, self) => [CreateReshape(grad, tensor.Shape)])
+    internal CuTensor(int[] shape, CuTensor tensor) : base(shape, [tensor], _ => {}, (grad, self) => [CreateReshape(tensor.Shape, grad)])
     {
         Accelerator = tensor.Accelerator;
         Allocator = tensor.Allocator;
@@ -58,9 +57,9 @@ public partial class CuTensor :
         return new CuTensor(children[0].Accelerator, shape, children, forward, backward);
     }
 
-    public static CuTensor CreateReshape(CuTensor tensor, int[] shape)
+    public static CuTensor CreateReshape(int[] shape, CuTensor source)
     {
-        return new CuTensor(tensor, shape);
+        return new CuTensor(shape, source);
     }
 
     public void CopyToHost(Span<float> destination)
@@ -80,11 +79,6 @@ public partial class CuTensor :
         View.BaseView.CopyFromCPU(source);
     }
     
-    public void Accumulate(CuTensor value)
-    {
-        CuBackend.ExecuteAdd(this, value, this);
-    }
-
     public void Dispose()
     {
         Buffer.Dispose();

@@ -257,9 +257,4 @@ public partial class Tensor
             bgrad
         ];
     }
-
-    public void Accumulate(Tensor value)
-    {
-        Ops.Add(this, value, this);
-    }
 }

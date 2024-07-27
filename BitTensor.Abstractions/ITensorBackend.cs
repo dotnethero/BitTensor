@@ -6,7 +6,6 @@
 /// <typeparam name="T">Tensor type</typeparam>
 public interface ITensorBackend<in T> where T : ITensor<T>
 {
-    static abstract void ExecuteReshape(T a, T output);
     static abstract void ExecuteBroadcast(T a, T output);
     static abstract void ExecuteNegate(T a, T output);
     static abstract void ExecuteSum(T a, T output);

@@ -9,10 +9,6 @@ using DTypeView = ArrayView<float>;
 
 internal readonly struct CuBackend : ITensorBackend<CuTensor>
 {
-    public static void ExecuteReshape(CuTensor a, CuTensor output)
-    {
-    }
-
     public static void ExecuteBroadcast(CuTensor a, CuTensor output)
     {
         var broadcast = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView>(CuKernels.BroadcastScalar);
