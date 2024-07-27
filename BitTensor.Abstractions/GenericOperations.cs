@@ -71,11 +71,7 @@ public static class GenericOperations<TTensor, TBackend>
         if (shape.Product() != a.Size)
             throw new InvalidOperationException($"Shape {shape.Serialize()} does not produce {a.Size} size");
 
-        return TTensor.CreateNode(
-            shape,
-            children: [a],
-            forward: static self => TBackend.ExecuteReshape(self.A, self),
-            backward: (grad, _) => [Reshape(grad, a.Shape)]);
+        return TTensor.CreateReshape(a, shape);
     }
 
     public static TTensor Broadcast(TTensor a, int[] shape)

@@ -46,11 +46,23 @@ public partial class CuTensor :
         Buffer = accelerator.Allocate1D<float>(Size);
     }
 
+    internal CuTensor(CuTensor tensor, int[] shape) : base(shape, [tensor], self => {}, (grad, self) => [CreateReshape(grad, tensor.Shape)])
+    {
+        Accelerator = tensor.Accelerator;
+        Allocator = tensor.Allocator;
+        Buffer = tensor.Buffer;
+    }
+
     public static CuTensor CreateNode(int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward)
     {
         return new CuTensor(children[0].Accelerator, shape, children, forward, backward);
     }
-    
+
+    public static CuTensor CreateReshape(CuTensor tensor, int[] shape)
+    {
+        return new CuTensor(tensor, shape);
+    }
+
     public void CopyToHost(Span<float> destination)
     {
         if (destination.Length != Size)

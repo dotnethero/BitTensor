@@ -17,19 +17,19 @@ internal class Program
 
         using var a = allocator.Create([1, 2, 3]);
         using var b = allocator.Create([3, 4, 5]);
-        using var c = a * b * 10;
-        using var d = (a + b) * (a + b);
-        using var e = CuTensor.Sum(d);
+        using var c = (a * b) + 10;
+        using var d = (a + b) * 10;
+        using var e = CuTensor.Sum(2 * a + b);
 
-        var gradients = Auto.Grad(e)([a, b]);
+        var gradients = Auto.Grad(e);
 
         Console.WriteLine(ToHost(a).ToDataString());
         Console.WriteLine(ToHost(b).ToDataString());
         Console.WriteLine(ToHost(c).ToDataString());
         Console.WriteLine(ToHost(d).ToDataString());
 
-        //Console.WriteLine(ToHost(gradients[0]).ToDataString());
-        //Console.WriteLine(ToHost(gradients[1]).ToDataString());
+        Console.WriteLine(ToHost(gradients.By(a)).ToDataString());
+        Console.WriteLine(ToHost(gradients.By(b)).ToDataString());
     }
 
     private static Tensor ToHost(CuTensor c)

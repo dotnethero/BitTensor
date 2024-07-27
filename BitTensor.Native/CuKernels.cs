@@ -12,6 +12,11 @@ internal static class CuKernels
         output[i] = value;
     }
 
+    public static void BroadcastScalar(Index1D i, DTypeView a, DTypeView output)
+    {
+        output[i] = a[0]; // TODO: support axis
+    }
+
     public static void Add(Index1D i, DTypeView a, DTypeView b, DTypeView output)
     {
         output[i] = a[i] + b[i];

@@ -7,4 +7,6 @@ public interface ITensorNode<T> where T : AbstractTensorNode<T>
         T[] children, 
         AbstractTensorNode<T>.ForwardFunction forward, 
         AbstractTensorNode<T>.BackwardFunction backward);
+
+    static abstract T CreateReshape(T tensor, int[] shape);
 }

@@ -11,12 +11,12 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
 {
     public static void ExecuteReshape(CuTensor a, CuTensor output)
     {
-        throw new NotImplementedException();
     }
 
     public static void ExecuteBroadcast(CuTensor a, CuTensor output)
     {
-        throw new NotImplementedException();
+        var broadcast = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView>(CuKernels.BroadcastScalar);
+        broadcast(output.Size, a.View, output.View);
     }
 
     public static void ExecuteNegate(CuTensor a, CuTensor output)
