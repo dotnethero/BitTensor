@@ -5,7 +5,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.Core;
 
-public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<Tensor>
+public sealed partial class Tensor : AbstractTensorNode<Tensor>, IAccumulator<Tensor>
 {
     internal float[] Data;
     internal Lazy<Tensor> TransposeLazy;

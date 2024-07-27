@@ -14,7 +14,7 @@ public static class Auto
         return output(tensors);
     }
 
-    public static GetGradientsFunction<T> Grad<T>(T output) where T : AbstractTensorNode<T>, IMutableTensor<T>
+    public static GetGradientsFunction<T> Grad<T>(T output) where T : AbstractTensorNode<T>, IAccumulator<T>
     {
         var grads = GetGradients<T>(output);
         return vars => vars
@@ -22,7 +22,7 @@ public static class Auto
             .ToArray();
     }
 
-    public static Dictionary<T, T> GetGradients<T>(T output) where T : AbstractTensorNode<T>, IMutableTensor<T>
+    public static Dictionary<T, T> GetGradients<T>(T output) where T : AbstractTensorNode<T>, IAccumulator<T>
     {
         if (!output.IsScalar)
             throw new InvalidOperationException($"Gradient only defined for scalar-output functions. Output had shape: {output.Shape.Serialize()}");

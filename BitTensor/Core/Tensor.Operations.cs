@@ -44,17 +44,10 @@ public partial class Tensor
     public static Tensor Mul(float a, Tensor b) => Mul(b, a);
 
     public static Tensor Mul(Tensor a, float b) =>
-        b switch
-        {
-            0f => Zeros(a.Shape),
-            1f => a,
-            -1f => -a,
-            _ => new(
-                shape: a.Shape,
-                children: [a],
-                forward: self => Ops.Multiply(self.A, b, self),
-                backward: (grad, _) => [b * grad])
-        };
+        new(shape: a.Shape,
+            children: [a],
+            forward: self => Ops.Multiply(self.A, b, self),
+            backward: (grad, _) => [b * grad]);
 
     public static Tensor Mul(Tensor a, Tensor b)
     {

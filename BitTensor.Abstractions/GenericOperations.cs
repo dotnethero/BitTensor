@@ -4,8 +4,6 @@ public static class GenericOperations<TTensor, TBackend>
     where TTensor : AbstractTensorNode<TTensor>, ITensorNode<TTensor>, ITensor<TTensor>
     where TBackend : ITensorBackend<TTensor>
 {
-    public static TTensor Identity(TTensor a) => a;
-    
     public static TTensor Negate(TTensor a) =>
         TTensor.Create(
             shape: a.Shape,
@@ -47,16 +45,11 @@ public static class GenericOperations<TTensor, TBackend>
     public static TTensor Mul(float a, TTensor b) => Mul(b, a);
 
     public static TTensor Mul(TTensor a, float b) =>
-        b switch
-        {
-            0f => TTensor.Zeros(a.Shape),
-            1f => a,
-            _ => TTensor.Create(
-                shape: a.Shape,
-                children: [a],
-                forward: self => TBackend.ExecuteMultiply(self.A, b, self),
-                backward: (grad, _) => [Mul(b, grad)])
-        };
+        TTensor.Create(
+            shape: a.Shape,
+            children: [a],
+            forward: self => TBackend.ExecuteMultiply(self.A, b, self),
+            backward: (grad, _) => [Mul(b, grad)]);
 
     public static TTensor Mul(TTensor a, TTensor b)
     {
