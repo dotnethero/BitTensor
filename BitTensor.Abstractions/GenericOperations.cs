@@ -5,7 +5,7 @@ public static class GenericOperations<TTensor, TBackend>
     where TBackend : ITensorBackend<TTensor>
 {
     public static TTensor Negate(TTensor a) =>
-        TTensor.Create(
+        TTensor.CreateNode(
             shape: a.Shape,
             children: [a],
             forward: static self => TBackend.ExecuteNegate(self.A, self),
@@ -15,7 +15,7 @@ public static class GenericOperations<TTensor, TBackend>
     {
         var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
 
-        return TTensor.Create(
+        return TTensor.CreateNode(
             shape,
             children: [a, b],
             forward: static self => TBackend.ExecuteAdd(self.A, self.B, self),
@@ -36,7 +36,7 @@ public static class GenericOperations<TTensor, TBackend>
     public static TTensor Add(float a, TTensor b) => Add(b, a);
 
     public static TTensor Add(TTensor a, float b) =>
-        TTensor.Create(
+        TTensor.CreateNode(
             shape: a.Shape,
             children: [a],
             forward: self => TBackend.ExecuteAdd(self.A, b, self),
@@ -45,7 +45,7 @@ public static class GenericOperations<TTensor, TBackend>
     public static TTensor Mul(float a, TTensor b) => Mul(b, a);
 
     public static TTensor Mul(TTensor a, float b) =>
-        TTensor.Create(
+        TTensor.CreateNode(
             shape: a.Shape,
             children: [a],
             forward: self => TBackend.ExecuteMultiply(self.A, b, self),
@@ -55,7 +55,7 @@ public static class GenericOperations<TTensor, TBackend>
     {
         var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
 
-        return TTensor.Create(
+        return TTensor.CreateNode(
             shape,
             children: [a, b],
             forward: static self => TBackend.ExecuteMultiply(self.A, self.B, self),
@@ -71,7 +71,7 @@ public static class GenericOperations<TTensor, TBackend>
         if (shape.Product() != a.Size)
             throw new InvalidOperationException($"Shape {shape.Serialize()} does not produce {a.Size} size");
 
-        return TTensor.Create(
+        return TTensor.CreateNode(
             shape,
             children: [a],
             forward: static self => TBackend.ExecuteReshape(self.A, self),
@@ -83,7 +83,7 @@ public static class GenericOperations<TTensor, TBackend>
         if (!a.IsScalar)
             throw new NotImplementedException($"Not implemented for {a.Dimensions} dims");
 
-        return TTensor.Create(
+        return TTensor.CreateNode(
             shape: shape,
             children: [a],
             forward: static self => TBackend.ExecuteBroadcast(self.A, self),
@@ -91,7 +91,7 @@ public static class GenericOperations<TTensor, TBackend>
     }
 
     public static TTensor Sum(TTensor a) =>
-        TTensor.Create(
+        TTensor.CreateNode(
             shape: [],
             children: [a],
             forward: static self => TBackend.ExecuteSum(self.A, self),
@@ -105,7 +105,7 @@ public static class GenericOperations<TTensor, TBackend>
         if (axis.Count == a.Dimensions)
             return Sum(a);
 
-        return TTensor.Create(
+        return TTensor.CreateNode(
             shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
             children: [a],
             forward: self => TBackend.ExecuteSum(self.A, axis, self),

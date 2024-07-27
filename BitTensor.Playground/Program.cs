@@ -13,15 +13,23 @@ internal class Program
             .GetPreferredDevice(preferCPU: false)
             .CreateAccelerator(context);
 
-        using var a = CuTensor.Create(accelerator, [1, 2, 3]);
-        using var b = CuTensor.Create(accelerator, [3, 4, 5]);
+        var allocator = new CuAllocator(accelerator);
+
+        using var a = allocator.Create([1, 2, 3]);
+        using var b = allocator.Create([3, 4, 5]);
         using var c = a * b * 10;
         using var d = (a + b) * (a + b);
+        using var e = CuTensor.Sum(d);
+
+        var gradients = Auto.Grad(e)([a, b]);
 
         Console.WriteLine(ToHost(a).ToDataString());
         Console.WriteLine(ToHost(b).ToDataString());
         Console.WriteLine(ToHost(c).ToDataString());
         Console.WriteLine(ToHost(d).ToDataString());
+
+        //Console.WriteLine(ToHost(gradients[0]).ToDataString());
+        //Console.WriteLine(ToHost(gradients[1]).ToDataString());
     }
 
     private static Tensor ToHost(CuTensor c)

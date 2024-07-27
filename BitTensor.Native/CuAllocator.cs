@@ -1,24 +1,19 @@
 ﻿using BitTensor.Abstractions;
-using ILGPU;
 using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
-using DType = float;
-using DTypeView = ArrayView<float>;
-
-internal class CuAllocator(Accelerator accelerator) : ITensorAllocator<CuTensor>
+public class CuAllocator(Accelerator accelerator) : ITensorAllocator<CuTensor>
 {
-    public CuTensor AllocateOnes(int[] shape)
-    {
-        var tensor = new CuTensor(accelerator, shape);
-        var add = accelerator.LoadAutoGroupedStreamKernel<Index1D, DType, DTypeView>(CuKernels.Memset);
-        add(tensor.Size, 1, tensor.Buffer.View);
-        return tensor;
-    }
+    public CuTensor Create(float value) => 
+        new(accelerator, shape: [], values: [value]);
+    
+    public CuTensor Create(float[] values) =>
+        new(accelerator, shape: [values.Length], values);
 
-    public CuTensor AllocateZeros(int[] shape)
-    {
-        return new CuTensor(accelerator, shape);
-    }
+    public CuTensor Create(float[][] values) =>
+        new(accelerator, shape: [values.Length, values[0].Length], values.Collect2D());
+
+    public CuTensor Create(float[][][] values) =>
+        new(accelerator, shape: [values.Length, values[0].Length, values[0][0].Length], values.Collect3D());
 }

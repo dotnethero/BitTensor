@@ -4,7 +4,7 @@
 /// Declares set of kernels to support backpropagation for operations defined in <see cref="ITensor{T}"/>
 /// </summary>
 /// <typeparam name="T">Tensor type</typeparam>
-public interface ITensorBackend<in T>
+public interface ITensorBackend<in T> where T : ITensor<T>
 {
     static abstract void ExecuteReshape(T a, T output);
     static abstract void ExecuteBroadcast(T a, T output);

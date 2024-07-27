@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
+    <ProjectReference Include="..\BitTensor.Core\BitTensor.Core.csproj" />
   </ItemGroup>
 
 </Project>

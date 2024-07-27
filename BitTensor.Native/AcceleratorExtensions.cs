@@ -5,6 +5,10 @@ namespace BitTensor.CUDA;
 
 public static class AcceleratorExtensions
 {
+    public static CuTensor AllocateZero(Accelerator accelerator) => new(accelerator, [], [0]);
+
+    public static CuTensor AllocateOne(Accelerator accelerator)  => new(accelerator, [], [1]);
+
     public static CuTensor CreateTensor(this Accelerator accelerator, float value) => 
         new(accelerator, shape: [], values: [value]);
     

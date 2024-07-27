@@ -37,24 +37,24 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
     public static void ExecuteAdd(CuTensor a, CuTensor b, CuTensor output)
     {
         var add = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView, DTypeView>(CuKernels.Add);
-        add(output.Size, a.Buffer.View, b.Buffer.View, output.Buffer.View);
+        add(output.Size, a.View, b.View, output.View);
     }
 
     public static void ExecuteAdd(CuTensor a, DType b, CuTensor output)
     {
         var add = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(CuKernels.Add);
-        add(output.Size, a.Buffer.View, b, output.Buffer.View);
+        add(output.Size, a.View, b, output.View);
     }
 
     public static void ExecuteMultiply(CuTensor a, CuTensor b, CuTensor output)
     {
         var mul = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView, DTypeView>(CuKernels.Mul);
-        mul(output.Size, a.Buffer.View, b.Buffer.View, output.Buffer.View);
+        mul(output.Size, a.View, b.View, output.View);
     }
 
     public static void ExecuteMultiply(CuTensor a, DType b, CuTensor output)
     {
         var mul = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(CuKernels.Mul);
-        mul(output.Size, a.Buffer.View, b, output.Buffer.View);
+        mul(output.Size, a.View, b, output.View);
     }
 }

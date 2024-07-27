@@ -14,22 +14,22 @@ public static class Auto
         return output(tensors);
     }
 
-    public static GetGradientsFunction<T> Grad<T>(T output) where T : AbstractTensorNode<T>, IAccumulator<T>
+    public static GetGradientsFunction<T> Grad<T>(T output) where T : AbstractTensorNode<T>, IAccumulator<T>, IHasAllocator<T>
     {
         var grads = GetGradients<T>(output);
         return vars => vars
-            .Select(v => grads.TryGetValue(v, out var grad) ? grad : T.Zero)
+            .Select(v => grads.TryGetValue(v, out var grad) ? grad : output.Allocator.Create(0))
             .ToArray();
     }
 
-    public static Dictionary<T, T> GetGradients<T>(T output) where T : AbstractTensorNode<T>, IAccumulator<T>
+    public static Dictionary<T, T> GetGradients<T>(T output) where T : AbstractTensorNode<T>, IAccumulator<T>, IHasAllocator<T>
     {
         if (!output.IsScalar)
             throw new InvalidOperationException($"Gradient only defined for scalar-output functions. Output had shape: {output.Shape.Serialize()}");
 
         var grads = new Dictionary<T, T>(16)
         {
-            [output] = T.One
+            [output] = output.Allocator.Create(1)
         };
 
         var nodes = new Stack<T>(16);
