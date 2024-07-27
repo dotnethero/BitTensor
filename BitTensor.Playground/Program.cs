@@ -23,7 +23,7 @@ internal unsafe class Program
         using var a = CuTensor.Create(accelerator, [1, 2, 3]);
         using var b = CuTensor.Create(accelerator, [3, 4, 5]);
         using var c = a * b * 10;
-        using var d = a + b + 10;
+        using var d = (a + b) * (a + b);
 
         Console.WriteLine(ToHost(a).ToDataString());
         Console.WriteLine(ToHost(b).ToDataString());

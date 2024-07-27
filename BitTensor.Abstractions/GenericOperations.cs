@@ -73,21 +73,6 @@ public static class GenericOperations<TTensor, TBackend>
             ]);
     }
 
-    public static TTensor Pow(TTensor a, float power) =>
-        power switch
-        {
-            0f => TTensor.Ones(a.Shape),
-            1f => Identity(a),
-            _ => TTensor.Create(
-                shape: a.Shape,
-                children: [a],
-                forward: self => TBackend.ExecutePower(self.A, power, self),
-                backward: (grad, _) => [PowBackward(grad, a, power)])
-        };
-
-    private static TTensor PowBackward(TTensor grad, TTensor a, float power) =>
-        Mul(power, Mul(grad, Pow(a, power - 1)));
-
     public static TTensor Reshape(TTensor a, int[] shape)
     {
         if (shape.Product() != a.Size)

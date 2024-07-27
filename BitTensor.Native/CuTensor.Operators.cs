@@ -15,6 +15,5 @@ public partial class CuTensor // Operators
     public static CuTensor operator *(CuTensor a, CuTensor b) => Mul(a, b);
     public static CuTensor operator *(CuTensor a, float b) => Mul(a, b);
     public static CuTensor operator *(float a, CuTensor b) => Mul(a, b);
-    public static CuTensor operator ^(CuTensor a, float b) => Pow(a, b);
     public static CuTensor operator -(CuTensor a) => Negate(a);
 }

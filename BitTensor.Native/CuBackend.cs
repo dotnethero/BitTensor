@@ -28,7 +28,7 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
     {
         output[i] = a[i] * b;
     }
-
+    
     public static void ExecuteReshape(CuTensor a, CuTensor output)
     {
         throw new NotImplementedException();
@@ -60,7 +60,7 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
         add(output.Size, a.Buffer.View, b.Buffer.View, output.Buffer.View);
     }
 
-    public static void ExecuteAdd(CuTensor a, float b, CuTensor output)
+    public static void ExecuteAdd(CuTensor a, DType b, CuTensor output)
     {
         var add = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(Add);
         add(output.Size, a.Buffer.View, b, output.Buffer.View);
@@ -72,14 +72,9 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
         mul(output.Size, a.Buffer.View, b.Buffer.View, output.Buffer.View);
     }
 
-    public static void ExecuteMultiply(CuTensor a, float b, CuTensor output)
+    public static void ExecuteMultiply(CuTensor a, DType b, CuTensor output)
     {
         var mul = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(Mul);
         mul(output.Size, a.Buffer.View, b, output.Buffer.View);
-    }
-
-    public static void ExecutePower(CuTensor a, float b, CuTensor output)
-    {
-        throw new NotImplementedException();
     }
 }

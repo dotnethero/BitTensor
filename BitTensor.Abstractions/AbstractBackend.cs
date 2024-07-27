@@ -15,5 +15,4 @@ public interface ITensorBackend<in T>
     static abstract void ExecuteAdd(T a, float b, T output);
     static abstract void ExecuteMultiply(T a, T b, T output);
     static abstract void ExecuteMultiply(T a, float b, T output);
-    static abstract void ExecutePower(T a, float b, T output);
 }
