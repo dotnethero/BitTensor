@@ -5,6 +5,9 @@ namespace BitTensor.CUDA;
 
 public class CuAllocator(Accelerator accelerator) : ITensorAllocator<CuTensor>
 {
+    public CuTensor Allocate(int[] shape) => 
+        new(accelerator, shape: shape);
+
     public CuTensor Create(float value) => 
         new(accelerator, shape: [], values: [value]);
     
