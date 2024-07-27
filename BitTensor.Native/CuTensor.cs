@@ -5,7 +5,7 @@ using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor : 
+public partial class CuTensor : 
     AbstractTensorNode<CuTensor>, 
     ITensorNode<CuTensor>, 
     ITensor<CuTensor>, 
