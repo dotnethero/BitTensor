@@ -13,7 +13,7 @@ public sealed class TensorAllocator : ITensorAllocator<Tensor>
     public Tensor Create(float[][][] values) => Tensor.Create(values);
 }
 
-public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensor<Tensor>, IHasAllocator<Tensor>
+public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<Tensor>, IHasAllocator<Tensor>
 {
     internal float[] Data;
     internal Lazy<Tensor> TransposeLazy;
@@ -49,5 +49,15 @@ public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensor<Tensor>
     {
         Data = values ?? new float[Size];
         TransposeLazy = new(Transpose);
+    }
+
+    public void ApplyOffset(Tensor offset)
+    {
+        Ops.Add(this, offset, this);
+    }
+
+    public void ApplyScale(Tensor scale)
+    {
+        Ops.Multiply(this, scale, this);
     }
 }

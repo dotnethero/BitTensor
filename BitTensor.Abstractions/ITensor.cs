@@ -16,6 +16,12 @@ public interface ITensor<T> where T : ITensor<T>
     static abstract T operator -(T a);
 }
 
+public interface IMutableTensor<T> : ITensor<T> where T : ITensor<T>
+{
+    void ApplyOffset(T offset);
+    void ApplyScale(T scale);
+}
+
 public interface IHasAllocator<out T> where T : ITensor<T>
 {
     ITensorAllocator<T> Allocator { get; }

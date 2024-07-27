@@ -9,7 +9,7 @@ namespace BitTensor.CUDA;
 public partial class CuTensor : 
     AbstractTensorNode<CuTensor>, 
     ITensorNode<CuTensor>, 
-    ITensor<CuTensor>,
+    IMutableTensor<CuTensor>,
     IHasAllocator<CuTensor>,
     IDeviceArray
 {
@@ -45,6 +45,7 @@ public partial class CuTensor :
         Buffer = accelerator.Allocate1D<float>(Size);
     }
 
+    // Reshape
     internal CuTensor(int[] shape, CuTensor tensor) : base(shape, [tensor], _ => {}, (grad, self) => [CreateReshape(tensor.Shape, grad)])
     {
         Accelerator = tensor.Accelerator;
@@ -77,6 +78,16 @@ public partial class CuTensor :
             throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({Size})");
 
         View.BaseView.CopyFromCPU(source);
+    }
+
+    public void ApplyOffset(CuTensor offset)
+    {
+        CuBackend.ExecuteAdd(this, offset, this);
+    }
+
+    public void ApplyScale(CuTensor scale)
+    {
+        CuBackend.ExecuteMultiply(this, scale, this);
     }
     
     public void Dispose()

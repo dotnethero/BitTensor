@@ -14,7 +14,7 @@ public static class Auto
         return output(tensors);
     }
 
-    public static GetGradientsFunction<T> Grad<T>(T output) where T : AbstractTensorNode<T>, ITensor<T>, IHasAllocator<T>
+    public static GetGradientsFunction<T> Grad<T>(T output) where T : AbstractTensorNode<T>, IMutableTensor<T>, IHasAllocator<T>
     {
         var grads = GetGradients<T>(output);
         return vars => vars
@@ -22,7 +22,7 @@ public static class Auto
             .ToArray();
     }
 
-    public static Dictionary<T, T> GetGradients<T>(T output) where T : AbstractTensorNode<T>, ITensor<T>, IHasAllocator<T>
+    public static Dictionary<T, T> GetGradients<T>(T output) where T : AbstractTensorNode<T>, IMutableTensor<T>, IHasAllocator<T>
     {
         if (!output.IsScalar)
             throw new InvalidOperationException($"Gradient only defined for scalar-output functions. Output had shape: {output.Shape.Serialize()}");
@@ -52,7 +52,7 @@ public static class Auto
 
                 if (grads.ContainsKey(child))
                 {
-                    grads[child] = ITensor<T>.Add(grads[child], grad);
+                    grads[child].ApplyOffset(grad);
                 }
                 else
                 {
