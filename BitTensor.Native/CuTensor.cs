@@ -1,33 +1,40 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Abstractions;
+using ILGPU;
+using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
 public unsafe partial class CuTensor : 
     AbstractTensorNode<CuTensor>, 
-    ITensorNode<CuTensor>, ITensor<CuTensor>, 
+    ITensorNode<CuTensor>, 
+    ITensor<CuTensor>, 
     IDeviceArray
 {
-    internal readonly float* Handle;
+    internal readonly Accelerator Accelerator;
+    internal readonly MemoryBuffer1D<float, Stride1D.Dense> Buffer;
 
-    internal CuTensor(int[] shape) : base(shape)
+    internal CuTensor(Accelerator accelerator, int[] shape) : base(shape)
     {
-        Handle = CuAllocator.Allocate(Size);
-    }
-    
-    internal CuTensor(int[] shape, float[] values) : this(shape)
-    {
-        CuMemory.CopyToDevice(values, Handle, Size);
+        Accelerator = accelerator;
+        Buffer = accelerator.Allocate1D<float>(Size);
     }
 
-    internal CuTensor(int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
+    internal CuTensor(Accelerator accelerator, int[] shape, float[] values) : this(accelerator, shape)
     {
-        Handle = CuAllocator.Allocate(Size);
+        Accelerator = accelerator;
+        Buffer = accelerator.Allocate1D(values);
+    }
+
+    internal CuTensor(Accelerator accelerator, int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
+    {
+        Accelerator = accelerator;
+        Buffer = accelerator.Allocate1D<float>(Size);
     }
 
     public static CuTensor Create(int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward)
     {
-        return new CuTensor(shape, children, forward, backward);
+        return new CuTensor(children[0].Accelerator, shape, children, forward, backward);
     }
 
     public void CopyToHost(Span<float> destination)
@@ -37,7 +44,7 @@ public unsafe partial class CuTensor :
 
         EnsureHasUpdatedValues();
 
-        CuMemory.CopyToHost(Handle, destination, Size);
+        Buffer.View.BaseView.CopyToCPU(destination);
     }
 
     public void CopyToDevice(ReadOnlySpan<float> source)
@@ -45,11 +52,11 @@ public unsafe partial class CuTensor :
         if (source.Length != Size)
             throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({Size})");
 
-        CuMemory.CopyToDevice(source, Handle, Size);
+        Buffer.View.BaseView.CopyFromCPU(source);
     }
 
     public void Dispose()
     {
-        CuAllocator.Free(Handle);
+        Buffer.Dispose();
     }
 }

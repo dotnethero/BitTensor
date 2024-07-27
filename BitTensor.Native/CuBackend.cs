@@ -1,16 +1,34 @@
 ﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Internals;
-using BitTensor.CUDA.Interop;
+using ILGPU;
+using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
-using static cublasOperation_t;
-using static cublasFillMode_t;
-
-using static cuBLAS;
+using DType = float;
+using DTypeView = ArrayView<float>;
 
 public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
 {
+    private static void Add(Index1D i, DTypeView a, DTypeView b, DTypeView output)
+    {
+        output[i] = a[i] + b[i];
+    }
+
+    private static void Add(Index1D i, DTypeView a, DType b, DTypeView output)
+    {
+        output[i] = a[i] + b;
+    }
+
+    private static void Mul(Index1D i, DTypeView a, DTypeView b, DTypeView output)
+    {
+        output[i] = a[i] * b[i];
+    }
+    
+    private static void Mul(Index1D i, DTypeView a, DType b, DTypeView output)
+    {
+        output[i] = a[i] * b;
+    }
+
     public static void ExecuteReshape(CuTensor a, CuTensor output)
     {
         throw new NotImplementedException();
@@ -38,95 +56,26 @@ public readonly unsafe struct CuBackend : ITensorBackend<CuTensor>
 
     public static void ExecuteAdd(CuTensor a, CuTensor b, CuTensor output)
     {
-        using var scope = new CublasScope();
-
-        var alpha = 1.0f;
-        var beta = 1.0f;
-
-        cublasSgeam(
-            scope.Context,
-            CUBLAS_OP_N,
-            CUBLAS_OP_N,
-            a.Size,
-            1,
-            &alpha,
-            a.Handle,
-            a.Size,
-            &beta,
-            b.Handle,
-            b.Size,
-            output.Handle,
-            output.Size);
+        var add = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView, DTypeView>(Add);
+        add(output.Size, a.Buffer.View, b.Buffer.View, output.Buffer.View);
     }
 
     public static void ExecuteAdd(CuTensor a, float b, CuTensor output)
     {
-        using var scope = new CublasScope();
-
-        cublasCopyEx(
-            scope.Context,
-            a.Size,
-            a.Handle,
-            cudaDataType_t.CUDA_R_32F,
-            1,
-            output.Handle,
-            cudaDataType_t.CUDA_R_32F,
-            1);
-
-        using var ones = CuTensor.Ones(a.Shape); // TODO: remove allocation
-
-        cublasSaxpy_v2(
-            scope.Context,
-            output.Size,
-            &b,
-            ones.Handle,
-            1,
-            output.Handle,
-            1);
+        var add = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(Add);
+        add(output.Size, a.Buffer.View, b, output.Buffer.View);
     }
 
     public static void ExecuteMultiply(CuTensor a, CuTensor b, CuTensor output)
     {
-        using var scope = new CublasScope();
-
-        var alpha = 1.0f;
-        var beta = 0.0f;
-
-        cublasSsbmv_v2(
-            scope.Context, 
-            CUBLAS_FILL_MODE_UPPER, 
-            a.Size, 
-            0, 
-            &alpha, 
-            a.Handle, 
-            1, 
-            b.Handle,
-            1,
-            &beta,
-            output.Handle,
-            1);
+        var mul = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView, DTypeView>(Mul);
+        mul(output.Size, a.Buffer.View, b.Buffer.View, output.Buffer.View);
     }
 
     public static void ExecuteMultiply(CuTensor a, float b, CuTensor output)
     {
-        using var scope = new CublasScope();
-
-        cublasCopyEx(
-            scope.Context,
-            a.Size,
-            a.Handle,
-            cudaDataType_t.CUDA_R_32F,
-            1,
-            output.Handle,
-            cudaDataType_t.CUDA_R_32F,
-            1);
-
-        cublasSscal_v2(
-            scope.Context,
-            a.Size,
-            &b,
-            output.Handle,
-            1);
+        var mul = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(Mul);
+        mul(output.Size, a.Buffer.View, b, output.Buffer.View);
     }
 
     public static void ExecutePower(CuTensor a, float b, CuTensor output)

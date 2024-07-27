@@ -2,7 +2,7 @@
 using BitTensor.Core;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Interop;
-
+using ILGPU;
 using static BitTensor.CUDA.Interop.cudaRT;
 using static BitTensor.CUDA.Interop.cudaMemcpyKind;
 using static BitTensor.CUDA.Interop.cuBLAS;
@@ -15,8 +15,13 @@ internal unsafe class Program
 {
     static void Main(string[] args)
     {
-        using var a = CuTensor.Create([1, 2, 3]);
-        using var b = CuTensor.Create([3, 4, 5]);
+        using var context = Context.CreateDefault();
+        using var accelerator = context
+            .GetPreferredDevice(preferCPU: false)
+            .CreateAccelerator(context);
+
+        using var a = CuTensor.Create(accelerator, [1, 2, 3]);
+        using var b = CuTensor.Create(accelerator, [3, 4, 5]);
         using var c = a * b * 10;
         using var d = a + b + 10;
 
