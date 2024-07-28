@@ -8,3 +8,8 @@ public interface ITensorAllocator<out T> where T : ITensor<T>
     T Create(float[][] values);
     T Create(float[][][] values);
 }
+
+public interface IHasAllocator<out T> where T : ITensor<T>
+{
+    ITensorAllocator<T> Allocator { get; }
+}

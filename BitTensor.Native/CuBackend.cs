@@ -17,12 +17,18 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
 
     public static void ExecuteNegate(CuTensor a, CuTensor output)
     {
-        throw new NotImplementedException();
+        var negate = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView>(CuKernels.Negate);
+        negate(output.Size, a.View, output.View);
     }
 
     public static void ExecuteSum(CuTensor a, CuTensor output)
     {
-        throw new NotImplementedException();
+        var sum = output.Accelerator.LoadStreamKernel<DTypeView, DTypeView>(CuKernels.SumToScalar);
+        var groupSize = 256;
+        var gridSize = (a.Size + groupSize - 1) / groupSize;
+        var config = new KernelConfig(gridSize, groupSize);
+        sum(config, a.View, output.View);
+        output.Accelerator.Synchronize();
     }
 
     public static void ExecuteSum(CuTensor a, HashSet<int> axes, CuTensor output)

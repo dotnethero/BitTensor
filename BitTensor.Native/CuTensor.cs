@@ -80,16 +80,6 @@ public partial class CuTensor :
         View.BaseView.CopyFromCPU(source);
     }
 
-    public void ApplyOffset(CuTensor offset)
-    {
-        CuBackend.ExecuteAdd(this, offset, this);
-    }
-
-    public void ApplyScale(CuTensor scale)
-    {
-        CuBackend.ExecuteMultiply(this, scale, this);
-    }
-    
     public void Dispose()
     {
         Buffer.Dispose();
