@@ -6,6 +6,9 @@ using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
+using DTypeBuffer = MemoryBuffer1D<float, Stride1D.Dense>;
+using DTypeView = ArrayView<float>;
+
 public partial class CuTensor : 
     AbstractTensorNode<CuTensor>, 
     ITensorNode<CuTensor>, 
@@ -14,12 +17,12 @@ public partial class CuTensor :
     IDeviceArray
 {
     internal readonly Accelerator Accelerator;
-    internal readonly MemoryBuffer1D<float, Stride1D.Dense> Buffer;
+    internal readonly DTypeBuffer ArrayBuffer;
     
-    internal ArrayView1D<float, Stride1D.Dense> View
+    internal DTypeView ArrayView
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => Buffer.View;
+        get => ArrayBuffer.View;
     }
 
     public ITensorAllocator<CuTensor> Allocator { get; }
@@ -28,21 +31,21 @@ public partial class CuTensor :
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
-        Buffer = accelerator.Allocate1D<float>(Size);
+        ArrayBuffer = accelerator.Allocate1D<float>(Size);
     }
 
-    internal CuTensor(Accelerator accelerator, int[] shape, float[] values) : this(accelerator, shape)
+    internal CuTensor(Accelerator accelerator, int[] shape, float[] values) : base(shape)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
-        Buffer = accelerator.Allocate1D(values);
+        ArrayBuffer = accelerator.Allocate1D(values);
     }
 
     internal CuTensor(Accelerator accelerator, int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
-        Buffer = accelerator.Allocate1D<float>(Size);
+        ArrayBuffer = accelerator.Allocate1D<float>(Size);
     }
 
     // Reshape
@@ -50,7 +53,7 @@ public partial class CuTensor :
     {
         Accelerator = tensor.Accelerator;
         Allocator = tensor.Allocator;
-        Buffer = tensor.Buffer;
+        ArrayBuffer = tensor.ArrayBuffer;
     }
 
     public static CuTensor CreateNode(int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward)
@@ -69,7 +72,7 @@ public partial class CuTensor :
             throw new ArgumentException($"Destination array size ({destination.Length}) not equal to allocated array size ({Size})");
 
         EnsureHasUpdatedValues();
-        View.BaseView.CopyToCPU(destination);
+        ArrayView.CopyToCPU(destination);
     }
 
     public void CopyToDevice(ReadOnlySpan<float> source)
@@ -77,11 +80,11 @@ public partial class CuTensor :
         if (source.Length != Size)
             throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({Size})");
 
-        View.BaseView.CopyFromCPU(source);
+        ArrayView.CopyFromCPU(source);
     }
 
     public void Dispose()
     {
-        Buffer.Dispose();
+        ArrayBuffer.Dispose();
     }
 }

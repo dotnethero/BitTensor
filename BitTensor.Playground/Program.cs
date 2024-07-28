@@ -20,9 +20,11 @@ internal class Program
             [4, 5, 6]]);
 
         using var x = CuTensor.Sum(a);
+        using var y = CuTensor.Sum(a, [1]);
 
         Console.WriteLine(ToHost(a).ToDataString());
         Console.WriteLine(ToHost(x).ToDataString());
+        Console.WriteLine(ToHost(y).ToDataString());
     }
 
     private static Tensor ToHost(CuTensor c)
