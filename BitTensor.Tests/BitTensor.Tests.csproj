@@ -22,8 +22,4 @@
     <ProjectReference Include="..\BitTensor\BitTensor.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Tests\Native\" />
-  </ItemGroup>
-
 </Project>
