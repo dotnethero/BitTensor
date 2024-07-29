@@ -104,7 +104,7 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         var beta = 1;
         var batches = output.Strides[..^2].Product();
 
-        cuBLAS.cublasGemmBatchedEx(
+        var result = cuBLAS.cublasGemmBatchedEx(
             context.Context,
             CUBLAS_OP_N,
             CUBLAS_OP_N,
