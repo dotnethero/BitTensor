@@ -1,9 +1,10 @@
 ﻿using BitTensor.Abstractions;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 
 namespace BitTensor.CUDA;
 
-public class CuAllocator(Accelerator accelerator) : ITensorAllocator<CuTensor>
+public class CuAllocator(CudaAccelerator accelerator) : ITensorAllocator<CuTensor>
 {
     public CuTensor Allocate(int[] shape) => 
         new(accelerator, shape: shape);

@@ -3,6 +3,7 @@ using BitTensor.Abstractions;
 using BitTensor.CUDA.Abstractions;
 using ILGPU;
 using ILGPU.Runtime;
+using ILGPU.Runtime.Cuda;
 
 namespace BitTensor.CUDA;
 
@@ -16,7 +17,7 @@ public partial class CuTensor :
     IHasAllocator<CuTensor>,
     IDeviceArray
 {
-    internal readonly Accelerator Accelerator;
+    internal readonly CudaAccelerator Accelerator;
     internal readonly DTypeBuffer ArrayBuffer;
     
     internal DTypeView ArrayView
@@ -27,21 +28,21 @@ public partial class CuTensor :
 
     public ITensorAllocator<CuTensor> Allocator { get; }
 
-    internal CuTensor(Accelerator accelerator, int[] shape) : base(shape)
+    internal CuTensor(CudaAccelerator accelerator, int[] shape) : base(shape)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
         ArrayBuffer = accelerator.Allocate1D<float>(Size);
     }
 
-    internal CuTensor(Accelerator accelerator, int[] shape, float[] values) : base(shape)
+    internal CuTensor(CudaAccelerator accelerator, int[] shape, float[] values) : base(shape)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
         ArrayBuffer = accelerator.Allocate1D(values);
     }
 
-    internal CuTensor(Accelerator accelerator, int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
+    internal CuTensor(CudaAccelerator accelerator, int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
