@@ -1,8 +1,6 @@
-﻿using BitTensor.Abstractions;
+﻿namespace BitTensor.Abstractions;
 
-namespace BitTensor.Core;
-
-internal readonly unsafe struct BatchStrides(int batchCount, int[] aStrides, int[] bStrides, int[] rStrides)
+public readonly unsafe struct BatchStrides(int batchCount, int[] aStrides, int[] bStrides, int[] rStrides)
 {
     public readonly int BatchCount = batchCount;
     public readonly int Dimensions = rStrides.Length;
@@ -32,9 +30,9 @@ internal readonly unsafe struct BatchStrides(int batchCount, int[] aStrides, int
     }
 }
 
-internal static class Batching
+public static class Batching
 {
-    public static BatchStrides GetBatchStrides(Tensor a, Tensor b, Range dimensions)
+    public static BatchStrides GetBatchStrides(AbstractTensor a, AbstractTensor b, Range dimensions)
     {
         var batchDims = Math.Max(a.Dimensions, b.Dimensions) - 2;
 

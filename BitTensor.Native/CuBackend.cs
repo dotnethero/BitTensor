@@ -1,8 +1,15 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Internals;
+using BitTensor.CUDA.Interop;
 using ILGPU;
 using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
+
+using static cudaDataType_t;
+using static cublasOperation_t;
+using static cublasComputeType_t;
+using static cublasGemmAlgo_t;
 
 using DType = float;
 using DTypeView = ArrayView<float>;
@@ -87,6 +94,37 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
     {
         var mul = output.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType, DTypeView>(CuKernels.Mul);
         mul(output.Size, a.ArrayView, b, output.ArrayView);
+    }
+
+    public static unsafe void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor output)
+    {
+        using var context = new CublasScope();
+
+        var alpha = 1;
+        var beta = 1;
+        var batches = output.Strides[..^2].Product();
+
+        cuBLAS.cublasGemmBatchedEx(
+            context.Context,
+            CUBLAS_OP_N,
+            CUBLAS_OP_N,
+            a.PrevDimension,
+            a.LastDimension,
+            b.LastDimension,
+            &alpha,
+            Aarray: (void**)a.ArrayBuffer.NativePtr,
+            Atype: CUDA_R_32F,
+            lda: a.PrevDimension,
+            Barray: (void**)b.ArrayBuffer.NativePtr,
+            Btype: CUDA_R_32F,
+            ldb: b.PrevDimension,
+            &beta,
+            Carray: (void**)output.ArrayBuffer.NativePtr,
+            Ctype: CUDA_R_32F,
+            ldc: output.PrevDimension,
+            batchCount: batches,
+            CUBLAS_COMPUTE_32F,
+            CUBLAS_GEMM_ALGO0);
     }
     
     private static KernelConfig GetKernelConfig(AbstractTensor a)

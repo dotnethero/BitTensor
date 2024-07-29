@@ -1,18 +1,10 @@
-﻿using System;
-using BitTensor.Abstractions;
-using ILGPU;
+﻿using ILGPU;
 
 namespace BitTensor.CUDA;
 
 using DType = float;
 using DTypeView = ArrayView<float>;
 using DShapeView = ArrayView<int>;
-
-internal readonly struct CuArray(DTypeView data, DShapeView shape)
-{
-    public readonly DTypeView Data = data;
-    public readonly DShapeView Shape = shape;
-}
 
 internal static class CuKernels
 {
