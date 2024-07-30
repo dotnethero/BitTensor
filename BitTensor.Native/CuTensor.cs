@@ -25,6 +25,12 @@ public partial class CuTensor :
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get => ArrayBuffer.View;
     }
+    
+    internal unsafe void* Pointer
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => ArrayBuffer.NativePtr.ToPointer();
+    }
 
     public ITensorAllocator<CuTensor> Allocator { get; }
 

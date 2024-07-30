@@ -1,9 +1,11 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Internals;
 using BitTensor.CUDA.Interop;
 using ILGPU;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
+using ILGPU.Runtime.Cuda.API;
 
 namespace BitTensor.CUDA;
 
@@ -98,16 +100,45 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         mul(output.Size, a.ArrayView, b, output.ArrayView);
     }
     
-    public static void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor output)
+    public static unsafe void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor output)
+    {
+        using var scope = new CublasScope();
+
+        var alpha = 1f;
+        var beta = 1f;
+
+        cublasGemmEx(
+            scope.Context,
+            CUBLAS_OP_N,
+            CUBLAS_OP_N,
+            b.LastDimension, // b.T rows
+            a.PrevDimension, // a.T cols
+            a.LastDimension, // a.T rows
+            &alpha,
+            b.Pointer,
+            CUDA_R_32F,
+            b.LastDimension,
+            a.Pointer,
+            CUDA_R_32F,
+            a.LastDimension,
+            &beta,
+            output.Pointer,
+            CUDA_R_32F,
+            output.LastDimension,
+            CUBLAS_COMPUTE_32F,
+            CUBLAS_GEMM_ALGO0);
+    }
+
+    public static void ExecuteMatMulCon(CuTensor a, CuTensor b, CuTensor output)
     {
         using var context = new CuBlas(output.Accelerator);
        
         context.Gemm(
             CuBlasOperation.NonTranspose,
             CuBlasOperation.NonTranspose,
-            b.LastDimension,
-            a.PrevDimension,
-            a.LastDimension,
+            b.LastDimension, // b.T rows
+            a.PrevDimension, // a.T cols
+            a.LastDimension, // a.T rows
             1f,
             b.ArrayView,
             b.LastDimension,
