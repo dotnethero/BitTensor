@@ -13,6 +13,7 @@ using DTypeView = ArrayView<float>;
 public partial class CuTensor : 
     AbstractTensorNode<CuTensor>, 
     ITensorNode<CuTensor>, 
+    ITensor<CuTensor>,
     IMutableTensor<CuTensor>,
     IHasAllocator<CuTensor>,
     IDeviceArray

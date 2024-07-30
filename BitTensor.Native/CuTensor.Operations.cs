@@ -14,8 +14,7 @@ public partial class CuTensor
     {
         var batchDimensions = Shapes.EnsureShapesAreCompatible(a.Shape[..^2], b.Shape[..^2]);
 
-        return new CuTensor(
-            a.Accelerator,
+        return CreateNode(
             [..batchDimensions, a.PrevDimension, b.LastDimension],
             children: [a, b],
             forward: static self => CuBackend.ExecuteMatMul(self.A, self.B, self),

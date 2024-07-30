@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Internals;
 using BitTensor.CUDA.Interop;
@@ -74,6 +74,12 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         sum(config, a.ArrayView, old_strides_buffer.View, mod_strides_buffer.View, output.ArrayView);
         output.Accelerator.Synchronize();
     }
+    
+    public static void ExecuteMemset(CuTensor tensor, DType value)
+    {
+        var add = tensor.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DType>(CuKernels.Memset);
+        add(tensor.Size, tensor.ArrayView, value);
+    }
 
     public static void ExecuteAdd(CuTensor a, CuTensor b, CuTensor output)
     {
@@ -99,12 +105,12 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         mul(output.Size, a.ArrayView, b, output.ArrayView);
     }
     
-    public static unsafe void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor output)
+    public static unsafe void ExecuteMatMulCustom(CuTensor a, CuTensor b, CuTensor output)
     {
         using var scope = new CublasScope();
 
         var alpha = 1f;
-        var beta = 1f;
+        var beta = 0f;
 
         cublasGemmEx(
             scope.Context,
@@ -128,10 +134,10 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
             CUBLAS_GEMM_ALGO0);
     }
 
-    public static void ExecuteMatMulCon(CuTensor a, CuTensor b, CuTensor output)
+    public static void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor output)
     {
         using var context = new CuBlas(output.Accelerator);
-       
+
         context.Gemm(
             CuBlasOperation.NonTranspose,
             CuBlasOperation.NonTranspose,
@@ -148,9 +154,8 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
             output.LastDimension);
     }
     
-    private static KernelConfig GetKernelConfig(AbstractTensor a)
+    private static KernelConfig GetKernelConfig(AbstractTensor a, int groupSize = 128)
     {
-        var groupSize = 256;
         var gridSize = (a.Size + groupSize - 1) / groupSize;
         var config = new KernelConfig(gridSize, groupSize);
         return config;

@@ -8,7 +8,7 @@ using DShapeView = ArrayView<int>;
 
 internal static class CuKernels
 {
-    public static void Memset(Index1D i, DType value, DTypeView output)
+    public static void Memset(Index1D i, DTypeView output, DType value)
     {
         output[i] = value;
     }

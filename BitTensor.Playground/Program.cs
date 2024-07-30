@@ -32,9 +32,16 @@ internal class Program
         using var y = CuTensor.Sum(a, [0]);
         using var z = CuTensor.MatMul(a, b);
 
-        Console.WriteLine(ToHost(a).ToDataString());
-        Console.WriteLine(ToHost(b).ToDataString());
-        Console.WriteLine(ToHost(z).ToDataString());
+        var a_host = ToHost(a);
+        var b_host = ToHost(b);
+        var z_host = ToHost(z);
+
+        var v_host = Tensor.Matmul(a_host, b_host);
+
+        Console.WriteLine(a_host.ToDataString());
+        Console.WriteLine(b_host.ToDataString());
+        Console.WriteLine(z_host.ToDataString());
+        Console.WriteLine(v_host.ToDataString());
     }
 
     private static Tensor ToHost(CuTensor c)

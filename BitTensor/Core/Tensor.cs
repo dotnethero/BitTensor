@@ -5,15 +5,6 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.Core;
 
-public sealed class TensorAllocator : ITensorAllocator<Tensor>
-{
-    public Tensor Allocate(int[] shape) => Tensor.Allocate(shape);
-    public Tensor Create(float value) => Tensor.Create(value);
-    public Tensor Create(float[] values) => Tensor.Create(values);
-    public Tensor Create(float[][] values) => Tensor.Create(values);
-    public Tensor Create(float[][][] values) => Tensor.Create(values);
-}
-
 public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensorNode<Tensor>, IMutableTensor<Tensor>, IHasAllocator<Tensor>
 {
     internal float[] Data;
@@ -71,11 +62,11 @@ public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensorNode<Ten
 
     public void ApplyOffset(Tensor offset)
     {
-        Backend.ExecuteAdd(this, offset, this);
+        TensorBackend.ExecuteAdd(this, offset, this);
     }
 
     public void ApplyScale(Tensor scale)
     {
-        Backend.ExecuteMultiply(this, scale, this);
+        TensorBackend.ExecuteMultiply(this, scale, this);
     }
 }

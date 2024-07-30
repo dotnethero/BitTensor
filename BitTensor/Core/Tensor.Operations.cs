@@ -2,7 +2,7 @@
 
 namespace BitTensor.Core;
 
-using Ops = GenericOperations<Tensor, Backend>;
+using Ops = GenericOperations<Tensor, TensorBackend>;
 
 public partial class Tensor
 {
@@ -21,7 +21,7 @@ public partial class Tensor
         return new(
             shape: [a.Size, b.Size],
             children: [a, b],
-            forward: static self => Backend.ExecuteOuter(self.A, self.B, self),
+            forward: static self => TensorBackend.ExecuteOuter(self.A, self.B, self),
             backward: static (grad, self) => [
                 Matmul(grad, self.A), 
                 Matmul(grad.Transpose(), self.B)]);
@@ -32,13 +32,13 @@ public partial class Tensor
     public static Tensor Sigmoid(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Backend.ExecuteSigmoid(self.A, self),
+            forward: static self => TensorBackend.ExecuteSigmoid(self.A, self),
             backward: static (grad, self) => [grad * self * (1f - self)]);
 
     public static Tensor Tanh(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Backend.ExecuteTanh(self.A, self),
+            forward: static self => TensorBackend.ExecuteTanh(self.A, self),
             backward: static (grad, self) => [grad * (1f - self * self)]);
 
     public static Tensor Matmul(Tensor a, Tensor b)
@@ -53,7 +53,7 @@ public partial class Tensor
             return new(
                 [],
                 children: [a, b],
-                forward: static self => Backend.ExecuteDot(self.A, self.B, self),
+                forward: static self => TensorBackend.ExecuteDot(self.A, self.B, self),
                 backward: MatMulBackward);
         }
         
@@ -65,7 +65,7 @@ public partial class Tensor
             return new(
                 b.Shape[1..],
                 children: [a, b],
-                forward: static self => Backend.ExecuteVecMatMul(self.A, self.B.T, self),
+                forward: static self => TensorBackend.ExecuteVecMatMul(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
         
@@ -77,7 +77,7 @@ public partial class Tensor
             return new(
                 a.Shape[..^1],
                 children: [a, b],
-                forward: static self => Backend.ExecuteMatVecMul(self.A, self.B, self),
+                forward: static self => TensorBackend.ExecuteMatVecMul(self.A, self.B, self),
                 backward: MatMulBackward);
         }
 
@@ -90,7 +90,7 @@ public partial class Tensor
             return new(
                 [1, 1],
                 children: [a, b],
-                forward: static self => Backend.ExecuteDot(self.A, self.B.T, self),
+                forward: static self => TensorBackend.ExecuteDot(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
 
@@ -99,7 +99,7 @@ public partial class Tensor
             return new(
                 [1, ..b.Shape[1..]],
                 children: [a, b],
-                forward: static self => Backend.ExecuteVecMatMul(self.A, self.B.T, self),
+                forward: static self => TensorBackend.ExecuteVecMatMul(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
 
@@ -108,7 +108,7 @@ public partial class Tensor
             return new(
                 [..a.Shape[..^1], 1],
                 children: [a, b],
-                forward: static self => Backend.ExecuteMatVecMul(self.A, self.B, self),
+                forward: static self => TensorBackend.ExecuteMatVecMul(self.A, self.B, self),
                 backward: MatMulBackward);
         }
 
@@ -117,7 +117,7 @@ public partial class Tensor
         return new(
             [..batchDimensions, a.PrevDimension, b.LastDimension],
             children: [a, b],
-            forward: static self => Backend.ExecuteMatMulTransposed(self.A, self.B.T, self),
+            forward: static self => TensorBackend.ExecuteMatMulTransposed(self.A, self.B.T, self),
             backward: MatMulBackward);
     }
 

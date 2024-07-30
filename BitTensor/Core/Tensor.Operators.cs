@@ -2,7 +2,7 @@
 
 namespace BitTensor.Core;
 
-using static GenericOperations<Tensor, Backend>;
+using static GenericOperations<Tensor, TensorBackend>;
 
 public partial class Tensor
 {

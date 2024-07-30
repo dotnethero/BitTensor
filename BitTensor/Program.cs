@@ -60,7 +60,7 @@ public class Program
         var sw = Stopwatch.StartNew();
         for (var i = 0; i < times; i++)
         {
-            Backend.ExecuteMatMulTransposed(x, y, z);
+            TensorBackend.ExecuteMatMulTransposed(x, y, z);
         }
 
         var s = sw.Elapsed;

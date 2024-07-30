@@ -1,7 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
+using BitTensor.Core;
+using BitTensor.Operators;
 
-namespace BitTensor.Core;
+namespace BitTensor.Internals;
 
 internal unsafe class Aggregation
 {

@@ -1,11 +1,13 @@
 ﻿using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
+using BitTensor.Internals;
+using BitTensor.Operators;
 using BitTensor.Playground;
 
 namespace BitTensor.Core;
 
-internal readonly unsafe struct Backend : ITensorBackend<Tensor>
+internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static void ExecuteNegate(Tensor a, Tensor result)
@@ -149,11 +151,11 @@ internal readonly unsafe struct Backend : ITensorBackend<Tensor>
         if (strides.BatchCount * rowCount > 64 && colCount > 64)
         {
             ParallelOptions options = new();
-            Parallel.ForEach(GetMatMulAtoms(strides, a, bT, result), options, MatMulRow);
+            Parallel.ForEach(Batching.GetMatMulAtoms(strides, a, bT, result), options, MatMulRow);
         }
         else
         {
-            foreach (var atom in GetMatMulAtoms(strides, a, bT, result))
+            foreach (var atom in Batching.GetMatMulAtoms(strides, a, bT, result))
             {
                 MatMulRow(atom);
             }
@@ -167,43 +169,14 @@ internal readonly unsafe struct Backend : ITensorBackend<Tensor>
 
         var strides = Batching.GetBatchStrides(a, bT, ..^2);
 
-        foreach (var atom in GetMatMulAtoms(strides, a, bT, result))
+        foreach (var atom in Batching.GetMatMulAtoms(strides, a, bT, result))
         {
             MatMulRow(atom);
         }
     }
 
-    private readonly record struct MatMulAtom(
-        Tensor A,
-        Tensor B,
-        Tensor Result,
-        int BatchIndexA = 0,
-        int BatchIndexB = 0,
-        int BatchIndexR = 0,
-        int RowIndex = 0);
-
-    private static IEnumerable<MatMulAtom> GetMatMulAtoms(BatchStrides strides, Tensor a, Tensor b, Tensor r)
-    {
-        var rowCount = a.PrevDimension;
-        var iterator = new MatMulAtom(a, b, r);
-        for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
-        {
-            var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
-            for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
-            {
-                yield return iterator with
-                {
-                    BatchIndexA = aIndex,
-                    BatchIndexB = bIndex,
-                    BatchIndexR = batchIndex,
-                    RowIndex = rowIndex
-                };
-            }
-        }
-    }
-    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MatMulRow(MatMulAtom inputs)
+    private static void MatMulRow(MatMulAtom<Tensor> inputs)
     {
         var rowSize = inputs.A.LastDimension;
         var rowCount = inputs.A.PrevDimension;
@@ -275,10 +248,5 @@ internal readonly unsafe struct Backend : ITensorBackend<Tensor>
             {
                 r[i] = s[m[i]];
             }
-    }
-    
-    internal static Tensor[] NotSupported(Tensor grad, Tensor self)
-    {
-        throw new NotSupportedException("Operations is not supported");
     }
 }

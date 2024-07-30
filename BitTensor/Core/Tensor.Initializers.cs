@@ -4,10 +4,6 @@ namespace BitTensor.Core;
 
 public partial class Tensor
 {
-    public static Tensor Zero { get; } = Create(0);
-
-    public static Tensor One { get; } = Create(1);
-    
     public static Tensor Allocate(int[] shape) =>
         new(shape);
 
