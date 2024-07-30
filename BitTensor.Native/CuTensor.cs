@@ -82,6 +82,13 @@ public partial class CuTensor :
         EnsureHasUpdatedValues();
         ArrayView.CopyToCPU(destination);
     }
+    
+    public float[] CopyToHost()
+    {
+        var destination = new float[Size];
+        CopyToHost(destination);
+        return destination;
+    }
 
     public void CopyToDevice(ReadOnlySpan<float> source)
     {
@@ -90,7 +97,7 @@ public partial class CuTensor :
 
         ArrayView.CopyFromCPU(source);
     }
-
+    
     public void Dispose()
     {
         ArrayBuffer.Dispose();

@@ -28,28 +28,29 @@ internal class Program
             [4, 1],
             [4, 1]]);
 
+        using var c = allocator.Create([[[0, 0, 1]]]);
+
         using var x = CuTensor.Sum(a);
-        using var y = CuTensor.Sum(a, [0]);
+        using var y = a + c;
         using var z = CuTensor.MatMul(a, b);
 
         var a_host = ToHost(a);
         var b_host = ToHost(b);
+        var c_host = ToHost(c);
         var z_host = ToHost(z);
+        var y_host = ToHost(CuTensor.Sum(y, [0, 2]));
 
-        var v_host = Tensor.Matmul(a_host, b_host);
+        var z_test = Tensor.Matmul(a_host, b_host);
+        var y_test = Tensor.Sum(a_host + c_host, [0, 2]);
 
-        Console.WriteLine(a_host.ToDataString());
-        Console.WriteLine(b_host.ToDataString());
         Console.WriteLine(z_host.ToDataString());
-        Console.WriteLine(v_host.ToDataString());
+        Console.WriteLine(z_test.ToDataString());
+        Console.WriteLine(y_host.ToDataString());
+        Console.WriteLine(y_test.ToDataString());
     }
 
     private static Tensor ToHost(CuTensor c)
     {
-        var data = new float[c.Size];
-
-        c.CopyToHost(data);
-
-        return Tensor.FromArray(c.Shape, data);
+        return Tensor.FromArray(c.Shape, c.CopyToHost());
     }
 }

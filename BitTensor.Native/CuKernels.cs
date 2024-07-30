@@ -18,11 +18,24 @@ internal static class CuKernels
         output[i] = -a[i];
     }
 
-    public static void Add(Index1D i, DTypeView a, DTypeView b, DTypeView output)
+    public static void Add(Index1D i, DTypeView a, DShapeView aStrides, DTypeView b, DShapeView bStrides, DTypeView c, DShapeView cStrides)
     {
-        output[i] = a[i] + b[i];
-    }
+        var aIndex = 0;
+        var bIndex = 0;
+        var leftover = i.X;
+        var dims = cStrides.Length;
 
+        for (var j = 0; j < dims; ++j)
+        {
+            var di = leftover / cStrides[j]; // dimension index
+            aIndex += aStrides[j] * di;
+            bIndex += bStrides[j] * di;
+            leftover -= di * cStrides[j];
+        }
+
+        c[i] = a[aIndex] + b[bIndex];
+    }
+    
     public static void Add(Index1D i, DTypeView a, DType b, DTypeView output)
     {
         output[i] = a[i] + b;
@@ -46,41 +59,24 @@ internal static class CuKernels
     /// <summary>
     /// Sum array by specified axis
     /// </summary>
+    /// <param name="i">Index</param>
     /// <param name="a">Input array</param>
-    /// <param name="old">Old strides</param>
-    /// <param name="mod">New strides or zero if reduced</param>
-    /// <param name="output">Reduced array</param>
-    public static void Sum(DTypeView a, DShapeView old, DShapeView mod, DTypeView output)
+    /// <param name="aStrides">Input strides</param>
+    /// <param name="c">Reduced array</param>
+    /// <param name="cStrides">Output strides prepended by zeros</param>
+    public static void Sum(Index1D i, DTypeView a, DShapeView aStrides, DTypeView c, DShapeView cStrides)
     {
-        var i = Grid.GlobalIndex.X;
-        var memory = SharedMemory.Allocate<DType>(1);
-
-        if (Grid.GlobalIndex.IsFirst)
+        var index = 0;
+        var temp = i;
+        var dims = aStrides.Length;
+        for (var m = 0; m < dims; m++)
         {
-            output[0] = 0;
+            var dim_old = temp / aStrides[m];
+            temp -= dim_old * aStrides[m];
+            index += dim_old * cStrides[m];
         }
 
-        if (Group.IsFirstThread)
-        {
-            memory[0] = 0;
-        }
-
-        Group.Barrier();
-
-        if (i < a.IntExtent)
-        {
-            var index = 0;
-            var temp = i;
-            var dims = old.Length;
-            for (var m = 0; m < dims; m++)
-            {
-                var dim_old = temp / old[m];
-                temp -= dim_old * old[m];
-                index += dim_old * mod[m];
-            }
-
-            Atomic.Add(ref output[index], a[i]);
-        }
+        Atomic.Add(ref c[index], a[i]);
     }
     
     public static void SumToScalar(DTypeView a, DTypeView output)
