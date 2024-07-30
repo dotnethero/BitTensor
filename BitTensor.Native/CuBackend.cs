@@ -105,7 +105,8 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         mul(output.Size, a.ArrayView, b, output.ArrayView);
     }
     
-    public static unsafe void ExecuteMatMulCustom(CuTensor a, CuTensor b, CuTensor output)
+    [Obsolete]
+    public static unsafe void ExecuteMatMulCustomExample(CuTensor a, CuTensor b, CuTensor r)
     {
         using var scope = new CublasScope();
 
@@ -127,31 +128,43 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
             CUDA_R_32F,
             a.LastDimension,
             &beta,
-            output.Pointer,
+            r.Pointer,
             CUDA_R_32F,
-            output.LastDimension,
+            r.LastDimension,
             CUBLAS_COMPUTE_32F,
             CUBLAS_GEMM_ALGO0);
     }
 
-    public static void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor output)
+    public static void ExecuteMatMul(CuTensor a, CuTensor b, CuTensor r)
     {
-        using var context = new CuBlas(output.Accelerator);
+        a.EnsureHasUpdatedValues();
+        b.EnsureHasUpdatedValues();
 
-        context.Gemm(
-            CuBlasOperation.NonTranspose,
-            CuBlasOperation.NonTranspose,
-            b.LastDimension, // b.T rows
-            a.PrevDimension, // a.T cols
-            a.LastDimension, // a.T rows
-            1f,
-            b.ArrayView,
-            b.LastDimension,
-            a.ArrayView,
-            a.LastDimension,
-            0f,
-            output.ArrayView,
-            output.LastDimension);
+        using var context = new CuBlas(r.Accelerator);
+
+        var strides = Batching.GetBatchStrides(a, b, ..^2);
+
+        var a_batch_size = a.PrevDimension * a.LastDimension;
+        var b_batch_size = b.PrevDimension * b.LastDimension;
+        var r_batch_size = r.PrevDimension * r.LastDimension;
+
+        foreach (var atom in Batching.GetMatMulBatches(strides, a, b, r))
+        {
+            context.Gemm(
+                CuBlasOperation.NonTranspose,
+                CuBlasOperation.NonTranspose,
+                b.LastDimension, // b.T rows
+                a.PrevDimension, // a.T cols
+                a.LastDimension, // a.T rows
+                1f,
+                b.ArrayView.SubView(atom.BatchIndexB * b_batch_size, b_batch_size),
+                b.LastDimension,
+                a.ArrayView.SubView(atom.BatchIndexA * a_batch_size, a_batch_size),
+                a.LastDimension,
+                0f,
+                r.ArrayView.SubView(atom.BatchIndexR * r_batch_size, r_batch_size),
+                r.LastDimension);
+        }
     }
     
     private static KernelConfig GetKernelConfig(AbstractTensor a, int groupSize = 128)

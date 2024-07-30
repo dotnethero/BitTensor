@@ -17,11 +17,11 @@ internal class Program
 
         var allocator = new CuAllocator(accelerator);
 
-        using var a = allocator.Create([
+        using var a = allocator.Create([[
             [1, 2, 3],
             [1, 2, 3],
             [1, 2, 3],
-            [4, 5, 6]]);
+            [4, 5, 6]]]);
         
         using var b = allocator.Create([
             [1, 2],

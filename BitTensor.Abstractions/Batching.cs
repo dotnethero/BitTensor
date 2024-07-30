@@ -29,7 +29,16 @@ public readonly unsafe struct BatchStrides(int batchCount, int[] aStrides, int[]
     }
 }
 
-public readonly record struct MatMulAtom<T>(
+public readonly record struct MatMulBatch<T>(
+    T A,
+    T B,
+    T Result,
+    int BatchIndexA = 0,
+    int BatchIndexB = 0,
+    int BatchIndexR = 0) 
+    where T : AbstractTensor;
+
+public readonly record struct MatMulRow<T>(
     T A,
     T B,
     T Result,
@@ -38,6 +47,7 @@ public readonly record struct MatMulAtom<T>(
     int BatchIndexR = 0,
     int RowIndex = 0) 
     where T : AbstractTensor;
+
 
 public static class Batching
 {
@@ -77,11 +87,25 @@ public static class Batching
         var batchCount = batchDims == 0 ? 1 : rStrides[0] * rBatchShape[0];
         return new(batchCount, aStrides, bStrides, rStrides);
     }
-
-    public static IEnumerable<MatMulAtom<T>> GetMatMulAtoms<T>(BatchStrides strides, T a, T b, T r) where T : AbstractTensor
+    
+    public static IEnumerable<MatMulBatch<T>> GetMatMulBatches<T>(BatchStrides strides, T a, T b, T r) where T : AbstractTensor
+    {
+        var iterator = new MatMulBatch<T>(a, b, r);
+        for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
+        {
+            var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
+            yield return iterator with
+            {
+                BatchIndexA = aIndex,
+                BatchIndexB = bIndex,
+                BatchIndexR = batchIndex,
+            };
+        }
+    }
+    public static IEnumerable<MatMulRow<T>> GetMatMulRows<T>(BatchStrides strides, T a, T b, T r) where T : AbstractTensor
     {
         var rowCount = a.PrevDimension;
-        var iterator = new MatMulAtom<T>(a, b, r);
+        var iterator = new MatMulRow<T>(a, b, r);
         for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
         {
             var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
