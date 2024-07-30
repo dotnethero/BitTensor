@@ -41,9 +41,22 @@ internal static class CuKernels
         output[i] = a[i] + b;
     }
 
-    public static void Mul(Index1D i, DTypeView a, DTypeView b, DTypeView output)
+    public static void Mul(Index1D i, DTypeView a, DShapeView aStrides, DTypeView b, DShapeView bStrides, DTypeView c, DShapeView cStrides)
     {
-        output[i] = a[i] * b[i];
+        var aIndex = 0;
+        var bIndex = 0;
+        var leftover = i.X;
+        var dims = cStrides.Length;
+
+        for (var j = 0; j < dims; ++j)
+        {
+            var di = leftover / cStrides[j]; // dimension index
+            aIndex += aStrides[j] * di;
+            bIndex += bStrides[j] * di;
+            leftover -= di * cStrides[j];
+        }
+
+        c[i] = a[aIndex] * b[bIndex];
     }
     
     public static void Mul(Index1D i, DTypeView a, DType b, DTypeView output)

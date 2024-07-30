@@ -19,8 +19,8 @@ internal class Program
 
         using var a = allocator.Create([[
             [1, 2, 3],
-            [1, 2, 3],
-            [1, 2, 3],
+            [1, 7, 3],
+            [1, 4, 3],
             [4, 5, 6]]]);
         
         using var b = allocator.Create([
@@ -28,20 +28,20 @@ internal class Program
             [4, 1],
             [4, 1]]);
 
-        using var c = allocator.Create([[[0, 0, 1]]]);
+        using var c = allocator.Create([[[0, 2, 1]]]);
 
         using var x = CuTensor.Sum(a);
-        using var y = a + c;
+        using var y = a * c;
         using var z = CuTensor.MatMul(a, b);
 
         var a_host = ToHost(a);
         var b_host = ToHost(b);
         var c_host = ToHost(c);
         var z_host = ToHost(z);
-        var y_host = ToHost(CuTensor.Sum(y, [0, 2]));
+        var y_host = ToHost(CuTensor.Sum(y, [0]));
 
         var z_test = Tensor.Matmul(a_host, b_host);
-        var y_test = Tensor.Sum(a_host + c_host, [0, 2]);
+        var y_test = Tensor.Sum(a_host * c_host, [0]);
 
         Console.WriteLine(z_host.ToDataString());
         Console.WriteLine(z_test.ToDataString());

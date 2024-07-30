@@ -96,9 +96,9 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
 
         var acc = c.Accelerator;
         
-        var aStridesDev = acc.Allocate1D(aStrides);
-        var bStridesDev = acc.Allocate1D(bStrides);
-        var cStridesDev = acc.Allocate1D(cStrides);
+        using var aStridesDev = acc.Allocate1D(aStrides);
+        using var bStridesDev = acc.Allocate1D(bStrides);
+        using var cStridesDev = acc.Allocate1D(cStrides);
 
         var add = acc.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DShapeView, DTypeView, DShapeView, DTypeView, DShapeView>(CuKernels.Add);
 
@@ -117,9 +117,27 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
     {
         a.EnsureHasUpdatedValues();
         b.EnsureHasUpdatedValues();
+        
+        var aStrides = new int[c.Dimensions];
+        var bStrides = new int[c.Dimensions];
+        var cStrides = new int[c.Dimensions];
 
-        var mul = c.Accelerator.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DTypeView, DTypeView>(CuKernels.Mul);
-        mul(c.Size, a.ArrayView, b.ArrayView, c.ArrayView);
+        for (var m = c.Dimensions - 1; m >= 0; --m)
+        {
+            aStrides[m] = m < a.Dimensions && a.Shape[m] == c.Shape[m] ? a.Strides[m] : 0;
+            bStrides[m] = m < b.Dimensions && b.Shape[m] == c.Shape[m] ? b.Strides[m] : 0;
+            cStrides[m] = c.Strides[m];
+        }
+
+        var acc = c.Accelerator;
+        
+        using var aStridesDev = acc.Allocate1D(aStrides);
+        using var bStridesDev = acc.Allocate1D(bStrides);
+        using var cStridesDev = acc.Allocate1D(cStrides);
+
+        var mul = acc.LoadAutoGroupedStreamKernel<Index1D, DTypeView, DShapeView, DTypeView, DShapeView, DTypeView, DShapeView>(CuKernels.Mul);
+
+        mul(c.Size, a.ArrayView, aStridesDev.View, b.ArrayView, bStridesDev.View, c.ArrayView, cStridesDev.View);
     }
 
     public static void ExecuteMultiply(CuTensor a, DType b, CuTensor c)
