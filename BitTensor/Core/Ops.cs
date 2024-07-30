@@ -5,62 +5,51 @@ using BitTensor.Playground;
 
 namespace BitTensor.Core;
 
-internal static unsafe class Ops
+internal readonly unsafe struct Backend : ITensorBackend<Tensor>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Negate(Tensor a, Tensor result)
+    public static void ExecuteNegate(Tensor a, Tensor result)
     {
         TensorPrimitives.Negate(a.Values, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sigmoid(Tensor a, Tensor result)
+    public static void ExecuteSigmoid(Tensor a, Tensor result)
     {
         TensorPrimitives.Sigmoid(a.Values, result.Data);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Tanh(Tensor a, Tensor result)
+    public static void ExecuteTanh(Tensor a, Tensor result)
     {
         TensorPrimitives.Tanh(a.Values, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add(Tensor a, float b, Tensor result)
+    public static void ExecuteAdd(Tensor a, float b, Tensor result)
     {
         TensorPrimitives.Add(a.Values, b, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteAdd(Tensor a, Tensor b, Tensor result)
     {
         Broadcasting.Binary<AddOperator>(a, b, result);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Multiply(Tensor a, float b, Tensor result)
+    public static void ExecuteMultiply(Tensor a, float b, Tensor result)
     {
         TensorPrimitives.Multiply(a.Values, b, result.Data);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Multiply(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteMultiply(Tensor a, Tensor b, Tensor result)
     {
         Broadcasting.Binary<MultiplyOperator>(a, b, result);
     }
 
-    public static void Power(Tensor a, float power, Tensor result)
-    {
-        fixed (float* ap = a.Values, rp = result.Data)
-        {
-            for (var i = 0; i < a.Size; i++)
-            {
-                rp[i] = MathF.Pow(ap[i], power);
-            }
-        }
-    }
-    
-    public static void Outer(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteOuter(Tensor a, Tensor b, Tensor result)
     {
         var span = result.Data;
 
@@ -73,29 +62,29 @@ internal static unsafe class Ops
         }
     }
 
-    public static void Sum(Tensor a, Tensor result)
+    public static void ExecuteSum(Tensor a, Tensor result)
     {
         Aggregation.Aggregate<AddOperator>(a, result);
     }
 
-    public static void Sum(Tensor a, HashSet<int> axis, Tensor result)
+    public static void ExecuteSum(Tensor a, HashSet<int> axis, Tensor result)
     {
         Aggregation.Aggregate<AddOperator>(a, axis, result);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Broadcast(Tensor a, Tensor result) // TODO: support axis
+    public static void ExecuteBroadcast(Tensor a, Tensor result) // TODO: support axis
     {
         Array.Fill(result.Data, a.Values[0]);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Dot(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteDot(Tensor a, Tensor b, Tensor result)
     {
         result.Data[0] = TensorPrimitives.Dot(a.Values, b.Values);
     }
 
-    public static void MatVecMul(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteMatVecMul(Tensor a, Tensor b, Tensor result)
     {
         var (batchCount, rowCount, rowSize) = Shapes.GetBatchRowsColumns(a.Shape);
 
@@ -122,7 +111,7 @@ internal static unsafe class Ops
         }
     }
 
-    public static void VecMatMul(Tensor a, Tensor bT, Tensor result)
+    public static void ExecuteVecMatMul(Tensor a, Tensor bT, Tensor result)
     {
         var (batchCount, colCount, rowSize) = Shapes.GetBatchRowsColumns(bT.Shape);
 
@@ -149,7 +138,7 @@ internal static unsafe class Ops
         }
     }
 
-    public static void MatMulTransposed(Tensor a, Tensor bT, Tensor result)
+    public static void ExecuteMatMulTransposed(Tensor a, Tensor bT, Tensor result)
     {
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
@@ -171,7 +160,7 @@ internal static unsafe class Ops
         }
     }
 
-    public static void MatMulTransposedST(Tensor a, Tensor bT, Tensor result)
+    public static void ExecuteMatMulTransposedST(Tensor a, Tensor bT, Tensor result)
     {
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();

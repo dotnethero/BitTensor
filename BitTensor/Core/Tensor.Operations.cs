@@ -2,78 +2,13 @@
 
 namespace BitTensor.Core;
 
+using Ops = GenericOperations<Tensor, Backend>;
+
 public partial class Tensor
 {
-    public static Tensor Add(Tensor a, Tensor b)
-    {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
+    public static Tensor Sum(Tensor a) => Ops.Sum(a);
 
-        return new(
-            shape,
-            children: [a, b],
-            forward: static self => Ops.Add(self.A, self.B, self),
-            backward: static (grad, self) =>
-            {
-                var adims = Shapes.GetBroadcastedAxis(self.A.Shape, self.Shape);
-                var bdims = Shapes.GetBroadcastedAxis(self.B.Shape, self.Shape);
-                var agrad = Sum(grad, axis: adims);
-                var bgrad = Sum(grad, axis: bdims);
-                return
-                [
-                    agrad.Reshape(self.A.Shape),
-                    bgrad.Reshape(self.B.Shape),
-                ];
-            });
-    }
-
-    public static Tensor Add(float a, Tensor b) => Add(b, a);
-
-    public static Tensor Add(Tensor a, float b) =>
-        new(shape: a.Shape,
-            children: [a],
-            forward: self => Ops.Add(self.A, b, self),
-            backward: static (grad, _) => [grad]);
-
-
-    public static Tensor Negate(Tensor a) =>
-        new(shape: a.Shape,
-            children: [a],
-            forward: static self => Ops.Negate(self.A, self),
-            backward: static (grad, _) => [-grad]);
-
-    public static Tensor Mul(float a, Tensor b) => Mul(b, a);
-
-    public static Tensor Mul(Tensor a, float b) =>
-        new(shape: a.Shape,
-            children: [a],
-            forward: self => Ops.Multiply(self.A, b, self),
-            backward: (grad, _) => [b * grad]);
-
-    public static Tensor Mul(Tensor a, Tensor b)
-    {
-        if (ReferenceEquals(a, One))
-            return b;
-
-        if (ReferenceEquals(b, One))
-            return a;
-
-        if (ReferenceEquals(a, b))
-            return Square(a);
-
-        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
-        
-        return new(
-            shape,
-            children: [a, b],
-            forward: static self => Ops.Multiply(self.A, self.B, self),
-            backward: static (grad, self) => [self.B * grad, self.A * grad]);
-    }
-
-    public static Tensor Square(Tensor a) =>
-        new(shape: a.Shape,
-            children: [a],
-            forward: static self => Ops.Multiply(self.A, self.A, self),
-            backward: static (grad, self) => [grad * self.A * 2]);
+    public static Tensor Sum(Tensor a, int[] axis) => Ops.Sum(a, axis);
 
     public static Tensor Outer(Tensor a, Tensor b)
     {
@@ -86,58 +21,10 @@ public partial class Tensor
         return new(
             shape: [a.Size, b.Size],
             children: [a, b],
-            forward: static self => Ops.Outer(self.A, self.B, self),
+            forward: static self => Backend.ExecuteOuter(self.A, self.B, self),
             backward: static (grad, self) => [
                 Matmul(grad, self.A), 
                 Matmul(grad.Transpose(), self.B)]);
-    }
-
-    public static Tensor Pow(Tensor a, float power) =>
-        power switch
-        {
-            0f => Ones(a.Shape),
-            1f => a,
-            2f => Square(a),
-            _ => new(
-                shape: a.Shape,
-                children: [a],
-                forward: self => Ops.Power(self.A, power, self),
-                backward: (grad, _) => [grad * power * Pow(a, power - 1)])
-        };
-
-    public static Tensor Sum(Tensor a) =>
-        new(shape: [],
-            children: [a],
-            forward: static self => Ops.Sum(self.A, self),
-            backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]);
-
-    public static Tensor Sum(Tensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
-
-    private static Tensor Sum(Tensor a, HashSet<int> axis)
-    {
-        if (axis.Count == 0)
-            return a;
-
-        if (axis.Count == a.Dimensions)
-            return Sum(a);
-
-        return new(
-            shape: a.Shape.Where((s, i) => !axis.Contains(i)).ToArray(),
-            children: [a],
-            forward: self => Ops.Sum(self.A, axis, self),
-            backward: Ops.NotSupported);
-    }
-
-    public static Tensor Broadcast(Tensor a, int[] shape)
-    {
-        if (!a.IsScalar)
-            throw new NotImplementedException($"Not implemented for {a.Dimensions} dims");
-
-        return new(
-            shape: shape,
-            children: [a],
-            forward: static self => Ops.Broadcast(self.A, self),
-            backward: Ops.NotSupported);
     }
 
     public static Tensor Identity(Tensor a) => a;
@@ -145,19 +32,19 @@ public partial class Tensor
     public static Tensor Sigmoid(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Ops.Sigmoid(self.A, self),
+            forward: static self => Backend.ExecuteSigmoid(self.A, self),
             backward: static (grad, self) => [grad * self * (1f - self)]);
 
     public static Tensor Tanh(Tensor a) =>
         new(shape: a.Shape,
             children: [a],
-            forward: static self => Ops.Tanh(self.A, self),
-            backward: static (grad, self) => [grad * (1f - Square(self))]);
+            forward: static self => Backend.ExecuteTanh(self.A, self),
+            backward: static (grad, self) => [grad * (1f - self * self)]);
 
     public static Tensor Matmul(Tensor a, Tensor b)
     {
         if (a.IsScalar || b.IsScalar)
-            return Mul(a, b);
+            return Ops.Mul(a, b);
 
         if (a.IsVector && b.IsVector)
         {
@@ -166,7 +53,7 @@ public partial class Tensor
             return new(
                 [],
                 children: [a, b],
-                forward: static self => Ops.Dot(self.A, self.B, self),
+                forward: static self => Backend.ExecuteDot(self.A, self.B, self),
                 backward: MatMulBackward);
         }
         
@@ -178,7 +65,7 @@ public partial class Tensor
             return new(
                 b.Shape[1..],
                 children: [a, b],
-                forward: static self => Ops.VecMatMul(self.A, self.B.T, self),
+                forward: static self => Backend.ExecuteVecMatMul(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
         
@@ -190,7 +77,7 @@ public partial class Tensor
             return new(
                 a.Shape[..^1],
                 children: [a, b],
-                forward: static self => Ops.MatVecMul(self.A, self.B, self),
+                forward: static self => Backend.ExecuteMatVecMul(self.A, self.B, self),
                 backward: MatMulBackward);
         }
 
@@ -203,7 +90,7 @@ public partial class Tensor
             return new(
                 [1, 1],
                 children: [a, b],
-                forward: static self => Ops.Dot(self.A, self.B.T, self),
+                forward: static self => Backend.ExecuteDot(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
 
@@ -212,7 +99,7 @@ public partial class Tensor
             return new(
                 [1, ..b.Shape[1..]],
                 children: [a, b],
-                forward: static self => Ops.VecMatMul(self.A, self.B.T, self),
+                forward: static self => Backend.ExecuteVecMatMul(self.A, self.B.T, self),
                 backward: MatMulBackward);
         }
 
@@ -221,7 +108,7 @@ public partial class Tensor
             return new(
                 [..a.Shape[..^1], 1],
                 children: [a, b],
-                forward: static self => Ops.MatVecMul(self.A, self.B, self),
+                forward: static self => Backend.ExecuteMatVecMul(self.A, self.B, self),
                 backward: MatMulBackward);
         }
 
@@ -230,7 +117,7 @@ public partial class Tensor
         return new(
             [..batchDimensions, a.PrevDimension, b.LastDimension],
             children: [a, b],
-            forward: static self => Ops.MatMulTransposed(self.A, self.B.T, self),
+            forward: static self => Backend.ExecuteMatMulTransposed(self.A, self.B.T, self),
             backward: MatMulBackward);
     }
 
@@ -245,11 +132,11 @@ public partial class Tensor
 
         var agrad = grad.IsVector && self.B.IsVector
             ? Outer(grad, self.B.T)
-            : Sum(Matmul(grad, self.B.T), axis: adims).Reshape(self.A.Shape);
+            : Ops.Sum(Matmul(grad, self.B.T), axis: adims).Reshape(self.A.Shape);
 
         var bgrad = grad.IsVector && self.A.IsVector
             ? Outer(self.A.T, grad)
-            : Sum(Matmul(self.A.T, grad), axis: bdims).Reshape(self.B.Shape);
+            : Ops.Sum(Matmul(self.A.T, grad), axis: bdims).Reshape(self.B.Shape);
 
         return
         [

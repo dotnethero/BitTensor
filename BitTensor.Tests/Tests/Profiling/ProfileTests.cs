@@ -25,7 +25,7 @@ class ProfileTests
         var a = Tensor.Random.Normal([100, 1000, 1000]);
         var b = Tensor.Random.Normal([5, 1, 1000, 1000]);
         var sw = Stopwatch.StartNew();
-        var c = Tensor.Mul(a, b);
+        var c = a * b;
         c.EnsureHasUpdatedValues();
         Console.WriteLine(sw.Elapsed);
     }

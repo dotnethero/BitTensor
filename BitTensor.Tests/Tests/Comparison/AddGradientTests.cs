@@ -57,11 +57,11 @@ class AddGradientTests
         var xy_dx_true = scope.GetTensor("xy_dx");
         var xy_dy_true = scope.GetTensor("xy_dy");
         
-        var xy_grads = Auto.GetGradients(Tensor.Sum(Tensor.Add(x, y)));
+        var xy_grads = Auto.GetGradients(Tensor.Sum(x + y));
         var xy_dx = xy_grads[x];
         var xy_dy = xy_grads[y];
 
-        var yx_grads = Auto.GetGradients(Tensor.Sum(Tensor.Add(y, x)));
+        var yx_grads = Auto.GetGradients(Tensor.Sum(y + x));
         var yx_dx = yx_grads[x];
         var yx_dy = yx_grads[y];
 

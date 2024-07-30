@@ -125,12 +125,12 @@ public partial class Tensor
             return Reshape(shape);
         }
 
-        var matrix = Ops.GetTransposeMatrix(this, axes);
+        var matrix = Backend.GetTransposeMatrix(this, axes);
 
         return new(
             shape,
             children: [this],
-            forward: self => Ops.ApplyTransposeMatrix(this.Data, matrix, self.Data),
+            forward: self => Backend.ApplyTransposeMatrix(this.Data, matrix, self.Data),
             backward: (grad, self) => [grad.Transpose(axes)])
             {
                 TransposeLazy = new(this)

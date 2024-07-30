@@ -14,7 +14,7 @@ public sealed class TensorAllocator : ITensorAllocator<Tensor>
     public Tensor Create(float[][][] values) => Tensor.Create(values);
 }
 
-public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<Tensor>, IHasAllocator<Tensor>
+public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensorNode<Tensor>, IMutableTensor<Tensor>, IHasAllocator<Tensor>
 {
     internal float[] Data;
     internal Lazy<Tensor> TransposeLazy;
@@ -51,14 +51,31 @@ public sealed partial class Tensor : AbstractTensorNode<Tensor>, IMutableTensor<
         Data = values ?? new float[Size];
         TransposeLazy = new(Transpose);
     }
+    
+    // Reshape
+    internal Tensor(int[] shape, Tensor tensor) : base(shape, [tensor], _ => {}, (grad, self) => [CreateReshape(tensor.Shape, grad)])
+    {
+        Data = tensor.Data;
+        TransposeLazy = new(Transpose);
+    }
+
+    public static Tensor CreateNode(int[] shape, Tensor[] children, ForwardFunction forward, BackwardFunction backward)
+    {
+        return new Tensor(shape, children, forward, backward);
+    }
+
+    public static Tensor CreateReshape(int[] shape, Tensor source)
+    {
+        return new Tensor(shape, source);
+    }
 
     public void ApplyOffset(Tensor offset)
     {
-        Ops.Add(this, offset, this);
+        Backend.ExecuteAdd(this, offset, this);
     }
 
     public void ApplyScale(Tensor scale)
     {
-        Ops.Multiply(this, scale, this);
+        Backend.ExecuteMultiply(this, scale, this);
     }
 }

@@ -5,7 +5,6 @@ using BitTensor.CUDA.Interop;
 using ILGPU;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
-using ILGPU.Runtime.Cuda.API;
 
 namespace BitTensor.CUDA;
 
