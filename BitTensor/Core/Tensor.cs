@@ -3,6 +3,10 @@
 using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
 
+[assembly: InternalsVisibleTo("BitTensor.Playground")]
+[assembly: InternalsVisibleTo("BitTensor.Benchmarks")]
+[assembly: InternalsVisibleTo("BitTensor.Tests")]
+
 namespace BitTensor.Core;
 
 public sealed partial class Tensor : AbstractTensorNode<Tensor>, ITensorNode<Tensor>, IMutableTensor<Tensor>, IHasAllocator<Tensor>

@@ -9,6 +9,11 @@ internal class Program
 {
     static void Main(string[] args)
     {
+        BenchmarkGPU.Run();
+    }
+
+    private static void Test()
+    {
         using var context = Context.CreateDefault();
         
         var device = context.GetCudaDevice(0);

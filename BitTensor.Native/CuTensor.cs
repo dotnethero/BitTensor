@@ -5,6 +5,10 @@ using ILGPU;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
 
+[assembly: InternalsVisibleTo("BitTensor.Playground")]
+[assembly: InternalsVisibleTo("BitTensor.Benchmarks")]
+[assembly: InternalsVisibleTo("BitTensor.Tests")]
+
 namespace BitTensor.CUDA;
 
 using DTypeBuffer = MemoryBuffer1D<float, Stride1D.Dense>;
@@ -35,21 +39,21 @@ public partial class CuTensor :
 
     public ITensorAllocator<CuTensor> Allocator { get; }
 
-    internal CuTensor(CudaAccelerator accelerator, int[] shape) : base(shape)
+    public CuTensor(CudaAccelerator accelerator, int[] shape) : base(shape)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
         ArrayBuffer = accelerator.Allocate1D<float>(Size);
     }
 
-    internal CuTensor(CudaAccelerator accelerator, int[] shape, float[] values) : base(shape)
+    public CuTensor(CudaAccelerator accelerator, int[] shape, float[] values) : base(shape)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
         ArrayBuffer = accelerator.Allocate1D(values);
     }
 
-    internal CuTensor(CudaAccelerator accelerator, int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
+    public CuTensor(CudaAccelerator accelerator, int[] shape, CuTensor[] children, ForwardFunction forward, BackwardFunction backward) : base(shape, children, forward, backward)
     {
         Accelerator = accelerator;
         Allocator = new CuAllocator(accelerator);
@@ -57,7 +61,7 @@ public partial class CuTensor :
     }
 
     // Reshape
-    internal CuTensor(int[] shape, CuTensor tensor) : base(shape, [tensor], _ => {}, (grad, self) => [CreateReshape(tensor.Shape, grad)])
+    private CuTensor(int[] shape, CuTensor tensor) : base(shape, [tensor], _ => {}, (grad, self) => [CreateReshape(tensor.Shape, grad)])
     {
         Accelerator = tensor.Accelerator;
         Allocator = tensor.Allocator;
