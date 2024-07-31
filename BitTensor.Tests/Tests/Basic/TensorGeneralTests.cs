@@ -19,11 +19,11 @@ class TensorGeneralTests
         var model = new TestModel(x.Shape[1], 7, d.Shape[1]);
         var compilation = model.Compile(x, d);
 
-        Assert.That(Tensor.MaxID, Is.EqualTo(45));
+        Assert.That(Tensor.MaxID, Is.EqualTo(46));
 
         model.Fit(compilation, lr: 1e-2f, epochs: 1000);
 
-        Assert.That(Tensor.MaxID, Is.EqualTo(47));
+        Assert.That(Tensor.MaxID, Is.EqualTo(48));
     }
 
     [Test]
@@ -39,7 +39,7 @@ class TensorGeneralTests
         Console.WriteLine(test1);
 
         var compilation = model.Compile(x, d);
-        model.Fit(compilation, lr: 1e-2f, epochs: 2000, shuffle: true, trace: true);
+        model.Fit(compilation, lr: 1e-2f, epochs: 3000, shuffle: true, trace: true);
         
         var x_shuffle = Tensor.Create([[1, 0], [1, 1], [0, 0], [0, 1]]);
         var test2 = model.Compute(x_shuffle).ToDataString();

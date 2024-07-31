@@ -53,7 +53,7 @@ internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
 
     public static void ExecuteOuter(Tensor a, Tensor b, Tensor result)
     {
-        var span = result.Data;
+        var span = result.Data.AsSpan();
 
         fixed (float* ap = a.Values)
         {
@@ -93,7 +93,7 @@ internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
         a.EnsureHasUpdatedValues();
         b.EnsureHasUpdatedValues();
 
-        var col = b.Data;
+        var col = b.Data.AsSpan();
 
         fixed (float* rp = result.Data)
         {
@@ -120,7 +120,7 @@ internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
-        var row = a.Data;
+        var row = a.Data.AsSpan();
 
         fixed (float* rp = result.Data)
         {
