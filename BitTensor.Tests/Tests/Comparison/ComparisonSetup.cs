@@ -10,7 +10,11 @@ namespace BitTensor.Tests.Comparison;
 [SetUpFixture]
 public sealed class ComparisonSetup
 {
-    static ComparisonSetup() => RuntimeData.FormatterType = typeof(NoopFormatter);
+    static ComparisonSetup()
+    {
+        Runtime.PythonDLL = @"C:\Program Files\Python 3\python312.dll";
+        RuntimeData.FormatterType = typeof(NoopFormatter);
+    }
 
     [OneTimeSetUp]
     public void Setup()
