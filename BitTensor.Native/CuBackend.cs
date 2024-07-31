@@ -210,6 +210,11 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         }
     }
     
+    public static void Transpose(CuTensor a, int[] axis, CuTensor c)
+    {
+
+    }
+
     private static KernelConfig GetKernelConfig(AbstractTensor a, int groupSize = 128)
     {
         var gridSize = (a.Size + groupSize - 1) / groupSize;

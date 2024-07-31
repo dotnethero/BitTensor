@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Serialization;
 using NUnit.Framework;
-using Python.Included;
 using Python.Runtime;
 
 #pragma warning disable SYSLIB0050
@@ -14,16 +13,8 @@ public sealed class ComparisonSetup
     static ComparisonSetup() => RuntimeData.FormatterType = typeof(NoopFormatter);
 
     [OneTimeSetUp]
-    public async Task Setup()
+    public void Setup()
     {
-        await Installer.SetupPython();
-
-        if (!Installer.IsModuleInstalled("jax[cpu]"))
-        {
-            await Installer.TryInstallPip();
-            await Installer.PipInstallModule("jax[cpu]", "0.4.20");
-        }
-        
         PythonEngine.Initialize();
     }
 
