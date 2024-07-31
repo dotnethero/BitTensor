@@ -4,15 +4,15 @@
 // </auto-generated>
 #pragma warning disable CS8500
 #pragma warning disable CS8981
-
 using System;
 using System.Runtime.InteropServices;
+
 
 namespace BitTensor.CUDA.Interop;
 
 public static unsafe partial class cuDNN
 {
-    const string __DllName = "cudnn64_8.dll";
+    const string __DllName = "cudnn64_9.dll";
 
 
 
@@ -27,6 +27,9 @@ public static unsafe partial class cuDNN
 
     [DllImport(__DllName, EntryPoint = "cudnnGetErrorString", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern byte* cudnnGetErrorString(cudnnStatus_t status);
+
+    [DllImport(__DllName, EntryPoint = "cudnnGetLastErrorString", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern void cudnnGetLastErrorString(byte* message, nuint max_size);
 
     [DllImport(__DllName, EntryPoint = "cudnnQueryRuntimeError", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnQueryRuntimeError(cudnnContext* handle, cudnnStatus_t* rstatus, cudnnErrQueryMode_t mode, cudnnRuntimeTag_t* tag);
@@ -45,6 +48,36 @@ public static unsafe partial class cuDNN
 
     [DllImport(__DllName, EntryPoint = "cudnnGetStream", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetStream(cudnnContext* handle, CUstream_st** streamId);
+
+    [DllImport(__DllName, EntryPoint = "cudnnSetCallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnSetCallback(uint mask, void* udata, delegate* unmanaged[Cdecl]<cudnnSeverity_t, void*, cudnnDebugStruct*, byte*, void> fptr);
+
+    [DllImport(__DllName, EntryPoint = "cudnnGetCallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnGetCallback(uint* mask, void** udata, delegate* unmanaged[Cdecl]<cudnnSeverity_t, void*, cudnnDebugStruct*, byte*, void>* fptr);
+
+    [DllImport(__DllName, EntryPoint = "cudnnGraphVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnGraphVersionCheck();
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendCreateDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t descriptorType, void** descriptor);
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendDestroyDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendDestroyDescriptor(void* descriptor);
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendInitialize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendInitialize(void* descriptor);
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendFinalize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendFinalize(void* descriptor);
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendSetAttribute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendSetAttribute(void* descriptor, cudnnBackendAttributeName_t attributeName, cudnnBackendAttributeType_t attributeType, long elementCount, void* arrayOfElements);
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendGetAttribute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendGetAttribute(void* descriptor, cudnnBackendAttributeName_t attributeName, cudnnBackendAttributeType_t attributeType, long requestedElementCount, long* elementCount, void* arrayOfElements);
+
+    [DllImport(__DllName, EntryPoint = "cudnnBackendExecute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnBackendExecute(cudnnContext* handle, void* executionPlan, void* variantPack);
 
     [DllImport(__DllName, EntryPoint = "cudnnCreateTensorDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnCreateTensorDescriptor(cudnnTensorStruct** tensorDesc);
@@ -283,50 +316,8 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnDropoutForward", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnDropoutForward(cudnnContext* handle, cudnnDropoutStruct* dropoutDesc, cudnnTensorStruct* xdesc, void* x, cudnnTensorStruct* ydesc, void* y, void* reserveSpace, nuint reserveSpaceSizeInBytes);
 
-    [DllImport(__DllName, EntryPoint = "cudnnCreateAlgorithmDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnCreateAlgorithmDescriptor(cudnnAlgorithmStruct** algoDesc);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetAlgorithmDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetAlgorithmDescriptor(cudnnAlgorithmStruct* algoDesc, cudnnAlgorithmUnionStruct algorithm);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetAlgorithmDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetAlgorithmDescriptor(cudnnAlgorithmStruct* algoDesc, cudnnAlgorithmUnionStruct* algorithm);
-
-    [DllImport(__DllName, EntryPoint = "cudnnCopyAlgorithmDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnCopyAlgorithmDescriptor(cudnnAlgorithmStruct* src, cudnnAlgorithmStruct* dest);
-
-    [DllImport(__DllName, EntryPoint = "cudnnDestroyAlgorithmDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnDestroyAlgorithmDescriptor(cudnnAlgorithmStruct* algoDesc);
-
-    [DllImport(__DllName, EntryPoint = "cudnnCreateAlgorithmPerformance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnCreateAlgorithmPerformance(cudnnAlgorithmPerformanceStruct** algoPerf, int numberToCreate);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetAlgorithmPerformance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetAlgorithmPerformance(cudnnAlgorithmPerformanceStruct* algoPerf, cudnnAlgorithmStruct* algoDesc, cudnnStatus_t status, float time, nuint memory);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetAlgorithmPerformance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetAlgorithmPerformance(cudnnAlgorithmPerformanceStruct* algoPerf, cudnnAlgorithmStruct** algoDesc, cudnnStatus_t* status, float* time, nuint* memory);
-
-    [DllImport(__DllName, EntryPoint = "cudnnDestroyAlgorithmPerformance", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnDestroyAlgorithmPerformance(cudnnAlgorithmPerformanceStruct** algoPerf, int numberToDestroy);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetAlgorithmSpaceSize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetAlgorithmSpaceSize(cudnnContext* handle, cudnnAlgorithmStruct* algoDesc, nuint* algoSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSaveAlgorithm", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSaveAlgorithm(cudnnContext* handle, cudnnAlgorithmStruct* algoDesc, void* algoSpace, nuint algoSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRestoreAlgorithm", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRestoreAlgorithm(cudnnContext* handle, void* algoSpace, nuint algoSpaceSizeInBytes, cudnnAlgorithmStruct* algoDesc);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetCallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetCallback(uint mask, void* udata, delegate* unmanaged[Cdecl]<cudnnSeverity_t, void*, cudnnDebugStruct*, byte*, void> fptr);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetCallback", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetCallback(uint* mask, void** udata, delegate* unmanaged[Cdecl]<cudnnSeverity_t, void*, cudnnDebugStruct*, byte*, void>* fptr);
-
-    [DllImport(__DllName, EntryPoint = "cudnnOpsInferVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnOpsInferVersionCheck();
+    [DllImport(__DllName, EntryPoint = "cudnnOpsVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnOpsVersionCheck();
 
     [DllImport(__DllName, EntryPoint = "cudnnSoftmaxBackward", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnSoftmaxBackward(cudnnContext* handle, cudnnSoftmaxAlgorithm_t algo, cudnnSoftmaxMode_t mode, void* alpha, cudnnTensorStruct* yDesc, void* y, cudnnTensorStruct* dyDesc, void* dy, void* beta, cudnnTensorStruct* dxDesc, void* dx);
@@ -388,9 +379,6 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnDropoutBackward", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnDropoutBackward(cudnnContext* handle, cudnnDropoutStruct* dropoutDesc, cudnnTensorStruct* dydesc, void* dy, cudnnTensorStruct* dxdesc, void* dx, void* reserveSpace, nuint reserveSpaceSizeInBytes);
 
-    [DllImport(__DllName, EntryPoint = "cudnnOpsTrainVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnOpsTrainVersionCheck();
-
     [DllImport(__DllName, EntryPoint = "cudnnCreateRNNDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnCreateRNNDescriptor(cudnnRNNStruct** rnnDesc);
 
@@ -403,86 +391,29 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnGetRNNDescriptor_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetRNNDescriptor_v8(cudnnRNNStruct* rnnDesc, cudnnRNNAlgo_t* algo, cudnnRNNMode_t* cellMode, cudnnRNNBiasMode_t* biasMode, cudnnDirectionMode_t* dirMode, cudnnRNNInputMode_t* inputMode, cudnnDataType_t* dataType, cudnnDataType_t* mathPrec, cudnnMathType_t* mathType, int* inputSize, int* hiddenSize, int* projSize, int* numLayers, cudnnDropoutStruct** dropoutDesc, uint* auxFlags);
 
-    [DllImport(__DllName, EntryPoint = "cudnnSetRNNDescriptor_v6", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetRNNDescriptor_v6(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int hiddenSize, int numLayers, cudnnDropoutStruct* dropoutDesc, cudnnRNNInputMode_t inputMode, cudnnDirectionMode_t direction, cudnnRNNMode_t cellMode, cudnnRNNAlgo_t algo, cudnnDataType_t mathPrec);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNDescriptor_v6", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNDescriptor_v6(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* hiddenSize, int* numLayers, cudnnDropoutStruct** dropoutDesc, cudnnRNNInputMode_t* inputMode, cudnnDirectionMode_t* direction, cudnnRNNMode_t* cellMode, cudnnRNNAlgo_t* algo, cudnnDataType_t* mathPrec);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetRNNMatrixMathType", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetRNNMatrixMathType(cudnnRNNStruct* rnnDesc, cudnnMathType_t mType);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNMatrixMathType", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNMatrixMathType(cudnnRNNStruct* rnnDesc, cudnnMathType_t* mType);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetRNNBiasMode", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetRNNBiasMode(cudnnRNNStruct* rnnDesc, cudnnRNNBiasMode_t biasMode);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNBiasMode", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNBiasMode(cudnnRNNStruct* rnnDesc, cudnnRNNBiasMode_t* biasMode);
-
     [DllImport(__DllName, EntryPoint = "cudnnRNNSetClip_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnRNNSetClip_v8(cudnnRNNStruct* rnnDesc, cudnnRNNClipMode_t clipMode, cudnnNanPropagation_t clipNanOpt, double lclip, double rclip);
+
+    [DllImport(__DllName, EntryPoint = "cudnnRNNSetClip_v9", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnRNNSetClip_v9(cudnnRNNStruct* rnnDesc, cudnnRNNClipMode_t clipMode, double lclip, double rclip);
 
     [DllImport(__DllName, EntryPoint = "cudnnRNNGetClip_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnRNNGetClip_v8(cudnnRNNStruct* rnnDesc, cudnnRNNClipMode_t* clipMode, cudnnNanPropagation_t* clipNanOpt, double* lclip, double* rclip);
 
-    [DllImport(__DllName, EntryPoint = "cudnnRNNSetClip", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNSetClip(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnRNNClipMode_t clipMode, cudnnNanPropagation_t clipNanOpt, double lclip, double rclip);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNGetClip", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNGetClip(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnRNNClipMode_t* clipMode, cudnnNanPropagation_t* clipNanOpt, double* lclip, double* rclip);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetRNNProjectionLayers", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetRNNProjectionLayers(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int recProjSize, int outProjSize);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNProjectionLayers", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNProjectionLayers(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* recProjSize, int* outProjSize);
-
-    [DllImport(__DllName, EntryPoint = "cudnnCreatePersistentRNNPlan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnCreatePersistentRNNPlan(cudnnRNNStruct* rnnDesc, int minibatch, cudnnDataType_t dataType, cudnnPersistentRNNPlan** plan);
-
-    [DllImport(__DllName, EntryPoint = "cudnnDestroyPersistentRNNPlan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnDestroyPersistentRNNPlan(cudnnPersistentRNNPlan* plan);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetPersistentRNNPlan", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetPersistentRNNPlan(cudnnRNNStruct* rnnDesc, cudnnPersistentRNNPlan* plan);
+    [DllImport(__DllName, EntryPoint = "cudnnRNNGetClip_v9", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnRNNGetClip_v9(cudnnRNNStruct* rnnDesc, cudnnRNNClipMode_t* clipMode, double* lclip, double* rclip);
 
     [DllImport(__DllName, EntryPoint = "cudnnBuildRNNDynamic", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnBuildRNNDynamic(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int miniBatch);
 
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNWorkspaceSize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNWorkspaceSize(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, nuint* sizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNTrainingReserveSize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNTrainingReserveSize(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, nuint* sizeInBytes);
-
     [DllImport(__DllName, EntryPoint = "cudnnGetRNNTempSpaceSizes", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetRNNTempSpaceSizes(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnForwardMode_t fwdMode, cudnnRNNDataStruct* xDesc, nuint* workSpaceSize, nuint* reserveSpaceSize);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNParamsSize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNParamsSize(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnTensorStruct* xDesc, nuint* sizeInBytes, cudnnDataType_t dataType);
 
     [DllImport(__DllName, EntryPoint = "cudnnGetRNNWeightSpaceSize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetRNNWeightSpaceSize(cudnnContext* handle, cudnnRNNStruct* rnnDesc, nuint* weightSpaceSize);
 
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNLinLayerMatrixParams", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNLinLayerMatrixParams(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int pseudoLayer, cudnnTensorStruct* xDesc, cudnnFilterStruct* wDesc, void* w, int linLayerID, cudnnFilterStruct* linLayerMatDesc, void** linLayerMat);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNLinLayerBiasParams", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNLinLayerBiasParams(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int pseudoLayer, cudnnTensorStruct* xDesc, cudnnFilterStruct* wDesc, void* w, int linLayerID, cudnnFilterStruct* linLayerBiasDesc, void** linLayerBias);
-
     [DllImport(__DllName, EntryPoint = "cudnnGetRNNWeightParams", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetRNNWeightParams(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int pseudoLayer, nuint weightSpaceSize, void* weightSpace, int linLayerID, cudnnTensorStruct* mDesc, void** mAddr, cudnnTensorStruct* bDesc, void** bAddr);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNForwardInference", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNForwardInference(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct** yDesc, void* y, cudnnTensorStruct* hyDesc, void* hy, cudnnTensorStruct* cyDesc, void* cy, void* workSpace, nuint workSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetRNNPaddingMode", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetRNNPaddingMode(cudnnRNNStruct* rnnDesc, uint paddingMode);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNPaddingMode", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNPaddingMode(cudnnRNNStruct* rnnDesc, uint* paddingMode);
 
     [DllImport(__DllName, EntryPoint = "cudnnCreateRNNDataDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnCreateRNNDataDescriptor(cudnnRNNDataStruct** rnnDataDesc);
@@ -496,20 +427,8 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnGetRNNDataDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetRNNDataDescriptor(cudnnRNNDataStruct* rnnDataDesc, cudnnDataType_t* dataType, cudnnRNNDataLayout_t* layout, int* maxSeqLength, int* batchSize, int* vectorSize, int arrayLengthRequested, int* seqLengthArray, void* paddingFill);
 
-    [DllImport(__DllName, EntryPoint = "cudnnRNNForwardInferenceEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNForwardInferenceEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnRNNDataStruct* xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnFilterStruct* wDesc, void* w, cudnnRNNDataStruct* yDesc, void* y, cudnnTensorStruct* hyDesc, void* hy, cudnnTensorStruct* cyDesc, void* cy, cudnnRNNDataStruct* kDesc, void* keys, cudnnRNNDataStruct* cDesc, void* cAttn, cudnnRNNDataStruct* iDesc, void* iAttn, cudnnRNNDataStruct* qDesc, void* queries, void* workSpace, nuint workSpaceSizeInBytes);
-
     [DllImport(__DllName, EntryPoint = "cudnnRNNForward", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnRNNForward(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnForwardMode_t fwdMode, int* devSeqLengths, cudnnRNNDataStruct* xDesc, void* x, cudnnRNNDataStruct* yDesc, void* y, cudnnTensorStruct* hDesc, void* hx, void* hy, cudnnTensorStruct* cDesc, void* cx, void* cy, nuint weightSpaceSize, void* weightSpace, nuint workSpaceSize, void* workSpace, nuint reserveSpaceSize, void* reserveSpace);
-
-    [DllImport(__DllName, EntryPoint = "cudnnSetRNNAlgorithmDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnSetRNNAlgorithmDescriptor(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnAlgorithmStruct* algoDesc);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNForwardInferenceAlgorithmMaxCount", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNForwardInferenceAlgorithmMaxCount(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* count);
-
-    [DllImport(__DllName, EntryPoint = "cudnnFindRNNForwardInferenceAlgorithmEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnFindRNNForwardInferenceAlgorithmEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct** yDesc, void* y, cudnnTensorStruct* hyDesc, void* hy, cudnnTensorStruct* cyDesc, void* cy, float findIntensity, int requestedAlgoCount, int* returnedAlgoCount, cudnnAlgorithmPerformanceStruct** perfResults, void* workspace, nuint workSpaceSizeInBytes);
 
     [DllImport(__DllName, EntryPoint = "cudnnCreateSeqDataDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnCreateSeqDataDescriptor(cudnnSeqDataStruct** seqDataDesc);
@@ -544,50 +463,14 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnMultiHeadAttnForward", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnMultiHeadAttnForward(cudnnContext* handle, cudnnAttnStruct* attnDesc, int currIdx, int* loWinIdx, int* hiWinIdx, int* devSeqLengthsQO, int* devSeqLengthsKV, cudnnSeqDataStruct* qDesc, void* queries, void* residuals, cudnnSeqDataStruct* kDesc, void* keys, cudnnSeqDataStruct* vDesc, void* values, cudnnSeqDataStruct* oDesc, void* @out, nuint weightSizeInBytes, void* weights, nuint workSpaceSizeInBytes, void* workSpace, nuint reserveSpaceSizeInBytes, void* reserveSpace);
 
-    [DllImport(__DllName, EntryPoint = "cudnnAdvInferVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnAdvInferVersionCheck();
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNForwardTraining", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNForwardTraining(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct** yDesc, void* y, cudnnTensorStruct* hyDesc, void* hy, cudnnTensorStruct* cyDesc, void* cy, void* workSpace, nuint workSpaceSizeInBytes, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNBackwardData", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNBackwardData(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** yDesc, void* y, cudnnTensorStruct** dyDesc, void* dy, cudnnTensorStruct* dhyDesc, void* dhy, cudnnTensorStruct* dcyDesc, void* dcy, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnTensorStruct** dxDesc, void* dx, cudnnTensorStruct* dhxDesc, void* dhx, cudnnTensorStruct* dcxDesc, void* dcx, void* workSpace, nuint workSpaceSizeInBytes, void* reserveSpace, nuint reserveSpaceSizeInBytes);
+    [DllImport(__DllName, EntryPoint = "cudnnAdvVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnAdvVersionCheck();
 
     [DllImport(__DllName, EntryPoint = "cudnnRNNBackwardData_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnRNNBackwardData_v8(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* devSeqLengths, cudnnRNNDataStruct* yDesc, void* y, void* dy, cudnnRNNDataStruct* xDesc, void* dx, cudnnTensorStruct* hDesc, void* hx, void* dhy, void* dhx, cudnnTensorStruct* cDesc, void* cx, void* dcy, void* dcx, nuint weightSpaceSize, void* weightSpace, nuint workSpaceSize, void* workSpace, nuint reserveSpaceSize, void* reserveSpace);
 
-    [DllImport(__DllName, EntryPoint = "cudnnRNNBackwardWeights", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNBackwardWeights(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct** yDesc, void* y, void* workSpace, nuint workSpaceSizeInBytes, cudnnFilterStruct* dwDesc, void* dw, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
     [DllImport(__DllName, EntryPoint = "cudnnRNNBackwardWeights_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnRNNBackwardWeights_v8(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnWgradMode_t addGrad, int* devSeqLengths, cudnnRNNDataStruct* xDesc, void* x, cudnnTensorStruct* hDesc, void* hx, cudnnRNNDataStruct* yDesc, void* y, nuint weightSpaceSize, void* dweightSpace, nuint workSpaceSize, void* workSpace, nuint reserveSpaceSize, void* reserveSpace);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNForwardTrainingEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNForwardTrainingEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnRNNDataStruct* xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnFilterStruct* wDesc, void* w, cudnnRNNDataStruct* yDesc, void* y, cudnnTensorStruct* hyDesc, void* hy, cudnnTensorStruct* cyDesc, void* cy, cudnnRNNDataStruct* kDesc, void* keys, cudnnRNNDataStruct* cDesc, void* cAttn, cudnnRNNDataStruct* iDesc, void* iAttn, cudnnRNNDataStruct* qDesc, void* queries, void* workSpace, nuint workSpaceSizeInBytes, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNBackwardDataEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNBackwardDataEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnRNNDataStruct* yDesc, void* y, cudnnRNNDataStruct* dyDesc, void* dy, cudnnRNNDataStruct* dcDesc, void* dcAttn, cudnnTensorStruct* dhyDesc, void* dhy, cudnnTensorStruct* dcyDesc, void* dcy, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnRNNDataStruct* dxDesc, void* dx, cudnnTensorStruct* dhxDesc, void* dhx, cudnnTensorStruct* dcxDesc, void* dcx, cudnnRNNDataStruct* dkDesc, void* dkeys, void* workSpace, nuint workSpaceSizeInBytes, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnRNNBackwardWeightsEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnRNNBackwardWeightsEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, cudnnRNNDataStruct* xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnRNNDataStruct* yDesc, void* y, void* workSpace, nuint workSpaceSizeInBytes, cudnnFilterStruct* dwDesc, void* dw, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNForwardTrainingAlgorithmMaxCount", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNForwardTrainingAlgorithmMaxCount(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* count);
-
-    [DllImport(__DllName, EntryPoint = "cudnnFindRNNForwardTrainingAlgorithmEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnFindRNNForwardTrainingAlgorithmEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct** yDesc, void* y, cudnnTensorStruct* hyDesc, void* hy, cudnnTensorStruct* cyDesc, void* cy, float findIntensity, int requestedAlgoCount, int* returnedAlgoCount, cudnnAlgorithmPerformanceStruct** perfResults, void* workspace, nuint workSpaceSizeInBytes, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNBackwardDataAlgorithmMaxCount", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNBackwardDataAlgorithmMaxCount(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* count);
-
-    [DllImport(__DllName, EntryPoint = "cudnnFindRNNBackwardDataAlgorithmEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnFindRNNBackwardDataAlgorithmEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** yDesc, void* y, cudnnTensorStruct** dyDesc, void* dy, cudnnTensorStruct* dhyDesc, void* dhy, cudnnTensorStruct* dcyDesc, void* dcy, cudnnFilterStruct* wDesc, void* w, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct* cxDesc, void* cx, cudnnTensorStruct** dxDesc, void* dx, cudnnTensorStruct* dhxDesc, void* dhx, cudnnTensorStruct* dcxDesc, void* dcx, float findIntensity, int requestedAlgoCount, int* returnedAlgoCount, cudnnAlgorithmPerformanceStruct** perfResults, void* workspace, nuint workSpaceSizeInBytes, void* reserveSpace, nuint reserveSpaceSizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnGetRNNBackwardWeightsAlgorithmMaxCount", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnGetRNNBackwardWeightsAlgorithmMaxCount(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int* count);
-
-    [DllImport(__DllName, EntryPoint = "cudnnFindRNNBackwardWeightsAlgorithmEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnFindRNNBackwardWeightsAlgorithmEx(cudnnContext* handle, cudnnRNNStruct* rnnDesc, int seqLength, cudnnTensorStruct** xDesc, void* x, cudnnTensorStruct* hxDesc, void* hx, cudnnTensorStruct** yDesc, void* y, float findIntensity, int requestedAlgoCount, int* returnedAlgoCount, cudnnAlgorithmPerformanceStruct** perfResults, void* workspace, nuint workSpaceSizeInBytes, cudnnFilterStruct* dwDesc, void* dw, void* reserveSpace, nuint reserveSpaceSizeInBytes);
 
     [DllImport(__DllName, EntryPoint = "cudnnMultiHeadAttnBackwardData", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnMultiHeadAttnBackwardData(cudnnContext* handle, cudnnAttnStruct* attnDesc, int* loWinIdx, int* hiWinIdx, int* devSeqLengthsDQDO, int* devSeqLengthsDKDV, cudnnSeqDataStruct* doDesc, void* dout, cudnnSeqDataStruct* dqDesc, void* dqueries, void* queries, cudnnSeqDataStruct* dkDesc, void* dkeys, void* keys, cudnnSeqDataStruct* dvDesc, void* dvalues, void* values, nuint weightSizeInBytes, void* weights, nuint workSpaceSizeInBytes, void* workSpace, nuint reserveSpaceSizeInBytes, void* reserveSpace);
@@ -607,6 +490,9 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnSetCTCLossDescriptor_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnSetCTCLossDescriptor_v8(cudnnCTCLossStruct* ctcLossDesc, cudnnDataType_t compType, cudnnLossNormalizationMode_t normMode, cudnnNanPropagation_t gradMode, int maxLabelLength);
 
+    [DllImport(__DllName, EntryPoint = "cudnnSetCTCLossDescriptor_v9", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnSetCTCLossDescriptor_v9(cudnnCTCLossStruct* ctcLossDesc, cudnnDataType_t compType, cudnnLossNormalizationMode_t normMode, cudnnCTCGradMode_t ctcGradMode, int maxLabelLength);
+
     [DllImport(__DllName, EntryPoint = "cudnnGetCTCLossDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetCTCLossDescriptor(cudnnCTCLossStruct* ctcLossDesc, cudnnDataType_t* compType);
 
@@ -615,6 +501,9 @@ public static unsafe partial class cuDNN
 
     [DllImport(__DllName, EntryPoint = "cudnnGetCTCLossDescriptor_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetCTCLossDescriptor_v8(cudnnCTCLossStruct* ctcLossDesc, cudnnDataType_t* compType, cudnnLossNormalizationMode_t* normMode, cudnnNanPropagation_t* gradMode, int* maxLabelLength);
+
+    [DllImport(__DllName, EntryPoint = "cudnnGetCTCLossDescriptor_v9", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnGetCTCLossDescriptor_v9(cudnnCTCLossStruct* ctcLossDesc, cudnnDataType_t* compType, cudnnLossNormalizationMode_t* normMode, cudnnCTCGradMode_t* ctcGradMode, int* maxLabelLength);
 
     [DllImport(__DllName, EntryPoint = "cudnnDestroyCTCLossDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnDestroyCTCLossDescriptor(cudnnCTCLossStruct* ctcLossDesc);
@@ -630,9 +519,6 @@ public static unsafe partial class cuDNN
 
     [DllImport(__DllName, EntryPoint = "cudnnGetCTCLossWorkspaceSize_v8", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetCTCLossWorkspaceSize_v8(cudnnContext* handle, cudnnCTCLossAlgo_t algo, cudnnCTCLossStruct* ctcLossDesc, cudnnTensorStruct* probsDesc, cudnnTensorStruct* gradientsDesc, nuint* sizeInBytes);
-
-    [DllImport(__DllName, EntryPoint = "cudnnAdvTrainVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnAdvTrainVersionCheck();
 
     [DllImport(__DllName, EntryPoint = "cudnnCreateConvolutionDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnCreateConvolutionDescriptor(cudnnConvolutionStruct** convDesc);
@@ -724,8 +610,8 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnGetFoldedConvBackwardDataDescriptors", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetFoldedConvBackwardDataDescriptors(cudnnContext* handle, cudnnFilterStruct* filterDesc, cudnnTensorStruct* diffDesc, cudnnConvolutionStruct* convDesc, cudnnTensorStruct* gradDesc, cudnnTensorFormat_t transformFormat, cudnnFilterStruct* foldedFilterDesc, cudnnTensorStruct* paddedDiffDesc, cudnnConvolutionStruct* foldedConvDesc, cudnnTensorStruct* foldedGradDesc, cudnnTensorTransformStruct* filterFoldTransDesc, cudnnTensorTransformStruct* diffPadTransDesc, cudnnTensorTransformStruct* gradFoldTransDesc, cudnnTensorTransformStruct* gradUnfoldTransDesc);
 
-    [DllImport(__DllName, EntryPoint = "cudnnCnnInferVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnCnnInferVersionCheck();
+    [DllImport(__DllName, EntryPoint = "cudnnCnnVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudnnStatus_t cudnnCnnVersionCheck();
 
     [DllImport(__DllName, EntryPoint = "cudnnGetConvolutionBackwardFilterAlgorithmMaxCount", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnGetConvolutionBackwardFilterAlgorithmMaxCount(cudnnContext* handle, int* count);
@@ -784,30 +670,6 @@ public static unsafe partial class cuDNN
     [DllImport(__DllName, EntryPoint = "cudnnFusedOpsExecute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnFusedOpsExecute(cudnnContext* handle, cudnnFusedOpsPlanStruct* plan, cudnnFusedOpsVariantParamStruct* varPack);
 
-    [DllImport(__DllName, EntryPoint = "cudnnCnnTrainVersionCheck", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnCnnTrainVersionCheck();
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendCreateDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t descriptorType, void** descriptor);
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendDestroyDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendDestroyDescriptor(void* descriptor);
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendInitialize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendInitialize(void* descriptor);
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendFinalize", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendFinalize(void* descriptor);
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendSetAttribute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendSetAttribute(void* descriptor, cudnnBackendAttributeName_t attributeName, cudnnBackendAttributeType_t attributeType, long elementCount, void* arrayOfElements);
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendGetAttribute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendGetAttribute(void* descriptor, cudnnBackendAttributeName_t attributeName, cudnnBackendAttributeType_t attributeType, long requestedElementCount, long* elementCount, void* arrayOfElements);
-
-    [DllImport(__DllName, EntryPoint = "cudnnBackendExecute", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendExecute(cudnnContext* handle, void* executionPlan, void* variantPack);
-
 
 }
 
@@ -821,6 +683,22 @@ public unsafe partial struct cudnnContext
 public unsafe partial struct cudnnRuntimeTag_t
 {
     public fixed byte _unused[1];
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct cudnnDebugStruct
+{
+    public uint cudnn_version;
+    public cudnnStatus_t cudnnStatus;
+    public uint time_sec;
+    public uint time_usec;
+    public uint time_delta;
+    public cudnnContext* handle;
+    public CUstream_st* stream;
+    public ulong pid;
+    public ulong tid;
+    public int cudaDeviceId;
+    public fixed int reserved[15];
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -890,62 +768,7 @@ public unsafe partial struct cudnnDropoutStruct
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct cudnnAlgorithmStruct
-{
-    public fixed byte _unused[1];
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct cudnnAlgorithmPerformanceStruct
-{
-    public fixed byte _unused[1];
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct cudnnAlgorithmUnionStruct
-{
-    public cudnnAlgorithmUnionStruct_Algorithm algo;
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public unsafe partial struct cudnnAlgorithmUnionStruct_Algorithm
-{
-    [FieldOffset(0)]
-    public cudnnConvolutionFwdAlgo_t convFwdAlgo;
-    [FieldOffset(0)]
-    public cudnnConvolutionBwdFilterAlgo_t convBwdFilterAlgo;
-    [FieldOffset(0)]
-    public cudnnConvolutionBwdDataAlgo_t convBwdDataAlgo;
-    [FieldOffset(0)]
-    public cudnnRNNAlgo_t RNNAlgo;
-    [FieldOffset(0)]
-    public cudnnCTCLossAlgo_t CTCLossAlgo;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct cudnnDebugStruct
-{
-    public uint cudnn_version;
-    public cudnnStatus_t cudnnStatus;
-    public uint time_sec;
-    public uint time_usec;
-    public uint time_delta;
-    public cudnnContext* handle;
-    public CUstream_st* stream;
-    public ulong pid;
-    public ulong tid;
-    public int cudaDeviceId;
-    public fixed int reserved[15];
-}
-
-[StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct cudnnRNNStruct
-{
-    public fixed byte _unused[1];
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct cudnnPersistentRNNPlan
 {
     public fixed byte _unused[1];
 }
@@ -1028,31 +851,53 @@ public unsafe partial struct cudnnConvolutionBwdFilterAlgoPerfStruct
     public fixed int reserved[3];
 }
 
-
-public enum libraryPropertyType_t : int
-{
-    MAJOR_VERSION = 0,
-    MINOR_VERSION = 1,
-    PATCH_LEVEL = 2,
-}
-
 public enum cudnnStatus_t : int
 {
     CUDNN_STATUS_SUCCESS = 0,
-    CUDNN_STATUS_NOT_INITIALIZED = 1,
-    CUDNN_STATUS_ALLOC_FAILED = 2,
-    CUDNN_STATUS_BAD_PARAM = 3,
-    CUDNN_STATUS_INTERNAL_ERROR = 4,
-    CUDNN_STATUS_INVALID_VALUE = 5,
-    CUDNN_STATUS_ARCH_MISMATCH = 6,
-    CUDNN_STATUS_MAPPING_ERROR = 7,
-    CUDNN_STATUS_EXECUTION_FAILED = 8,
-    CUDNN_STATUS_NOT_SUPPORTED = 9,
-    CUDNN_STATUS_LICENSE_ERROR = 10,
-    CUDNN_STATUS_RUNTIME_PREREQUISITE_MISSING = 11,
-    CUDNN_STATUS_RUNTIME_IN_PROGRESS = 12,
-    CUDNN_STATUS_RUNTIME_FP_OVERFLOW = 13,
-    CUDNN_STATUS_VERSION_MISMATCH = 14,
+    CUDNN_STATUS_NOT_INITIALIZED = 1001,
+    CUDNN_STATUS_SUBLIBRARY_VERSION_MISMATCH = 1002,
+    CUDNN_STATUS_SERIALIZATION_VERSION_MISMATCH = 1003,
+    CUDNN_STATUS_DEPRECATED = 1004,
+    CUDNN_STATUS_LICENSE_ERROR = 1005,
+    CUDNN_STATUS_RUNTIME_IN_PROGRESS = 1006,
+    CUDNN_STATUS_RUNTIME_FP_OVERFLOW = 1007,
+    CUDNN_STATUS_SUBLIBRARY_LOADING_FAILED = 1008,
+    CUDNN_STATUS_BAD_PARAM = 2000,
+    CUDNN_STATUS_BAD_PARAM_NULL_POINTER = 2002,
+    CUDNN_STATUS_BAD_PARAM_MISALIGNED_POINTER = 2003,
+    CUDNN_STATUS_BAD_PARAM_NOT_FINALIZED = 2004,
+    CUDNN_STATUS_BAD_PARAM_OUT_OF_BOUND = 2005,
+    CUDNN_STATUS_BAD_PARAM_SIZE_INSUFFICIENT = 2006,
+    CUDNN_STATUS_BAD_PARAM_STREAM_MISMATCH = 2007,
+    CUDNN_STATUS_BAD_PARAM_SHAPE_MISMATCH = 2008,
+    CUDNN_STATUS_BAD_PARAM_DUPLICATED_ENTRIES = 2009,
+    CUDNN_STATUS_BAD_PARAM_ATTRIBUTE_TYPE = 2010,
+    CUDNN_STATUS_NOT_SUPPORTED = 3000,
+    CUDNN_STATUS_NOT_SUPPORTED_GRAPH_PATTERN = 3001,
+    CUDNN_STATUS_NOT_SUPPORTED_SHAPE = 3002,
+    CUDNN_STATUS_NOT_SUPPORTED_DATA_TYPE = 3003,
+    CUDNN_STATUS_NOT_SUPPORTED_LAYOUT = 3004,
+    CUDNN_STATUS_NOT_SUPPORTED_INCOMPATIBLE_CUDA_DRIVER = 3005,
+    CUDNN_STATUS_NOT_SUPPORTED_INCOMPATIBLE_CUDART = 3006,
+    CUDNN_STATUS_NOT_SUPPORTED_ARCH_MISMATCH = 3007,
+    CUDNN_STATUS_NOT_SUPPORTED_RUNTIME_PREREQUISITE_MISSING = 3008,
+    CUDNN_STATUS_NOT_SUPPORTED_SUBLIBRARY_UNAVAILABLE = 3009,
+    CUDNN_STATUS_NOT_SUPPORTED_SHARED_MEMORY_INSUFFICIENT = 3010,
+    CUDNN_STATUS_NOT_SUPPORTED_PADDING = 3011,
+    CUDNN_STATUS_NOT_SUPPORTED_BAD_LAUNCH_PARAM = 3012,
+    CUDNN_STATUS_INTERNAL_ERROR = 4000,
+    CUDNN_STATUS_INTERNAL_ERROR_COMPILATION_FAILED = 4001,
+    CUDNN_STATUS_INTERNAL_ERROR_UNEXPECTED_VALUE = 4002,
+    CUDNN_STATUS_INTERNAL_ERROR_HOST_ALLOCATION_FAILED = 4003,
+    CUDNN_STATUS_INTERNAL_ERROR_DEVICE_ALLOCATION_FAILED = 4004,
+    CUDNN_STATUS_INTERNAL_ERROR_BAD_LAUNCH_PARAM = 4005,
+    CUDNN_STATUS_INTERNAL_ERROR_TEXTURE_CREATION_FAILED = 4006,
+    CUDNN_STATUS_EXECUTION_FAILED = 5000,
+    CUDNN_STATUS_EXECUTION_FAILED_CUDA_DRIVER = 5001,
+    CUDNN_STATUS_EXECUTION_FAILED_CUBLAS = 5002,
+    CUDNN_STATUS_EXECUTION_FAILED_CUDART = 5003,
+    CUDNN_STATUS_EXECUTION_FAILED_CURAND = 5004,
+    CUDNN_STATUS_INVALID_VALUE = 2001,
 }
 
 public enum cudnnErrQueryMode_t : int
@@ -1095,10 +940,10 @@ public enum cudnnNanPropagation_t : int
     CUDNN_PROPAGATE_NAN = 1,
 }
 
-public enum cudnnDeterminism_t : int
+public enum cudnnCTCGradMode_t : int
 {
-    CUDNN_NON_DETERMINISTIC = 0,
-    CUDNN_DETERMINISTIC = 1,
+    CUDNN_CTC_ZERO_OOB_GRADIENTS = 0,
+    CUDNN_CTC_SKIP_OOB_GRADIENTS = 1,
 }
 
 public enum cudnnTensorFormat_t : int
@@ -1106,22 +951,6 @@ public enum cudnnTensorFormat_t : int
     CUDNN_TENSOR_NCHW = 0,
     CUDNN_TENSOR_NHWC = 1,
     CUDNN_TENSOR_NCHW_VECT_C = 2,
-}
-
-public enum cudnnFoldingDirection_t : int
-{
-    CUDNN_TRANSFORM_FOLD = 0,
-    CUDNN_TRANSFORM_UNFOLD = 1,
-}
-
-public enum cudnnOpTensorOp_t : int
-{
-    CUDNN_OP_TENSOR_ADD = 0,
-    CUDNN_OP_TENSOR_MUL = 1,
-    CUDNN_OP_TENSOR_MIN = 2,
-    CUDNN_OP_TENSOR_MAX = 3,
-    CUDNN_OP_TENSOR_SQRT = 4,
-    CUDNN_OP_TENSOR_NOT = 5,
 }
 
 public enum cudnnReduceTensorOp_t : int
@@ -1137,41 +966,6 @@ public enum cudnnReduceTensorOp_t : int
     CUDNN_REDUCE_TENSOR_MUL_NO_ZEROS = 8,
 }
 
-public enum cudnnReduceTensorIndices_t : int
-{
-    CUDNN_REDUCE_TENSOR_NO_INDICES = 0,
-    CUDNN_REDUCE_TENSOR_FLATTENED_INDICES = 1,
-}
-
-public enum cudnnIndicesType_t : int
-{
-    CUDNN_32BIT_INDICES = 0,
-    CUDNN_64BIT_INDICES = 1,
-    CUDNN_16BIT_INDICES = 2,
-    CUDNN_8BIT_INDICES = 3,
-}
-
-public enum cudnnSoftmaxAlgorithm_t : int
-{
-    CUDNN_SOFTMAX_FAST = 0,
-    CUDNN_SOFTMAX_ACCURATE = 1,
-    CUDNN_SOFTMAX_LOG = 2,
-}
-
-public enum cudnnSoftmaxMode_t : int
-{
-    CUDNN_SOFTMAX_MODE_INSTANCE = 0,
-    CUDNN_SOFTMAX_MODE_CHANNEL = 1,
-}
-
-public enum cudnnPoolingMode_t : int
-{
-    CUDNN_POOLING_MAX = 0,
-    CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING = 1,
-    CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING = 2,
-    CUDNN_POOLING_MAX_DETERMINISTIC = 3,
-}
-
 public enum cudnnActivationMode_t : int
 {
     CUDNN_ACTIVATION_SIGMOID = 0,
@@ -1183,190 +977,12 @@ public enum cudnnActivationMode_t : int
     CUDNN_ACTIVATION_SWISH = 6,
 }
 
-public enum cudnnLRNMode_t : int
-{
-    CUDNN_LRN_CROSS_CHANNEL_DIM1 = 0,
-}
-
-public enum cudnnDivNormMode_t : int
-{
-    CUDNN_DIVNORM_PRECOMPUTED_MEANS = 0,
-}
-
-public enum cudnnBatchNormMode_t : int
-{
-    CUDNN_BATCHNORM_PER_ACTIVATION = 0,
-    CUDNN_BATCHNORM_SPATIAL = 1,
-    CUDNN_BATCHNORM_SPATIAL_PERSISTENT = 2,
-}
-
-public enum cudnnBatchNormOps_t : int
-{
-    CUDNN_BATCHNORM_OPS_BN = 0,
-    CUDNN_BATCHNORM_OPS_BN_ACTIVATION = 1,
-    CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION = 2,
-}
-
-public enum cudnnNormMode_t : int
-{
-    CUDNN_NORM_PER_ACTIVATION = 0,
-    CUDNN_NORM_PER_CHANNEL = 1,
-}
-
-public enum cudnnNormAlgo_t : int
-{
-    CUDNN_NORM_ALGO_STANDARD = 0,
-    CUDNN_NORM_ALGO_PERSIST = 1,
-}
-
-public enum cudnnNormOps_t : int
-{
-    CUDNN_NORM_OPS_NORM = 0,
-    CUDNN_NORM_OPS_NORM_ACTIVATION = 1,
-    CUDNN_NORM_OPS_NORM_ADD_ACTIVATION = 2,
-}
-
-public enum cudnnSamplerType_t : int
-{
-    CUDNN_SAMPLER_BILINEAR = 0,
-}
-
-public enum cudnnConvolutionFwdAlgo_t : int
-{
-    CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM = 0,
-    CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM = 1,
-    CUDNN_CONVOLUTION_FWD_ALGO_GEMM = 2,
-    CUDNN_CONVOLUTION_FWD_ALGO_DIRECT = 3,
-    CUDNN_CONVOLUTION_FWD_ALGO_FFT = 4,
-    CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING = 5,
-    CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD = 6,
-    CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED = 7,
-    CUDNN_CONVOLUTION_FWD_ALGO_COUNT = 8,
-}
-
-public enum cudnnConvolutionBwdFilterAlgo_t : int
-{
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0 = 0,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1 = 1,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT = 2,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3 = 3,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD = 4,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED = 5,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING = 6,
-    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT = 7,
-}
-
-public enum cudnnConvolutionBwdDataAlgo_t : int
-{
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_0 = 0,
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_1 = 1,
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT = 2,
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING = 3,
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD = 4,
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED = 5,
-    CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT = 6,
-}
-
-public enum cudnnRNNAlgo_t : int
-{
-    CUDNN_RNN_ALGO_STANDARD = 0,
-    CUDNN_RNN_ALGO_PERSIST_STATIC = 1,
-    CUDNN_RNN_ALGO_PERSIST_DYNAMIC = 2,
-    CUDNN_RNN_ALGO_PERSIST_STATIC_SMALL_H = 3,
-    CUDNN_RNN_ALGO_COUNT = 4,
-}
-
-public enum cudnnCTCLossAlgo_t : int
-{
-    CUDNN_CTC_LOSS_ALGO_DETERMINISTIC = 0,
-    CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC = 1,
-}
-
 public enum cudnnSeverity_t : int
 {
     CUDNN_SEV_FATAL = 0,
     CUDNN_SEV_ERROR = 1,
     CUDNN_SEV_WARNING = 2,
     CUDNN_SEV_INFO = 3,
-}
-
-public enum cudnnForwardMode_t : int
-{
-    CUDNN_FWD_MODE_INFERENCE = 0,
-    CUDNN_FWD_MODE_TRAINING = 1,
-}
-
-public enum cudnnRNNMode_t : int
-{
-    CUDNN_RNN_RELU = 0,
-    CUDNN_RNN_TANH = 1,
-    CUDNN_LSTM = 2,
-    CUDNN_GRU = 3,
-}
-
-public enum cudnnRNNBiasMode_t : int
-{
-    CUDNN_RNN_NO_BIAS = 0,
-    CUDNN_RNN_SINGLE_INP_BIAS = 1,
-    CUDNN_RNN_DOUBLE_BIAS = 2,
-    CUDNN_RNN_SINGLE_REC_BIAS = 3,
-}
-
-public enum cudnnDirectionMode_t : int
-{
-    CUDNN_UNIDIRECTIONAL = 0,
-    CUDNN_BIDIRECTIONAL = 1,
-}
-
-public enum cudnnRNNInputMode_t : int
-{
-    CUDNN_LINEAR_INPUT = 0,
-    CUDNN_SKIP_INPUT = 1,
-}
-
-public enum cudnnRNNClipMode_t : int
-{
-    CUDNN_RNN_CLIP_NONE = 0,
-    CUDNN_RNN_CLIP_MINMAX = 1,
-}
-
-public enum cudnnRNNDataLayout_t : int
-{
-    CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_UNPACKED = 0,
-    CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_PACKED = 1,
-    CUDNN_RNN_DATA_LAYOUT_BATCH_MAJOR_UNPACKED = 2,
-}
-
-public enum cudnnSeqDataAxis_t : int
-{
-    CUDNN_SEQDATA_TIME_DIM = 0,
-    CUDNN_SEQDATA_BATCH_DIM = 1,
-    CUDNN_SEQDATA_BEAM_DIM = 2,
-    CUDNN_SEQDATA_VECT_DIM = 3,
-}
-
-public enum cudnnMultiHeadAttnWeightKind_t : int
-{
-    CUDNN_MH_ATTN_Q_WEIGHTS = 0,
-    CUDNN_MH_ATTN_K_WEIGHTS = 1,
-    CUDNN_MH_ATTN_V_WEIGHTS = 2,
-    CUDNN_MH_ATTN_O_WEIGHTS = 3,
-    CUDNN_MH_ATTN_Q_BIASES = 4,
-    CUDNN_MH_ATTN_K_BIASES = 5,
-    CUDNN_MH_ATTN_V_BIASES = 6,
-    CUDNN_MH_ATTN_O_BIASES = 7,
-}
-
-public enum cudnnWgradMode_t : int
-{
-    CUDNN_WGRAD_MODE_ADD = 0,
-    CUDNN_WGRAD_MODE_SET = 1,
-}
-
-public enum cudnnLossNormalizationMode_t : int
-{
-    CUDNN_LOSS_NORMALIZATION_NONE = 0,
-    CUDNN_LOSS_NORMALIZATION_SOFTMAX = 1,
 }
 
 public enum cudnnConvolutionMode_t : int
@@ -1379,92 +995,6 @@ public enum cudnnReorderType_t : int
 {
     CUDNN_DEFAULT_REORDER = 0,
     CUDNN_NO_REORDER = 1,
-}
-
-public enum cudnnFusedOps_t : int
-{
-    CUDNN_FUSED_SCALE_BIAS_ACTIVATION_CONV_BNSTATS = 0,
-    CUDNN_FUSED_SCALE_BIAS_ACTIVATION_WGRAD = 1,
-    CUDNN_FUSED_BN_FINALIZE_STATISTICS_TRAINING = 2,
-    CUDNN_FUSED_BN_FINALIZE_STATISTICS_INFERENCE = 3,
-    CUDNN_FUSED_CONV_SCALE_BIAS_ADD_ACTIVATION = 4,
-    CUDNN_FUSED_SCALE_BIAS_ADD_ACTIVATION_GEN_BITMASK = 5,
-    CUDNN_FUSED_DACTIVATION_FORK_DBATCHNORM = 6,
-}
-
-public enum cudnnFusedOpsConstParamLabel_t : int
-{
-    CUDNN_PARAM_XDESC = 0,
-    CUDNN_PARAM_XDATA_PLACEHOLDER = 1,
-    CUDNN_PARAM_BN_MODE = 2,
-    CUDNN_PARAM_BN_EQSCALEBIAS_DESC = 3,
-    CUDNN_PARAM_BN_EQSCALE_PLACEHOLDER = 4,
-    CUDNN_PARAM_BN_EQBIAS_PLACEHOLDER = 5,
-    CUDNN_PARAM_ACTIVATION_DESC = 6,
-    CUDNN_PARAM_CONV_DESC = 7,
-    CUDNN_PARAM_WDESC = 8,
-    CUDNN_PARAM_WDATA_PLACEHOLDER = 9,
-    CUDNN_PARAM_DWDESC = 10,
-    CUDNN_PARAM_DWDATA_PLACEHOLDER = 11,
-    CUDNN_PARAM_YDESC = 12,
-    CUDNN_PARAM_YDATA_PLACEHOLDER = 13,
-    CUDNN_PARAM_DYDESC = 14,
-    CUDNN_PARAM_DYDATA_PLACEHOLDER = 15,
-    CUDNN_PARAM_YSTATS_DESC = 16,
-    CUDNN_PARAM_YSUM_PLACEHOLDER = 17,
-    CUDNN_PARAM_YSQSUM_PLACEHOLDER = 18,
-    CUDNN_PARAM_BN_SCALEBIAS_MEANVAR_DESC = 19,
-    CUDNN_PARAM_BN_SCALE_PLACEHOLDER = 20,
-    CUDNN_PARAM_BN_BIAS_PLACEHOLDER = 21,
-    CUDNN_PARAM_BN_SAVED_MEAN_PLACEHOLDER = 22,
-    CUDNN_PARAM_BN_SAVED_INVSTD_PLACEHOLDER = 23,
-    CUDNN_PARAM_BN_RUNNING_MEAN_PLACEHOLDER = 24,
-    CUDNN_PARAM_BN_RUNNING_VAR_PLACEHOLDER = 25,
-    CUDNN_PARAM_ZDESC = 26,
-    CUDNN_PARAM_ZDATA_PLACEHOLDER = 27,
-    CUDNN_PARAM_BN_Z_EQSCALEBIAS_DESC = 28,
-    CUDNN_PARAM_BN_Z_EQSCALE_PLACEHOLDER = 29,
-    CUDNN_PARAM_BN_Z_EQBIAS_PLACEHOLDER = 30,
-    CUDNN_PARAM_ACTIVATION_BITMASK_DESC = 31,
-    CUDNN_PARAM_ACTIVATION_BITMASK_PLACEHOLDER = 32,
-    CUDNN_PARAM_DXDESC = 33,
-    CUDNN_PARAM_DXDATA_PLACEHOLDER = 34,
-    CUDNN_PARAM_DZDESC = 35,
-    CUDNN_PARAM_DZDATA_PLACEHOLDER = 36,
-    CUDNN_PARAM_BN_DSCALE_PLACEHOLDER = 37,
-    CUDNN_PARAM_BN_DBIAS_PLACEHOLDER = 38,
-}
-
-public enum cudnnFusedOpsVariantParamLabel_t : int
-{
-    CUDNN_PTR_XDATA = 0,
-    CUDNN_PTR_BN_EQSCALE = 1,
-    CUDNN_PTR_BN_EQBIAS = 2,
-    CUDNN_PTR_WDATA = 3,
-    CUDNN_PTR_DWDATA = 4,
-    CUDNN_PTR_YDATA = 5,
-    CUDNN_PTR_DYDATA = 6,
-    CUDNN_PTR_YSUM = 7,
-    CUDNN_PTR_YSQSUM = 8,
-    CUDNN_PTR_WORKSPACE = 9,
-    CUDNN_PTR_BN_SCALE = 10,
-    CUDNN_PTR_BN_BIAS = 11,
-    CUDNN_PTR_BN_SAVED_MEAN = 12,
-    CUDNN_PTR_BN_SAVED_INVSTD = 13,
-    CUDNN_PTR_BN_RUNNING_MEAN = 14,
-    CUDNN_PTR_BN_RUNNING_VAR = 15,
-    CUDNN_PTR_ZDATA = 16,
-    CUDNN_PTR_BN_Z_EQSCALE = 17,
-    CUDNN_PTR_BN_Z_EQBIAS = 18,
-    CUDNN_PTR_ACTIVATION_BITMASK = 19,
-    CUDNN_PTR_DXDATA = 20,
-    CUDNN_PTR_DZDATA = 21,
-    CUDNN_PTR_BN_DSCALE = 22,
-    CUDNN_PTR_BN_DBIAS = 23,
-    CUDNN_SCALAR_SIZE_T_WORKSPACE_SIZE_IN_BYTES = 100,
-    CUDNN_SCALAR_INT64_T_BN_ACCUMULATION_COUNT = 101,
-    CUDNN_SCALAR_DOUBLE_BN_EXP_AVG_FACTOR = 102,
-    CUDNN_SCALAR_DOUBLE_BN_EPSILON = 103,
 }
 
 public enum cudnnBackendAttributeName_t : int
@@ -1493,6 +1023,8 @@ public enum cudnnBackendAttributeName_t : int
     CUDNN_ATTR_ENGINECFG_ENGINE = 300,
     CUDNN_ATTR_ENGINECFG_INTERMEDIATE_INFO = 301,
     CUDNN_ATTR_ENGINECFG_KNOB_CHOICES = 302,
+    CUDNN_ATTR_ENGINECFG_WORKSPACE_SIZE = 303,
+    CUDNN_ATTR_ENGINECFG_SHARED_MEMORY_USED = 304,
     CUDNN_ATTR_EXECUTION_PLAN_HANDLE = 400,
     CUDNN_ATTR_EXECUTION_PLAN_ENGINE_CONFIG = 401,
     CUDNN_ATTR_EXECUTION_PLAN_WORKSPACE_SIZE = 402,
@@ -1753,4 +1285,325 @@ public enum cudnnBackendDescriptorType_t : int
     CUDNN_BACKEND_OPERATION_RESHAPE_DESCRIPTOR = 31,
     CUDNN_BACKEND_RNG_DESCRIPTOR = 32,
     CUDNN_BACKEND_OPERATION_RNG_DESCRIPTOR = 33,
+}
+
+public enum cudnnDeterminism_t : int
+{
+    CUDNN_NON_DETERMINISTIC = 0,
+    CUDNN_DETERMINISTIC = 1,
+}
+
+public enum cudnnFoldingDirection_t : int
+{
+    CUDNN_TRANSFORM_FOLD = 0,
+    CUDNN_TRANSFORM_UNFOLD = 1,
+}
+
+public enum cudnnOpTensorOp_t : int
+{
+    CUDNN_OP_TENSOR_ADD = 0,
+    CUDNN_OP_TENSOR_MUL = 1,
+    CUDNN_OP_TENSOR_MIN = 2,
+    CUDNN_OP_TENSOR_MAX = 3,
+    CUDNN_OP_TENSOR_SQRT = 4,
+    CUDNN_OP_TENSOR_NOT = 5,
+}
+
+public enum cudnnReduceTensorIndices_t : int
+{
+    CUDNN_REDUCE_TENSOR_NO_INDICES = 0,
+    CUDNN_REDUCE_TENSOR_FLATTENED_INDICES = 1,
+}
+
+public enum cudnnIndicesType_t : int
+{
+    CUDNN_32BIT_INDICES = 0,
+    CUDNN_64BIT_INDICES = 1,
+    CUDNN_16BIT_INDICES = 2,
+    CUDNN_8BIT_INDICES = 3,
+}
+
+public enum cudnnSoftmaxAlgorithm_t : int
+{
+    CUDNN_SOFTMAX_FAST = 0,
+    CUDNN_SOFTMAX_ACCURATE = 1,
+    CUDNN_SOFTMAX_LOG = 2,
+}
+
+public enum cudnnSoftmaxMode_t : int
+{
+    CUDNN_SOFTMAX_MODE_INSTANCE = 0,
+    CUDNN_SOFTMAX_MODE_CHANNEL = 1,
+}
+
+public enum cudnnPoolingMode_t : int
+{
+    CUDNN_POOLING_MAX = 0,
+    CUDNN_POOLING_AVERAGE_COUNT_INCLUDE_PADDING = 1,
+    CUDNN_POOLING_AVERAGE_COUNT_EXCLUDE_PADDING = 2,
+    CUDNN_POOLING_MAX_DETERMINISTIC = 3,
+}
+
+public enum cudnnLRNMode_t : int
+{
+    CUDNN_LRN_CROSS_CHANNEL_DIM1 = 0,
+}
+
+public enum cudnnDivNormMode_t : int
+{
+    CUDNN_DIVNORM_PRECOMPUTED_MEANS = 0,
+}
+
+public enum cudnnBatchNormMode_t : int
+{
+    CUDNN_BATCHNORM_PER_ACTIVATION = 0,
+    CUDNN_BATCHNORM_SPATIAL = 1,
+    CUDNN_BATCHNORM_SPATIAL_PERSISTENT = 2,
+}
+
+public enum cudnnBatchNormOps_t : int
+{
+    CUDNN_BATCHNORM_OPS_BN = 0,
+    CUDNN_BATCHNORM_OPS_BN_ACTIVATION = 1,
+    CUDNN_BATCHNORM_OPS_BN_ADD_ACTIVATION = 2,
+}
+
+public enum cudnnNormMode_t : int
+{
+    CUDNN_NORM_PER_ACTIVATION = 0,
+    CUDNN_NORM_PER_CHANNEL = 1,
+}
+
+public enum cudnnNormAlgo_t : int
+{
+    CUDNN_NORM_ALGO_STANDARD = 0,
+    CUDNN_NORM_ALGO_PERSIST = 1,
+}
+
+public enum cudnnNormOps_t : int
+{
+    CUDNN_NORM_OPS_NORM = 0,
+    CUDNN_NORM_OPS_NORM_ACTIVATION = 1,
+    CUDNN_NORM_OPS_NORM_ADD_ACTIVATION = 2,
+}
+
+public enum cudnnSamplerType_t : int
+{
+    CUDNN_SAMPLER_BILINEAR = 0,
+}
+
+public enum cudnnConvolutionFwdAlgo_t : int
+{
+    CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_GEMM = 0,
+    CUDNN_CONVOLUTION_FWD_ALGO_IMPLICIT_PRECOMP_GEMM = 1,
+    CUDNN_CONVOLUTION_FWD_ALGO_GEMM = 2,
+    CUDNN_CONVOLUTION_FWD_ALGO_DIRECT = 3,
+    CUDNN_CONVOLUTION_FWD_ALGO_FFT = 4,
+    CUDNN_CONVOLUTION_FWD_ALGO_FFT_TILING = 5,
+    CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD = 6,
+    CUDNN_CONVOLUTION_FWD_ALGO_WINOGRAD_NONFUSED = 7,
+    CUDNN_CONVOLUTION_FWD_ALGO_COUNT = 8,
+}
+
+public enum cudnnConvolutionBwdFilterAlgo_t : int
+{
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_0 = 0,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_1 = 1,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT = 2,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_3 = 3,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD = 4,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_WINOGRAD_NONFUSED = 5,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_FFT_TILING = 6,
+    CUDNN_CONVOLUTION_BWD_FILTER_ALGO_COUNT = 7,
+}
+
+public enum cudnnConvolutionBwdDataAlgo_t : int
+{
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_0 = 0,
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_1 = 1,
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT = 2,
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_FFT_TILING = 3,
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD = 4,
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_WINOGRAD_NONFUSED = 5,
+    CUDNN_CONVOLUTION_BWD_DATA_ALGO_COUNT = 6,
+}
+
+public enum cudnnCTCLossAlgo_t : int
+{
+    CUDNN_CTC_LOSS_ALGO_DETERMINISTIC = 0,
+    CUDNN_CTC_LOSS_ALGO_NON_DETERMINISTIC = 1,
+}
+
+public enum cudnnRNNAlgo_t : int
+{
+    CUDNN_RNN_ALGO_STANDARD = 0,
+    CUDNN_RNN_ALGO_PERSIST_STATIC = 1,
+    CUDNN_RNN_ALGO_PERSIST_DYNAMIC = 2,
+    CUDNN_RNN_ALGO_PERSIST_STATIC_SMALL_H = 3,
+    CUDNN_RNN_ALGO_COUNT = 4,
+}
+
+public enum cudnnForwardMode_t : int
+{
+    CUDNN_FWD_MODE_INFERENCE = 0,
+    CUDNN_FWD_MODE_TRAINING = 1,
+}
+
+public enum cudnnRNNMode_t : int
+{
+    CUDNN_RNN_RELU = 0,
+    CUDNN_RNN_TANH = 1,
+    CUDNN_LSTM = 2,
+    CUDNN_GRU = 3,
+}
+
+public enum cudnnRNNBiasMode_t : int
+{
+    CUDNN_RNN_NO_BIAS = 0,
+    CUDNN_RNN_SINGLE_INP_BIAS = 1,
+    CUDNN_RNN_DOUBLE_BIAS = 2,
+    CUDNN_RNN_SINGLE_REC_BIAS = 3,
+}
+
+public enum cudnnDirectionMode_t : int
+{
+    CUDNN_UNIDIRECTIONAL = 0,
+    CUDNN_BIDIRECTIONAL = 1,
+}
+
+public enum cudnnRNNInputMode_t : int
+{
+    CUDNN_LINEAR_INPUT = 0,
+    CUDNN_SKIP_INPUT = 1,
+}
+
+public enum cudnnRNNClipMode_t : int
+{
+    CUDNN_RNN_CLIP_NONE = 0,
+    CUDNN_RNN_CLIP_MINMAX = 1,
+}
+
+public enum cudnnRNNDataLayout_t : int
+{
+    CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_UNPACKED = 0,
+    CUDNN_RNN_DATA_LAYOUT_SEQ_MAJOR_PACKED = 1,
+    CUDNN_RNN_DATA_LAYOUT_BATCH_MAJOR_UNPACKED = 2,
+}
+
+public enum cudnnSeqDataAxis_t : int
+{
+    CUDNN_SEQDATA_TIME_DIM = 0,
+    CUDNN_SEQDATA_BATCH_DIM = 1,
+    CUDNN_SEQDATA_BEAM_DIM = 2,
+    CUDNN_SEQDATA_VECT_DIM = 3,
+}
+
+public enum cudnnMultiHeadAttnWeightKind_t : int
+{
+    CUDNN_MH_ATTN_Q_WEIGHTS = 0,
+    CUDNN_MH_ATTN_K_WEIGHTS = 1,
+    CUDNN_MH_ATTN_V_WEIGHTS = 2,
+    CUDNN_MH_ATTN_O_WEIGHTS = 3,
+    CUDNN_MH_ATTN_Q_BIASES = 4,
+    CUDNN_MH_ATTN_K_BIASES = 5,
+    CUDNN_MH_ATTN_V_BIASES = 6,
+    CUDNN_MH_ATTN_O_BIASES = 7,
+}
+
+public enum cudnnWgradMode_t : int
+{
+    CUDNN_WGRAD_MODE_ADD = 0,
+    CUDNN_WGRAD_MODE_SET = 1,
+}
+
+public enum cudnnLossNormalizationMode_t : int
+{
+    CUDNN_LOSS_NORMALIZATION_NONE = 0,
+    CUDNN_LOSS_NORMALIZATION_SOFTMAX = 1,
+}
+
+public enum cudnnFusedOps_t : int
+{
+    CUDNN_FUSED_SCALE_BIAS_ACTIVATION_CONV_BNSTATS = 0,
+    CUDNN_FUSED_SCALE_BIAS_ACTIVATION_WGRAD = 1,
+    CUDNN_FUSED_BN_FINALIZE_STATISTICS_TRAINING = 2,
+    CUDNN_FUSED_BN_FINALIZE_STATISTICS_INFERENCE = 3,
+    CUDNN_FUSED_CONV_SCALE_BIAS_ADD_ACTIVATION = 4,
+    CUDNN_FUSED_SCALE_BIAS_ADD_ACTIVATION_GEN_BITMASK = 5,
+    CUDNN_FUSED_DACTIVATION_FORK_DBATCHNORM = 6,
+}
+
+public enum cudnnFusedOpsConstParamLabel_t : int
+{
+    CUDNN_PARAM_XDESC = 0,
+    CUDNN_PARAM_XDATA_PLACEHOLDER = 1,
+    CUDNN_PARAM_BN_MODE = 2,
+    CUDNN_PARAM_BN_EQSCALEBIAS_DESC = 3,
+    CUDNN_PARAM_BN_EQSCALE_PLACEHOLDER = 4,
+    CUDNN_PARAM_BN_EQBIAS_PLACEHOLDER = 5,
+    CUDNN_PARAM_ACTIVATION_DESC = 6,
+    CUDNN_PARAM_CONV_DESC = 7,
+    CUDNN_PARAM_WDESC = 8,
+    CUDNN_PARAM_WDATA_PLACEHOLDER = 9,
+    CUDNN_PARAM_DWDESC = 10,
+    CUDNN_PARAM_DWDATA_PLACEHOLDER = 11,
+    CUDNN_PARAM_YDESC = 12,
+    CUDNN_PARAM_YDATA_PLACEHOLDER = 13,
+    CUDNN_PARAM_DYDESC = 14,
+    CUDNN_PARAM_DYDATA_PLACEHOLDER = 15,
+    CUDNN_PARAM_YSTATS_DESC = 16,
+    CUDNN_PARAM_YSUM_PLACEHOLDER = 17,
+    CUDNN_PARAM_YSQSUM_PLACEHOLDER = 18,
+    CUDNN_PARAM_BN_SCALEBIAS_MEANVAR_DESC = 19,
+    CUDNN_PARAM_BN_SCALE_PLACEHOLDER = 20,
+    CUDNN_PARAM_BN_BIAS_PLACEHOLDER = 21,
+    CUDNN_PARAM_BN_SAVED_MEAN_PLACEHOLDER = 22,
+    CUDNN_PARAM_BN_SAVED_INVSTD_PLACEHOLDER = 23,
+    CUDNN_PARAM_BN_RUNNING_MEAN_PLACEHOLDER = 24,
+    CUDNN_PARAM_BN_RUNNING_VAR_PLACEHOLDER = 25,
+    CUDNN_PARAM_ZDESC = 26,
+    CUDNN_PARAM_ZDATA_PLACEHOLDER = 27,
+    CUDNN_PARAM_BN_Z_EQSCALEBIAS_DESC = 28,
+    CUDNN_PARAM_BN_Z_EQSCALE_PLACEHOLDER = 29,
+    CUDNN_PARAM_BN_Z_EQBIAS_PLACEHOLDER = 30,
+    CUDNN_PARAM_ACTIVATION_BITMASK_DESC = 31,
+    CUDNN_PARAM_ACTIVATION_BITMASK_PLACEHOLDER = 32,
+    CUDNN_PARAM_DXDESC = 33,
+    CUDNN_PARAM_DXDATA_PLACEHOLDER = 34,
+    CUDNN_PARAM_DZDESC = 35,
+    CUDNN_PARAM_DZDATA_PLACEHOLDER = 36,
+    CUDNN_PARAM_BN_DSCALE_PLACEHOLDER = 37,
+    CUDNN_PARAM_BN_DBIAS_PLACEHOLDER = 38,
+}
+
+public enum cudnnFusedOpsVariantParamLabel_t : int
+{
+    CUDNN_PTR_XDATA = 0,
+    CUDNN_PTR_BN_EQSCALE = 1,
+    CUDNN_PTR_BN_EQBIAS = 2,
+    CUDNN_PTR_WDATA = 3,
+    CUDNN_PTR_DWDATA = 4,
+    CUDNN_PTR_YDATA = 5,
+    CUDNN_PTR_DYDATA = 6,
+    CUDNN_PTR_YSUM = 7,
+    CUDNN_PTR_YSQSUM = 8,
+    CUDNN_PTR_WORKSPACE = 9,
+    CUDNN_PTR_BN_SCALE = 10,
+    CUDNN_PTR_BN_BIAS = 11,
+    CUDNN_PTR_BN_SAVED_MEAN = 12,
+    CUDNN_PTR_BN_SAVED_INVSTD = 13,
+    CUDNN_PTR_BN_RUNNING_MEAN = 14,
+    CUDNN_PTR_BN_RUNNING_VAR = 15,
+    CUDNN_PTR_ZDATA = 16,
+    CUDNN_PTR_BN_Z_EQSCALE = 17,
+    CUDNN_PTR_BN_Z_EQBIAS = 18,
+    CUDNN_PTR_ACTIVATION_BITMASK = 19,
+    CUDNN_PTR_DXDATA = 20,
+    CUDNN_PTR_DZDATA = 21,
+    CUDNN_PTR_BN_DSCALE = 22,
+    CUDNN_PTR_BN_DBIAS = 23,
+    CUDNN_SCALAR_SIZE_T_WORKSPACE_SIZE_IN_BYTES = 100,
+    CUDNN_SCALAR_INT64_T_BN_ACCUMULATION_COUNT = 101,
+    CUDNN_SCALAR_DOUBLE_BN_EXP_AVG_FACTOR = 102,
+    CUDNN_SCALAR_DOUBLE_BN_EPSILON = 103,
 }

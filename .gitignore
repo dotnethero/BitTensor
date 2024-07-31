@@ -5,6 +5,8 @@
 
 # User
 References/
+.idea/
+.rustc_info.json
 
 # User-specific files
 *.rsuser

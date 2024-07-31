@@ -4,9 +4,9 @@
 // </auto-generated>
 #pragma warning disable CS8500
 #pragma warning disable CS8981
-
 using System;
 using System.Runtime.InteropServices;
+
 
 namespace BitTensor.CUDA.Interop;
 

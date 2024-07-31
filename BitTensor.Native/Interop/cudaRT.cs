@@ -4,9 +4,9 @@
 // </auto-generated>
 #pragma warning disable CS8500
 #pragma warning disable CS8981
-
 using System;
 using System.Runtime.InteropServices;
+
 
 namespace BitTensor.CUDA.Interop;
 
@@ -40,12 +40,6 @@ public static unsafe partial class cudaRT
     [DllImport(__DllName, EntryPoint = "cudaDeviceSetCacheConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaDeviceSetCacheConfig(cudaFuncCache cacheConfig);
 
-    [DllImport(__DllName, EntryPoint = "cudaDeviceGetSharedMemConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudaError cudaDeviceGetSharedMemConfig(cudaSharedMemConfig* pConfig);
-
-    [DllImport(__DllName, EntryPoint = "cudaDeviceSetSharedMemConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudaError cudaDeviceSetSharedMemConfig(cudaSharedMemConfig config);
-
     [DllImport(__DllName, EntryPoint = "cudaDeviceGetByPCIBusId", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaDeviceGetByPCIBusId(int* device, byte* pciBusId);
 
@@ -69,6 +63,18 @@ public static unsafe partial class cudaRT
 
     [DllImport(__DllName, EntryPoint = "cudaDeviceFlushGPUDirectRDMAWrites", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaDeviceFlushGPUDirectRDMAWrites(cudaFlushGPUDirectRDMAWritesTarget target, cudaFlushGPUDirectRDMAWritesScope scope);
+
+    [DllImport(__DllName, EntryPoint = "cudaDeviceRegisterAsyncNotification", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaDeviceRegisterAsyncNotification(int device, delegate* unmanaged[Cdecl]<cudaAsyncNotificationInfo*, void*, cudaAsyncCallbackEntry*, void> callbackFunc, void* userData, cudaAsyncCallbackEntry** callback);
+
+    [DllImport(__DllName, EntryPoint = "cudaDeviceUnregisterAsyncNotification", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaDeviceUnregisterAsyncNotification(int device, cudaAsyncCallbackEntry* callback);
+
+    [DllImport(__DllName, EntryPoint = "cudaDeviceGetSharedMemConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaDeviceGetSharedMemConfig(cudaSharedMemConfig* pConfig);
+
+    [DllImport(__DllName, EntryPoint = "cudaDeviceSetSharedMemConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaDeviceSetSharedMemConfig(cudaSharedMemConfig config);
 
     [DllImport(__DllName, EntryPoint = "cudaThreadExit", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaThreadExit();
@@ -283,9 +289,6 @@ public static unsafe partial class cudaRT
     [DllImport(__DllName, EntryPoint = "cudaFuncSetCacheConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaFuncSetCacheConfig(void* func, cudaFuncCache cacheConfig);
 
-    [DllImport(__DllName, EntryPoint = "cudaFuncSetSharedMemConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudaError cudaFuncSetSharedMemConfig(void* func, cudaSharedMemConfig config);
-
     [DllImport(__DllName, EntryPoint = "cudaFuncGetAttributes", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaFuncGetAttributes(cudaFuncAttributes* attr, void* func);
 
@@ -295,6 +298,9 @@ public static unsafe partial class cudaRT
     [DllImport(__DllName, EntryPoint = "cudaFuncGetName", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaFuncGetName(byte** name, void* func);
 
+    [DllImport(__DllName, EntryPoint = "cudaFuncGetParamInfo", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaFuncGetParamInfo(void* func, nuint paramIndex, nuint* paramOffset, nuint* paramSize);
+
     [DllImport(__DllName, EntryPoint = "cudaSetDoubleForDevice", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaSetDoubleForDevice(double* d);
 
@@ -303,6 +309,9 @@ public static unsafe partial class cudaRT
 
     [DllImport(__DllName, EntryPoint = "cudaLaunchHostFunc", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaLaunchHostFunc(CUstream_st* stream, delegate* unmanaged[Cdecl]<void*, void> fn_, void* userData);
+
+    [DllImport(__DllName, EntryPoint = "cudaFuncSetSharedMemConfig", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaFuncSetSharedMemConfig(void* func, cudaSharedMemConfig config);
 
     [DllImport(__DllName, EntryPoint = "cudaOccupancyMaxActiveBlocksPerMultiprocessor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaOccupancyMaxActiveBlocksPerMultiprocessor(int* numBlocks, void* func, int blockSize, nuint dynamicSMemSize);
@@ -903,6 +912,9 @@ public static unsafe partial class cudaRT
 
     [DllImport(__DllName, EntryPoint = "cudaGetDriverEntryPoint", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaGetDriverEntryPoint(byte* symbol, void** funcPtr, ulong flags, cudaDriverEntryPointQueryResult* driverStatus);
+
+    [DllImport(__DllName, EntryPoint = "cudaGetDriverEntryPointByVersion", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+    public static extern cudaError cudaGetDriverEntryPointByVersion(byte* symbol, void** funcPtr, uint cudaVersion, ulong flags, cudaDriverEntryPointQueryResult* driverStatus);
 
     [DllImport(__DllName, EntryPoint = "cudaGetExportTable", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudaError cudaGetExportTable(void** ppExportTable, CUuuid_st* pExportTableId);
@@ -1727,6 +1739,12 @@ public unsafe partial struct cudaGraphExecUpdateResultInfo_st
 }
 
 [StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct CUgraphDeviceUpdatableNode_st
+{
+    public fixed byte _unused[1];
+}
+
+[StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct cudaLaunchMemSyncDomainMap_st
 {
     public byte default_;
@@ -1760,6 +1778,10 @@ public unsafe partial struct cudaLaunchAttributeValue
     public cudaLaunchMemSyncDomain memSyncDomain;
     [FieldOffset(0)]
     public cudaLaunchAttributeValue__bindgen_ty_3 launchCompletionEvent;
+    [FieldOffset(0)]
+    public cudaLaunchAttributeValue__bindgen_ty_4 deviceUpdatableKernelNode;
+    [FieldOffset(0)]
+    public uint sharedMemCarveout;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -1786,6 +1808,13 @@ public unsafe partial struct cudaLaunchAttributeValue__bindgen_ty_3
 }
 
 [StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct cudaLaunchAttributeValue__bindgen_ty_4
+{
+    public int deviceUpdatable;
+    public CUgraphDeviceUpdatableNode_st* devNode;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct cudaLaunchAttribute_st
 {
     public cudaLaunchAttributeID id;
@@ -1802,6 +1831,32 @@ public unsafe partial struct cudaLaunchConfig_st
     public CUstream_st* stream;
     public cudaLaunchAttribute_st* attrs;
     public uint numAttrs;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct cudaAsyncCallbackEntry
+{
+    public fixed byte _unused[1];
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct cudaAsyncNotificationInfo
+{
+    public cudaAsyncNotificationType_enum type_;
+    public cudaAsyncNotificationInfo__bindgen_ty_1 info;
+}
+
+[StructLayout(LayoutKind.Explicit)]
+public unsafe partial struct cudaAsyncNotificationInfo__bindgen_ty_1
+{
+    [FieldOffset(0)]
+    public cudaAsyncNotificationInfo__bindgen_ty_1__bindgen_ty_1 overBudget;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct cudaAsyncNotificationInfo__bindgen_ty_1__bindgen_ty_1
+{
+    public ulong bytesOverBudget;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -2292,7 +2347,8 @@ public enum cudaDeviceAttr : int
     cudaDevAttrReserved132 = 132,
     cudaDevAttrMpsEnabled = 133,
     cudaDevAttrHostNumaId = 134,
-    cudaDevAttrMax = 135,
+    cudaDevAttrD3D12CigSupported = 135,
+    cudaDevAttrMax = 136,
 }
 
 public enum cudaMemPoolAttr : int
@@ -2336,6 +2392,7 @@ public enum cudaMemAllocationHandleType : int
     cudaMemHandleTypePosixFileDescriptor = 1,
     cudaMemHandleTypeWin32 = 2,
     cudaMemHandleTypeWin32Kmt = 4,
+    cudaMemHandleTypeFabric = 8,
 }
 
 public enum cudaGraphMemAttributeType : int
@@ -2453,6 +2510,13 @@ public enum cudaLaunchAttributeID : int
     cudaLaunchAttributeMemSyncDomainMap = 9,
     cudaLaunchAttributeMemSyncDomain = 10,
     cudaLaunchAttributeLaunchCompletionEvent = 12,
+    cudaLaunchAttributeDeviceUpdatableKernelNode = 13,
+    cudaLaunchAttributePreferredSharedMemoryCarveout = 14,
+}
+
+public enum cudaAsyncNotificationType_enum : int
+{
+    cudaAsyncNotificationTypeOverBudget = 1,
 }
 
 public enum cudaTextureAddressMode : int

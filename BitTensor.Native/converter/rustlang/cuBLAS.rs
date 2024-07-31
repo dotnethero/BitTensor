@@ -244,6 +244,7 @@ pub enum cublasMath_t {
     CUBLAS_TF32_TENSOR_OP_MATH = 3,
     CUBLAS_MATH_DISALLOW_REDUCED_PRECISION_REDUCTION = 16,
 }
+pub use self::cudaDataType as cublasDataType_t;
 #[repr(i32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum cublasComputeType_t {
@@ -6287,6 +6288,134 @@ extern "C" {
         batchCount: i64,
         computeType: cublasComputeType_t,
         algo: cublasGemmAlgo_t,
+    ) -> cublasStatus_t;
+}
+extern "C" {
+    pub fn cublasSgemmGroupedBatched(
+        handle: cublasHandle_t,
+        transa_array: *const cublasOperation_t,
+        transb_array: *const cublasOperation_t,
+        m_array: *const ::std::os::raw::c_int,
+        n_array: *const ::std::os::raw::c_int,
+        k_array: *const ::std::os::raw::c_int,
+        alpha_array: *const f32,
+        Aarray: *const *const f32,
+        lda_array: *const ::std::os::raw::c_int,
+        Barray: *const *const f32,
+        ldb_array: *const ::std::os::raw::c_int,
+        beta_array: *const f32,
+        Carray: *const *mut f32,
+        ldc_array: *const ::std::os::raw::c_int,
+        group_count: ::std::os::raw::c_int,
+        group_size: *const ::std::os::raw::c_int,
+    ) -> cublasStatus_t;
+}
+extern "C" {
+    pub fn cublasSgemmGroupedBatched_64(
+        handle: cublasHandle_t,
+        transa_array: *const cublasOperation_t,
+        transb_array: *const cublasOperation_t,
+        m_array: *const i64,
+        n_array: *const i64,
+        k_array: *const i64,
+        alpha_array: *const f32,
+        Aarray: *const *const f32,
+        lda_array: *const i64,
+        Barray: *const *const f32,
+        ldb_array: *const i64,
+        beta_array: *const f32,
+        Carray: *const *mut f32,
+        ldc_array: *const i64,
+        group_count: i64,
+        group_size: *const i64,
+    ) -> cublasStatus_t;
+}
+extern "C" {
+    pub fn cublasDgemmGroupedBatched(
+        handle: cublasHandle_t,
+        transa_array: *const cublasOperation_t,
+        transb_array: *const cublasOperation_t,
+        m_array: *const ::std::os::raw::c_int,
+        n_array: *const ::std::os::raw::c_int,
+        k_array: *const ::std::os::raw::c_int,
+        alpha_array: *const f64,
+        Aarray: *const *const f64,
+        lda_array: *const ::std::os::raw::c_int,
+        Barray: *const *const f64,
+        ldb_array: *const ::std::os::raw::c_int,
+        beta_array: *const f64,
+        Carray: *const *mut f64,
+        ldc_array: *const ::std::os::raw::c_int,
+        group_count: ::std::os::raw::c_int,
+        group_size: *const ::std::os::raw::c_int,
+    ) -> cublasStatus_t;
+}
+extern "C" {
+    pub fn cublasDgemmGroupedBatched_64(
+        handle: cublasHandle_t,
+        transa_array: *const cublasOperation_t,
+        transb_array: *const cublasOperation_t,
+        m_array: *const i64,
+        n_array: *const i64,
+        k_array: *const i64,
+        alpha_array: *const f64,
+        Aarray: *const *const f64,
+        lda_array: *const i64,
+        Barray: *const *const f64,
+        ldb_array: *const i64,
+        beta_array: *const f64,
+        Carray: *const *mut f64,
+        ldc_array: *const i64,
+        group_count: i64,
+        group_size: *const i64,
+    ) -> cublasStatus_t;
+}
+extern "C" {
+    pub fn cublasGemmGroupedBatchedEx(
+        handle: cublasHandle_t,
+        transa_array: *const cublasOperation_t,
+        transb_array: *const cublasOperation_t,
+        m_array: *const ::std::os::raw::c_int,
+        n_array: *const ::std::os::raw::c_int,
+        k_array: *const ::std::os::raw::c_int,
+        alpha_array: *const ::std::os::raw::c_void,
+        Aarray: *const *const ::std::os::raw::c_void,
+        Atype: cudaDataType_t,
+        lda_array: *const ::std::os::raw::c_int,
+        Barray: *const *const ::std::os::raw::c_void,
+        Btype: cudaDataType_t,
+        ldb_array: *const ::std::os::raw::c_int,
+        beta_array: *const ::std::os::raw::c_void,
+        Carray: *const *mut ::std::os::raw::c_void,
+        Ctype: cudaDataType_t,
+        ldc_array: *const ::std::os::raw::c_int,
+        group_count: ::std::os::raw::c_int,
+        group_size: *const ::std::os::raw::c_int,
+        computeType: cublasComputeType_t,
+    ) -> cublasStatus_t;
+}
+extern "C" {
+    pub fn cublasGemmGroupedBatchedEx_64(
+        handle: cublasHandle_t,
+        transa_array: *const cublasOperation_t,
+        transb_array: *const cublasOperation_t,
+        m_array: *const i64,
+        n_array: *const i64,
+        k_array: *const i64,
+        alpha_array: *const ::std::os::raw::c_void,
+        Aarray: *const *const ::std::os::raw::c_void,
+        Atype: cudaDataType_t,
+        lda_array: *const i64,
+        Barray: *const *const ::std::os::raw::c_void,
+        Btype: cudaDataType_t,
+        ldb_array: *const i64,
+        beta_array: *const ::std::os::raw::c_void,
+        Carray: *const *mut ::std::os::raw::c_void,
+        Ctype: cudaDataType_t,
+        ldc_array: *const i64,
+        group_count: i64,
+        group_size: *const i64,
+        computeType: cublasComputeType_t,
     ) -> cublasStatus_t;
 }
 extern "C" {

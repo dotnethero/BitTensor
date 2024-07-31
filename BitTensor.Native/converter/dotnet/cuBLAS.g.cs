@@ -8,7 +8,7 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace BitTensor.Native
+namespace BitTensor.CUDA.Interop
 {
     public static unsafe partial class cuBLAS
     {
@@ -1341,6 +1341,24 @@ namespace BitTensor.Native
 
         [DllImport(__DllName, EntryPoint = "cublasGemmStridedBatchedEx_64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern cublasStatus_t cublasGemmStridedBatchedEx_64(cublasContext* handle, cublasOperation_t transa, cublasOperation_t transb, long m, long n, long k, void* alpha, void* A, cudaDataType_t Atype, long lda, long strideA, void* B, cudaDataType_t Btype, long ldb, long strideB, void* beta, void* C, cudaDataType_t Ctype, long ldc, long strideC, long batchCount, cublasComputeType_t computeType, cublasGemmAlgo_t algo);
+
+        [DllImport(__DllName, EntryPoint = "cublasSgemmGroupedBatched", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern cublasStatus_t cublasSgemmGroupedBatched(cublasContext* handle, cublasOperation_t* transa_array, cublasOperation_t* transb_array, int* m_array, int* n_array, int* k_array, float* alpha_array, float** Aarray, int* lda_array, float** Barray, int* ldb_array, float* beta_array, float** Carray, int* ldc_array, int group_count, int* group_size);
+
+        [DllImport(__DllName, EntryPoint = "cublasSgemmGroupedBatched_64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern cublasStatus_t cublasSgemmGroupedBatched_64(cublasContext* handle, cublasOperation_t* transa_array, cublasOperation_t* transb_array, long* m_array, long* n_array, long* k_array, float* alpha_array, float** Aarray, long* lda_array, float** Barray, long* ldb_array, float* beta_array, float** Carray, long* ldc_array, long group_count, long* group_size);
+
+        [DllImport(__DllName, EntryPoint = "cublasDgemmGroupedBatched", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern cublasStatus_t cublasDgemmGroupedBatched(cublasContext* handle, cublasOperation_t* transa_array, cublasOperation_t* transb_array, int* m_array, int* n_array, int* k_array, double* alpha_array, double** Aarray, int* lda_array, double** Barray, int* ldb_array, double* beta_array, double** Carray, int* ldc_array, int group_count, int* group_size);
+
+        [DllImport(__DllName, EntryPoint = "cublasDgemmGroupedBatched_64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern cublasStatus_t cublasDgemmGroupedBatched_64(cublasContext* handle, cublasOperation_t* transa_array, cublasOperation_t* transb_array, long* m_array, long* n_array, long* k_array, double* alpha_array, double** Aarray, long* lda_array, double** Barray, long* ldb_array, double* beta_array, double** Carray, long* ldc_array, long group_count, long* group_size);
+
+        [DllImport(__DllName, EntryPoint = "cublasGemmGroupedBatchedEx", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern cublasStatus_t cublasGemmGroupedBatchedEx(cublasContext* handle, cublasOperation_t* transa_array, cublasOperation_t* transb_array, int* m_array, int* n_array, int* k_array, void* alpha_array, void** Aarray, cudaDataType_t Atype, int* lda_array, void** Barray, cudaDataType_t Btype, int* ldb_array, void* beta_array, void** Carray, cudaDataType_t Ctype, int* ldc_array, int group_count, int* group_size, cublasComputeType_t computeType);
+
+        [DllImport(__DllName, EntryPoint = "cublasGemmGroupedBatchedEx_64", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern cublasStatus_t cublasGemmGroupedBatchedEx_64(cublasContext* handle, cublasOperation_t* transa_array, cublasOperation_t* transb_array, long* m_array, long* n_array, long* k_array, void* alpha_array, void** Aarray, cudaDataType_t Atype, long* lda_array, void** Barray, cudaDataType_t Btype, long* ldb_array, void* beta_array, void** Carray, cudaDataType_t Ctype, long* ldc_array, long group_count, long* group_size, cublasComputeType_t computeType);
 
         [DllImport(__DllName, EntryPoint = "cublasSgeam", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern cublasStatus_t cublasSgeam(cublasContext* handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, float* alpha, float* A, int lda, float* beta, float* B, int ldb, float* C, int ldc);

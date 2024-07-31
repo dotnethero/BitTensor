@@ -8,7 +8,7 @@ using System;
 using System.Runtime.InteropServices;
 
 
-namespace BitTensor.Native
+namespace BitTensor.CUDA.Interop
 {
     public static unsafe partial class cuRAND
     {

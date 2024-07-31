@@ -77,6 +77,30 @@ pub struct curandGenerator_st {
     _unused: [u8; 0],
 }
 pub type curandGenerator_t = *mut curandGenerator_st;
+pub type curandDistribution_st = f64;
+pub type curandDistribution_t = *mut curandDistribution_st;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct curandDistributionShift_st {
+    _unused: [u8; 0],
+}
+pub type curandDistributionShift_t = *mut curandDistributionShift_st;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct curandDistributionM2Shift_st {
+    _unused: [u8; 0],
+}
+pub type curandDistributionM2Shift_t = *mut curandDistributionM2Shift_st;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct curandHistogramM2_st {
+    _unused: [u8; 0],
+}
+pub type curandHistogramM2_t = *mut curandHistogramM2_st;
+pub type curandHistogramM2K_st = ::std::os::raw::c_uint;
+pub type curandHistogramM2K_t = *mut curandHistogramM2K_st;
+pub type curandHistogramM2V_st = curandDistribution_st;
+pub type curandHistogramM2V_t = *mut curandHistogramM2V_st;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct curandDiscreteDistribution_st {
