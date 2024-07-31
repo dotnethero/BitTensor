@@ -1,65 +1,57 @@
 ﻿using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
+using BitTensor.Internals;
+using BitTensor.Operators;
 using BitTensor.Playground;
 
 namespace BitTensor.Core;
 
-internal static unsafe class Ops
+internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Negate(Tensor a, Tensor result)
+    public static void ExecuteNegate(Tensor a, Tensor result)
     {
         TensorPrimitives.Negate(a.Values, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Sigmoid(Tensor a, Tensor result)
+    public static void ExecuteSigmoid(Tensor a, Tensor result)
     {
         TensorPrimitives.Sigmoid(a.Values, result.Data);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Tanh(Tensor a, Tensor result)
+    public static void ExecuteTanh(Tensor a, Tensor result)
     {
         TensorPrimitives.Tanh(a.Values, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add(Tensor a, float b, Tensor result)
+    public static void ExecuteAdd(Tensor a, float b, Tensor result)
     {
         TensorPrimitives.Add(a.Values, b, result.Data);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Add(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteAdd(Tensor a, Tensor b, Tensor result)
     {
         Broadcasting.Binary<AddOperator>(a, b, result);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Multiply(Tensor a, float b, Tensor result)
+    public static void ExecuteMultiply(Tensor a, float b, Tensor result)
     {
         TensorPrimitives.Multiply(a.Values, b, result.Data);
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Multiply(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteMultiply(Tensor a, Tensor b, Tensor result)
     {
         Broadcasting.Binary<MultiplyOperator>(a, b, result);
     }
 
-    public static void Power(Tensor a, float power, Tensor result)
-    {
-        fixed (float* ap = a.Values, rp = result.Data)
-        {
-            for (var i = 0; i < a.Size; i++)
-            {
-                rp[i] = MathF.Pow(ap[i], power);
-            }
-        }
-    }
-    
-    public static void Outer(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteOuter(Tensor a, Tensor b, Tensor result)
     {
         var span = result.Data.AsSpan();
 
@@ -72,29 +64,29 @@ internal static unsafe class Ops
         }
     }
 
-    public static void Sum(Tensor a, Tensor result)
+    public static void ExecuteSum(Tensor a, Tensor result)
     {
         Aggregation.Aggregate<AddOperator>(a, result);
     }
 
-    public static void Sum(Tensor a, HashSet<int> axis, Tensor result)
+    public static void ExecuteSum(Tensor a, HashSet<int> axis, Tensor result)
     {
         Aggregation.Aggregate<AddOperator>(a, axis, result);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Broadcast(Tensor a, Tensor result) // TODO: support axis
+    public static void ExecuteBroadcast(Tensor a, Tensor result) // TODO: support axis
     {
         Array.Fill(result.Data, a.Values[0]);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void Dot(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteDot(Tensor a, Tensor b, Tensor result)
     {
         result.Data[0] = TensorPrimitives.Dot(a.Values, b.Values);
     }
 
-    public static void MatVecMul(Tensor a, Tensor b, Tensor result)
+    public static void ExecuteMatVecMul(Tensor a, Tensor b, Tensor result)
     {
         var (batchCount, rowCount, rowSize) = Shapes.GetBatchRowsColumns(a.Shape);
 
@@ -121,7 +113,7 @@ internal static unsafe class Ops
         }
     }
 
-    public static void VecMatMul(Tensor a, Tensor bT, Tensor result)
+    public static void ExecuteVecMatMul(Tensor a, Tensor bT, Tensor result)
     {
         var (batchCount, colCount, rowSize) = Shapes.GetBatchRowsColumns(bT.Shape);
 
@@ -148,7 +140,7 @@ internal static unsafe class Ops
         }
     }
 
-    public static void MatMulTransposed(Tensor a, Tensor bT, Tensor result)
+    public static void ExecuteMatMulTransposed(Tensor a, Tensor bT, Tensor result)
     {
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
@@ -159,61 +151,32 @@ internal static unsafe class Ops
         if (strides.BatchCount * rowCount > 64 && colCount > 64)
         {
             ParallelOptions options = new();
-            Parallel.ForEach(GetMatMulAtoms(strides, a, bT, result), options, MatMulRow);
+            Parallel.ForEach(Batching.GetMatMulRows(strides, a, bT, result), options, MatMulRow);
         }
         else
         {
-            foreach (var atom in GetMatMulAtoms(strides, a, bT, result))
+            foreach (var atom in Batching.GetMatMulRows(strides, a, bT, result))
             {
                 MatMulRow(atom);
             }
         }
     }
 
-    public static void MatMulTransposedST(Tensor a, Tensor bT, Tensor result)
+    public static void ExecuteMatMulTransposedST(Tensor a, Tensor bT, Tensor result)
     {
         a.EnsureHasUpdatedValues();
         bT.EnsureHasUpdatedValues();
 
         var strides = Batching.GetBatchStrides(a, bT, ..^2);
 
-        foreach (var atom in GetMatMulAtoms(strides, a, bT, result))
+        foreach (var atom in Batching.GetMatMulRows(strides, a, bT, result))
         {
             MatMulRow(atom);
         }
     }
 
-    private readonly record struct MatMulAtom(
-        Tensor A,
-        Tensor B,
-        Tensor Result,
-        int BatchIndexA = 0,
-        int BatchIndexB = 0,
-        int BatchIndexR = 0,
-        int RowIndex = 0);
-
-    private static IEnumerable<MatMulAtom> GetMatMulAtoms(BatchStrides strides, Tensor a, Tensor b, Tensor r)
-    {
-        var rowCount = a.PrevDimension;
-        var iterator = new MatMulAtom(a, b, r);
-        for (var batchIndex = 0; batchIndex < strides.BatchCount; batchIndex++)
-        {
-            var (aIndex, bIndex) = strides.ConvertIndex(batchIndex);
-            for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
-            {
-                yield return iterator with
-                {
-                    BatchIndexA = aIndex,
-                    BatchIndexB = bIndex,
-                    BatchIndexR = batchIndex,
-                    RowIndex = rowIndex
-                };
-            }
-        }
-    }
-    
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MatMulRow(MatMulAtom inputs)
+    private static void MatMulRow(MatMulRow<Tensor> inputs)
     {
         var rowSize = inputs.A.LastDimension;
         var rowCount = inputs.A.PrevDimension;
@@ -285,10 +248,5 @@ internal static unsafe class Ops
             {
                 r[i] = s[m[i]];
             }
-    }
-    
-    internal static Tensor[] NotSupported(Tensor grad, Tensor self)
-    {
-        throw new NotSupportedException("Operations is not supported");
     }
 }

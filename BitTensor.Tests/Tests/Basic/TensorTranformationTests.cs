@@ -20,9 +20,9 @@ class TensorTranformationTests
         Console.WriteLine(y.ToDataString());
 
         Assert.That(y.Shape, Is.EqualTo(new[] {2, 3, 3}));
-        Assert.That(y[0, 2, 2].Values.Scalar(), Is.EqualTo(9));
-        Assert.That(y[1, 0, 2].Values.Scalar(), Is.EqualTo(12));
-        Assert.That(y[1, 1, 0].Values.Scalar(), Is.EqualTo(13));
+        Assert.That(y[0, 2, 2], Is.EqualTo(9));
+        Assert.That(y[1, 0, 2], Is.EqualTo(12));
+        Assert.That(y[1, 1, 0], Is.EqualTo(13));
     }
 
     [Test]

@@ -1,6 +1,6 @@
-﻿using BitTensor.Core;
+﻿using BitTensor.Abstractions;
+using BitTensor.Core;
 using BitTensor.Units;
-using System.Diagnostics;
 
 namespace BitTensor.Models;
 
@@ -47,7 +47,8 @@ public abstract class Model : ILayer
             {
                 Console.WriteLine(compilation.Loss.Values.Scalar());
             }
-            Auto.ApplyGradients(Parameters, compilation.Gradients, lr);
+
+            Updates.ApplyGradients(Parameters, compilation.Gradients, lr);
         }
     }
 }

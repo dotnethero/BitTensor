@@ -1,4 +1,5 @@
-﻿using BitTensor.Core;
+﻿using BitTensor.Abstractions;
+using BitTensor.Core;
 
 namespace BitTensor.Units;
 
@@ -6,11 +7,11 @@ public class LinearLayerInv : ILayer
 {
     public Tensor Weights { get; set; }
     public Tensor Bias { get; set; }
-    public ActivationFunction Activation { get; }
+    public Activation<Tensor> Activation { get; }
 
     public Tensor[] Parameters => [Weights, Bias];
 
-    public LinearLayerInv(int inputs, int outputs, ActivationFunction activation)
+    public LinearLayerInv(int inputs, int outputs, Activation<Tensor> activation)
     {
         Activation = activation;
         Bias = Tensor.Random.Uniform([outputs, 1]);

@@ -1,25 +1,26 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
 
 public partial class Tensor
 {
-    public static Tensor Zero { get; } = Create(0);
-
-    public static Tensor One { get; } = Create(1);
-    
-    public static Tensor Empty(int[] shape) =>
+    public static Tensor Allocate(int[] shape) =>
         new(shape);
 
+    public static Tensor FromArray(int[] shape, float[] values) => 
+        new(shape, values);
+
     public static Tensor Create(float value) =>
-        new(shape: [], [value]);
+        FromArray(shape: [], [value]);
 
     public static Tensor Create(float[] values) =>
-        new(shape: [values.Length], values);
+        FromArray(shape: [values.Length], values);
 
     public static Tensor Create(float[][] values) =>
-        new(shape: [values.Length, values[0].Length], values.Collect2D());
+        FromArray(shape: [values.Length, values[0].Length], values.Collect2D());
 
     public static Tensor Create(float[][][] values) =>
-        new(shape: [values.Length, values[0].Length, values[0][0].Length], values.Collect3D());
+        FromArray(shape: [values.Length, values[0].Length, values[0][0].Length], values.Collect3D());
 
     public static Tensor Ones(int[] shape) => Fill(shape, 1f);
 
@@ -29,7 +30,7 @@ public partial class Tensor
     {
         var values = new float[shape.Product()];
         Array.Fill(values, value);
-        return new(shape, values);
+        return FromArray(shape, values);
     }
     
     public static Tensor Arrange(float start, float end, float step = 1f)

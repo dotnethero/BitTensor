@@ -1,4 +1,8 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
+
+using static GenericOperations<Tensor, TensorBackend>;
 
 public partial class Tensor
 {
@@ -11,6 +15,5 @@ public partial class Tensor
     public static Tensor operator *(Tensor a, Tensor b) => Mul(a, b);
     public static Tensor operator *(Tensor a, float b) => Mul(a, b);
     public static Tensor operator *(float a, Tensor b) => Mul(a, b);
-    public static Tensor operator ^(Tensor a, float b) => Pow(a, b);
     public static Tensor operator -(Tensor a) => Negate(a);
 }

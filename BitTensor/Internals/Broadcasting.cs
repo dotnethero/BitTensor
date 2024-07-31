@@ -1,6 +1,9 @@
 ﻿using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
+using BitTensor.Core;
+using BitTensor.Operators;
 
-namespace BitTensor.Core;
+namespace BitTensor.Internals;
 
 internal class Broadcasting
 {
@@ -79,7 +82,7 @@ internal class Broadcasting
 
         var a_span = a.Values;
         var b_span = b.Values;
-        var r_span = result.Data.AsSpan();
+        var r_span = result.Data;
         var r_count = rrs[vdims..].Product();
 
         for (var ri = 0; ri < r_count; ri++)
@@ -99,14 +102,14 @@ internal class Broadcasting
             {
                 var aslice = a_span.Slice(ai * vstride, vstride);
                 var bslice = b_span[bi];
-                var rslice = r_span.Slice(ri * vstride, vstride);
+                var rslice = r_span.AsSpan(ri * vstride, vstride);
                 TOperator.Execute(aslice, bslice, rslice);
             }
             else // vectorize same part
             {
                 var aslice = a_span.Slice(ai * vstride, vstride);
                 var bslice = b_span.Slice(bi * vstride, vstride);
-                var rslice = r_span.Slice(ri * vstride, vstride);
+                var rslice = r_span.AsSpan(ri * vstride, vstride);
                 TOperator.Execute(aslice, bslice, rslice);
             }
         }

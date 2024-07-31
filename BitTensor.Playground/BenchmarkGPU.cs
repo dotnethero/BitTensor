@@ -1,17 +1,26 @@
-﻿using BitTensor.Core;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using BitTensor.Core;
+using BitTensor.CUDA;
+using ILGPU;
+using ILGPU.Runtime.Cuda;
 
-[assembly: InternalsVisibleTo("BitTensor.Tests")]
-[assembly: InternalsVisibleTo("BitTensor.Benchmarks")]
+namespace BitTensor.Playground;
 
-namespace BitTensor;
-
-public class Program
+internal class BenchmarkGPU
 {
-    public static void Main()
+    public static void Run()
     {
         Bench(1024, 1024, 1024, 8, 2); // warmup
+        
+        Console.WriteLine();
+
+        Bench(4096, 4096, 4096, 64, 1);
+
+        Console.WriteLine();
+
+        Bench(2048, 2048, 2048, 8, 8);
+        Bench(2048, 2048, 2048, 64, 1);
+        Bench(2048, 2048, 2048, 1, 64);
 
         Console.WriteLine();
 
@@ -36,30 +45,27 @@ public class Program
         Bench(128, 128, 128, 8, 8);
         Bench(128, 128, 128, 64, 1);
         Bench(128, 128, 128, 1, 64);
-
-        Console.WriteLine();
-
-        Bench(64, 64, 64, 8, 8);
-        Bench(64, 64, 64, 64, 1);
-        Bench(64, 64, 64, 1, 64);
-
-        Console.WriteLine();
-        
-        Bench(32, 32, 32, 8, 8);
-        Bench(32, 32, 32, 64, 1);
-        Bench(32, 32, 32, 1, 64);
     }
     
     private static void Bench(int m, int n, int k, int batches, int times)
     {
-        var x = Tensor.Random.Uniform([batches, m, n]);
-        var y = Tensor.Random.Uniform([batches, n, k]).T;
-        var z = Tensor.Empty([batches, m, k]);
+        using var context = Context.CreateDefault();
+        var device = context.GetCudaDevice(0);
+
+        using var accelerator = device.CreateCudaAccelerator(context);
+
+        var x_data = Tensor.Random.Uniform([batches, m, n]);
+        var y_data = Tensor.Random.Uniform([batches, n, k]);
+
+        using var x = new CuTensor(accelerator, x_data.Shape, x_data.Data);
+        using var y = new CuTensor(accelerator, y_data.Shape, y_data.Data);
+        using var z = new CuTensor(accelerator, [batches, m, k]);
 
         var sw = Stopwatch.StartNew();
         for (var i = 0; i < times; i++)
         {
-            Ops.MatMulTransposed(x, y, z);
+            CuBackend.ExecuteMatMul(x, y, z);
+            accelerator.Synchronize();
         }
 
         var s = sw.Elapsed;

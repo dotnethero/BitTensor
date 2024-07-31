@@ -1,8 +1,11 @@
-﻿namespace BitTensor.Core;
+﻿namespace BitTensor.Abstractions;
 
-internal static class ArrayExtensions
+public static class ArrayExtensions
 {
     public static float Scalar(this ReadOnlySpan<float> values) => values[0];
+    
+    private static IEnumerable<T> Collect<T>(this IEnumerable<IEnumerable<T>> items) => 
+        items.SelectMany(x => x);
 
     public static float[] Collect2D(this float[][] items) => 
         items
@@ -14,7 +17,4 @@ internal static class ArrayExtensions
             .Collect()
             .Collect()
             .ToArray();
-
-    private static IEnumerable<T> Collect<T>(this IEnumerable<IEnumerable<T>> items) => 
-        items.SelectMany(x => x);
 }

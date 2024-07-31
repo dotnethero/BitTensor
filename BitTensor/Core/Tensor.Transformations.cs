@@ -1,9 +1,11 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
 
 public partial class Tensor
 {
-    public Tensor this[params int[] indexes] => GetSlice(indexes);
-    
+    public float this[params int[] indexes] => GetScalar(indexes);
+
     public Tensor AppendDimension() => Reshape([..Shape, 1]);
 
     public Tensor PrependDimension() => Reshape([1, ..Shape]);
@@ -16,7 +18,7 @@ public partial class Tensor
         EnsureHasUpdatedValues();
 
         var data = new float[Size];
-        var span = Data.AsSpan();
+        var span = Data;
         var count = Shape[..dimension].Product();
         var dimSize = Shape[(dimension+1)..].Product();
         var dimCount = Shape[dimension];
@@ -26,7 +28,7 @@ public partial class Tensor
             for (var j = 0; j < dimCount; j++)
             {
                 var k = p[j]; // new index
-                var src = span.Slice(i * dimSize * dimCount + j * dimSize, dimSize);
+                var src = span.AsSpan(i * dimSize * dimCount + j * dimSize, dimSize);
                 var dest = data.AsSpan(i * dimSize * dimCount + k * dimSize, dimSize);
                 src.CopyTo(dest);
             }
@@ -48,19 +50,16 @@ public partial class Tensor
             backward: (grad, _) => [grad.Reshape(Shape)],
             values: Data);
     }
-    
-    public Tensor GetSlice(int[] indexes)
+
+    public float GetScalar(int[] indexes)
     {
+        if (indexes.Length != Dimensions)
+            throw new InvalidOperationException($"Index {indexes.Serialize()} is not valid for {Shape.Serialize()} shape");
+
         var range = GetSliceRange(indexes);
 
-        return new(
-            shape: Shape[indexes.Length..],
-            children: [this],
-            forward: t => {},
-            backward: (grad, _) => [grad.GetSlice(Shape)], 
-            values: Data[range]);
+        return Data[range.Start];
     }
-
     private Range GetSliceRange(int[] indexes)
     {
         if (indexes.Length > Dimensions)
@@ -104,7 +103,7 @@ public partial class Tensor
         if (axes.Length != dims)
             throw new InvalidOperationException($"Axis {axes.Serialize()} is not valid argument for {Shape.Serialize()} shape tensor");
 
-        if (!axes.IsElementsUnique())
+        if (!axes.AreElementsUnique())
             throw new InvalidOperationException($"Axis {axes.Serialize()} does not contain all axes for {Shape.Serialize()} shape tensor");
 
         var shape = new int[dims];
@@ -126,12 +125,12 @@ public partial class Tensor
             return Reshape(shape);
         }
 
-        var matrix = Ops.GetTransposeMatrix(this, axes);
+        var matrix = TensorBackend.GetTransposeMatrix(this, axes);
 
         return new(
             shape,
             children: [this],
-            forward: self => Ops.ApplyTransposeMatrix(this.Data, matrix, self.Data),
+            forward: self => TensorBackend.ApplyTransposeMatrix(this.Data, matrix, self.Data),
             backward: (grad, self) => [grad.Transpose(axes)])
             {
                 TransposeLazy = new(this)

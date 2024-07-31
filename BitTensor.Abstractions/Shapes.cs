@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace BitTensor.Core;
+namespace BitTensor.Abstractions;
 
 [SuppressMessage("ReSharper", "ForCanBeConvertedToForeach")]
 [SuppressMessage("ReSharper", "LoopCanBeConvertedToQuery")]
-internal static class Shapes
+public static class Shapes
 {
     public static unsafe int Product(this int[] shape)
     {
@@ -42,24 +42,6 @@ internal static class Shapes
         return (batch, rows, columns);
     }
 
-    public static unsafe bool IsElementsUnique(this int[] shape)
-    {
-        var dims = shape.Length;
-
-        fixed (int* sh = shape)
-        {
-            for (var i = 0; i < dims; ++i)
-            for (var j = 0; j < i; ++j)
-            {
-                if (sh[i] == sh[j])
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-
     public static unsafe int[] GetStrides(this int[] shape)
     {
         var dims = shape.Length;
@@ -79,6 +61,23 @@ internal static class Shapes
         }
 
         return strides;
+    }
+    
+    public static unsafe bool AreElementsUnique(this int[] shape)
+    {
+        var dims = shape.Length;
+
+        fixed (int* sh = shape)
+        {
+            for (var i = 0; i < dims; ++i)
+            for (var j = 0; j < i; ++j)
+            {
+                if (sh[i] == sh[j])
+                    return false;
+            }
+        }
+
+        return true;
     }
 
     public static bool AreEqual(int[] a, int[] b)

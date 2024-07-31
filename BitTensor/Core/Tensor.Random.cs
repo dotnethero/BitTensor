@@ -1,4 +1,6 @@
-﻿namespace BitTensor.Core;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.Core;
 
 public partial class Tensor
 {
@@ -12,7 +14,7 @@ public partial class Tensor
                 values[i] = NextUniform(min, max);
             }
 
-            return new(shape, values);
+            return FromArray(shape, values);
         }
         
         private static float NextUniform(float min = -1f, float max = 1f)
@@ -28,7 +30,7 @@ public partial class Tensor
                 values[i] = NextNormal(mean, std);
             }
 
-            return new(shape, values);
+            return FromArray(shape, values);
         }
 
         private static float NextNormal(float mean = 0f, float std = 1f)
