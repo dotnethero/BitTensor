@@ -4,16 +4,16 @@ namespace BitTensor.CUDA.ComputeOnly;
 
 public unsafe partial class CuTensor : AbstractTensor, IDisposable
 {
-    private readonly float* _pointer;
+    internal readonly float* Pointer;
 
     public CuTensor(int[] shape) : base(shape)
     {
-        _pointer = CuArray.Allocate(Size);
+        Pointer = CuArray.Allocate(Size);
     }
 
     public CuTensor(int[] shape, float[] values) : base(shape)
     {
-        _pointer = CuArray.Allocate(Size, values);
+        Pointer = CuArray.Allocate(Size, values);
     }
     
     public float[] CopyToHost()
@@ -28,7 +28,7 @@ public unsafe partial class CuTensor : AbstractTensor, IDisposable
         if (destination.Length != Size)
             throw new ArgumentException($"Destination array size ({destination.Length}) not equal to allocated array size ({Size})");
 
-        CuArray.CopyToHost(_pointer, destination, Size);
+        CuArray.CopyToHost(Pointer, destination, Size);
     }
 
     public void CopyToDevice(ReadOnlySpan<float> source)
@@ -36,11 +36,11 @@ public unsafe partial class CuTensor : AbstractTensor, IDisposable
         if (source.Length != Size)
             throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({Size})");
 
-        CuArray.CopyToDevice(source, _pointer, Size);
+        CuArray.CopyToDevice(source, Pointer, Size);
     }
     
     public void Dispose()
     {
-        CuArray.Free(_pointer);
+        CuArray.Free(Pointer);
     }
 }

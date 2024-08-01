@@ -8,13 +8,13 @@ using static cudaRT;
 public static unsafe class CuArray
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static uint Bytes(int size) => (uint)(size * sizeof(float));
+    private static uint Bytes(int size) => (uint)size  * sizeof(float);
 
     public static float* Allocate(int size)
     {
-        void* pointer;
-        cudaMalloc(&pointer, Bytes(size));
-        return (float*)pointer;
+        float* pointer;
+        cudaMalloc((void**)&pointer, Bytes(size));
+        return pointer;
     }
 
     public static float* Allocate(int size, float[] values)
@@ -27,13 +27,13 @@ public static unsafe class CuArray
     public static void CopyToHost(float* source, Span<float> destination, int size)
     {
         fixed(float* dp = destination)
-            cudaMemcpy(source, dp, Bytes(size), cudaMemcpyKind.cudaMemcpyDeviceToHost);
+            cudaMemcpy(dp, source, Bytes(size), cudaMemcpyKind.cudaMemcpyDeviceToHost);
     }
     
     public static void CopyToDevice(ReadOnlySpan<float> source, float* destination, int size)
     {
         fixed(float* sp = source)
-            cudaMemcpy(sp, destination, Bytes(size), cudaMemcpyKind.cudaMemcpyHostToDevice);
+            cudaMemcpy(destination, sp, Bytes(size), cudaMemcpyKind.cudaMemcpyHostToDevice);
     }
 
     public static void Free(void* pointer)
