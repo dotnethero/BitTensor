@@ -4,17 +4,17 @@
 // </auto-generated>
 #pragma warning disable CS8500
 #pragma warning disable CS8981
+
 using System;
 using System.Runtime.InteropServices;
-
 
 namespace BitTensor.CUDA.Interop;
 
 public static unsafe partial class cuTENSOR
 {
-    internal static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_16F;
-    internal static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_32F;
-    internal static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_64F;
+    public static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_16F;
+    public static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_32F;
+    public static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_64F;
 
     const string __DllName = "cutensor.dll";
 

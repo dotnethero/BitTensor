@@ -21,6 +21,8 @@
   <ItemGroup>
     <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
     <ProjectReference Include="..\BitTensor.Core\BitTensor.Core.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.Internals\BitTensor.CUDA.Interop.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.Interop.csproj" />
   </ItemGroup>
 
 </Project>
