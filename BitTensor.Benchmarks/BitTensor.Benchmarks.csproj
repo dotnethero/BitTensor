@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BitTensor.CPU\BitTensor.CPU.csproj" />
     <ProjectReference Include="..\BitTensor\BitTensor.CPU.csproj" />
   </ItemGroup>
 

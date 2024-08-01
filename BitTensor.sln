@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34310.174
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CPU", "BitTensor\BitTensor.CPU.csproj", "{1FEC8266-6FF6-4CBA-BFDC-33D69A63E15C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CPU", "BitTensor.CPU\BitTensor.CPU.csproj", "{1FEC8266-6FF6-4CBA-BFDC-33D69A63E15C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Tests", "BitTensor.Tests\BitTensor.Tests.csproj", "{E17E8062-D38C-41FB-B824-B0A65EB269BC}"
 EndProject
@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Benchmarks", "BitTensor.Benchmarks\BitTensor.Benchmarks.csproj", "{945295A6-408B-4E52-8656-91D1826D9BA8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA", "BitTensor.Native\BitTensor.CUDA.csproj", "{3BD9C0E9-CF19-451F-B1F5-05D890D0E046}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA", "BitTensor.CUDA\BitTensor.CUDA.csproj", "{3BD9C0E9-CF19-451F-B1F5-05D890D0E046}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.Playground", "BitTensor.Playground\BitTensor.Playground.csproj", "{07105965-1DA1-4992-BB8D-28383DEB5295}"
 EndProject
