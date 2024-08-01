@@ -1,5 +1,4 @@
 ﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA;
 
@@ -7,7 +6,20 @@ using Ops = GenericOperations<CuTensor, CuBackend>;
 
 public partial class CuTensor
 {
-    public static CuTensor Transpose(CuTensor a) => Transpose(a, [..a.Shape[..^2], a.LastDimension, a.PrevDimension]);
+    public static CuTensor Transpose(CuTensor a)
+    {
+        var dims = a.Dimensions;
+        var axis = new int[dims];
+        for (var i = 0; i < dims; i++)
+        {
+            axis[i] = i;
+        }
+
+        axis[^1] = dims - 2;
+        axis[^2] = dims - 1;
+
+        return Transpose(a, axis);
+    }
 
     public static CuTensor Transpose(CuTensor a, int[] axis)
     {

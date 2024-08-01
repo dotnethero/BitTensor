@@ -9,7 +9,32 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        BenchmarkGPU.Run();
+        TestTranspose();
+    }
+
+    private static void TestTranspose()
+    {
+        using var context = Context.CreateDefault();
+        
+        var device = context.GetCudaDevice(0);
+
+        using var accelerator = device.CreateCudaAccelerator(context);
+
+        var allocator = new CuAllocator(accelerator);
+        
+        using var a = allocator.Create([[
+            [1, 2, 3],
+            [1, 7, 3],
+            [1, 4, 3],
+            [4, 5, 6]]]);
+
+        using var b = CuTensor.Transpose(a);
+
+        var a_host = ToHost(a);
+        var b_host = ToHost(b);
+
+        Console.WriteLine(a_host.ToDataString());
+        Console.WriteLine(b_host.ToDataString());
     }
 
     private static void Test()

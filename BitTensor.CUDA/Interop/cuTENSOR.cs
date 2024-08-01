@@ -12,9 +12,22 @@ namespace BitTensor.CUDA.Interop;
 
 public static unsafe partial class cuTENSOR
 {
+    internal static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_16F;
+    internal static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_32F;
+    internal static readonly cutensorComputeDescriptor* CUTENSOR_COMPUTE_DESC_64F;
+
     const string __DllName = "cutensor.dll";
 
+    static cuTENSOR()
+    {
+        var lib = NativeLibrary.Load(__DllName);
 
+        CUTENSOR_COMPUTE_DESC_16F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, "CUTENSOR_COMPUTE_DESC_16F");
+        CUTENSOR_COMPUTE_DESC_32F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, "CUTENSOR_COMPUTE_DESC_32F");
+        CUTENSOR_COMPUTE_DESC_64F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, "CUTENSOR_COMPUTE_DESC_64F");
+
+        NativeLibrary.Free(lib);
+    }
 
     [DllImport(__DllName, EntryPoint = "cutensorCreate", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cutensorStatus_t cutensorCreate(cutensorHandle** handle);

@@ -11,8 +11,6 @@
   <ItemGroup>
     <ProjectReference Include="..\BitTensor.CPU\BitTensor.CPU.csproj" />
     <ProjectReference Include="..\BitTensor.CUDA\BitTensor.CUDA.csproj" />
-    <ProjectReference Include="..\BitTensor.Native\BitTensor.CUDA.csproj" />
-    <ProjectReference Include="..\BitTensor\BitTensor.CPU.csproj" />
   </ItemGroup>
 
 </Project>

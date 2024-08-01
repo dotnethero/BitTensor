@@ -4,14 +4,21 @@ using BitTensor.CUDA.Interop;
 using ILGPU;
 using ILGPU.Runtime;
 using ILGPU.Runtime.Cuda;
-
 namespace BitTensor.CUDA;
 
 using static cudaDataType_t;
+
 using static cuBLAS;
 using static cublasOperation_t;
 using static cublasComputeType_t;
 using static cublasGemmAlgo_t;
+
+using static cuTENSOR;
+using static cutensorAlgo_t;
+using static cutensorDataType_t;
+using static cutensorJitMode_t;
+using static cutensorOperator_t;
+using static cutensorWorksizePreference_t;
 
 using DType = float;
 using DTypeView = ArrayView<float>;
@@ -210,9 +217,54 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         }
     }
     
-    public static void Transpose(CuTensor a, int[] axis, CuTensor c)
+    public static unsafe void Transpose(CuTensor a, int[] axis, CuTensor b)
     {
+        cutensorHandle* handle;
+        cutensorPlan* plan;
+        cutensorPlanPreference* planPreference;
+        cutensorTensorDescriptor* aDescriptor;
+        cutensorTensorDescriptor* bDescriptor;
+        cutensorOperationDescriptor* operationDescriptor;
+        cutensorComputeDescriptor computeDescriptor = new();
+        cutensorStatus_t status;
 
+        ulong workspaceSizeEstimate;
+
+        var aShape = stackalloc long[a.Dimensions];
+        var bShape = stackalloc long[b.Dimensions];
+        var aStrides = stackalloc long[a.Dimensions];
+        var bStrides = stackalloc long[b.Dimensions];
+        var aModes = stackalloc int[a.Dimensions];
+        var bModes = stackalloc int[b.Dimensions];
+
+        for (var i = 0; i < a.Dimensions; ++i)
+        {
+            aShape[i] = a.Shape[i];
+            bShape[i] = b.Shape[i];
+            aStrides[i] = a.Strides[i];
+            bStrides[i] = b.Strides[i];
+            aModes[i] = i;
+            bModes[i] = axis[i];
+        }
+
+        var alpha = 1f;
+
+        status = cutensorCreate(&handle);
+        status = cutensorCreateTensorDescriptor(handle, &aDescriptor, (uint) a.Dimensions, aShape, aStrides, CUTENSOR_R_32F, 256u);
+        status = cutensorCreateTensorDescriptor(handle, &bDescriptor, (uint) b.Dimensions, bShape, bStrides, CUTENSOR_R_32F, 256u);
+        status = cutensorCreatePermutation(handle, &operationDescriptor, aDescriptor, aModes, CUTENSOR_OP_IDENTITY, bDescriptor, bModes, CUTENSOR_COMPUTE_DESC_32F);
+        status = cutensorCreatePlanPreference(handle, &planPreference, CUTENSOR_ALGO_DEFAULT, CUTENSOR_JIT_MODE_DEFAULT);
+
+        status = cutensorEstimateWorkspaceSize(handle, operationDescriptor, planPreference, CUTENSOR_WORKSPACE_DEFAULT, &workspaceSizeEstimate);
+
+        status = cutensorCreatePlan(handle, &plan, operationDescriptor, planPreference, workspaceSizeEstimate);
+        status = cutensorPermute(handle, plan, &alpha, a.Pointer, b.Pointer, (CUstream_st*)0);
+
+        status = cutensorDestroyPlan(plan);
+        status = cutensorDestroyPlanPreference(planPreference);
+        status = cutensorDestroyOperationDescriptor(operationDescriptor);
+        status = cutensorDestroyTensorDescriptor(bDescriptor);
+        status = cutensorDestroyTensorDescriptor(aDescriptor);
     }
 
     private static KernelConfig GetKernelConfig(AbstractTensor a, int groupSize = 128)
