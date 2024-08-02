@@ -17,6 +17,12 @@ internal unsafe class CuTensorContext : IDisposable
         Handle = handle;
     }
 
+    public CuTensorDescriptor CreateDescriptor(CuTensor a) => 
+        new(this, a);
+
+    public CuTensorBinaryOperation CreateElementwiseAdd(CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c) => 
+        new(this, a, b, c, cutensorOperator_t.CUTENSOR_OP_ADD);
+
     public void Dispose()
     {
         cuTENSOR.cutensorDestroy(Handle);

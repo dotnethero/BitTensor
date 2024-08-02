@@ -34,14 +34,13 @@ public partial class CuTensor
     {
         using var context = new CuTensorContext();
 
-        using var a1 = new CuTensorDescriptor(context, a);
-        using var b1 = new CuTensorDescriptor(context, b);
-        using var c1 = new CuTensorDescriptor(context, c);
+        using var a1 = context.CreateDescriptor(a);
+        using var b1 = context.CreateDescriptor(b);
+        using var c1 = context.CreateDescriptor(c);
 
-        using var operation = new CuTensorBinaryOperation(context, a1, b1, c1, cutensorOperator_t.CUTENSOR_OP_ADD);
-        using var plan = new CuTensorPlan(operation);
+        using var operation = context.CreateElementwiseAdd(a1, b1, c1);
 
-        plan.Execute();
+        operation.Execute();
     }
 
     public static unsafe void Multiply(CuTensor a, CuTensor b, CuTensor c)

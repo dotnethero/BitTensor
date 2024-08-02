@@ -34,6 +34,14 @@ internal unsafe class CuTensorBinaryOperation : IDisposable
         Context = context;
         Descriptor = descriptor;
     }
+    
+    public CuTensorPlan CreatePlan() => new(this);
+
+    public void Execute()
+    {
+        using var plan = CreatePlan();
+        plan.Execute();
+    }
 
     public void Dispose()
     {
