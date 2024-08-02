@@ -2,6 +2,8 @@
 
 public partial class CuTensor
 {
+    static System.Random Debug = new(0);
+
     public static class Random // TODO: use cuRAND
     {
         public static CuTensor Uniform(int[] shape, float min = -1f, float max = +1f)
@@ -20,7 +22,7 @@ public partial class CuTensor
         
         private static float NextUniform(float min = -1f, float max = 1f)
         {
-            return System.Random.Shared.NextSingle() * (max - min) + min;
+            return Debug.NextSingle() * (max - min) + min;
         }
     }
 }

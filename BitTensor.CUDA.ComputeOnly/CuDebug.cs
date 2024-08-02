@@ -1,18 +1,19 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace BitTensor.CUDA.ComputeOnly;
 
 public static class CuDebug
 {
-    public static void WriteLine(CuTensor tensor)
+    public static void WriteLine(CuTensor tensor, [CallerArgumentExpression("tensor")] string tensorName = "")
     {
         var values = tensor.CopyToHost();
         var shape = tensor.Shape;
-        var text = View(values, shape);
-        Console.WriteLine(text);
+        var text = View(values, shape, krStyle: true);
+        Console.WriteLine($"{tensorName} = {text}");
     }
 
-    public static string View(float[] values, int[] shape, int dimensionsPerLine = 1)
+    public static string View(float[] values, int[] shape, int dimensionsPerLine = 1, bool krStyle = false)
     {
         if (values.Length == 0)
         {
@@ -43,7 +44,20 @@ public static class CuDebug
             if (opens > 0)
                 sb.Append(new string(' ', dimensions - opens));
 
-            sb.Append(new string('[', opens));
+            if (krStyle && opens > 1)
+            {
+                if (i == 0)
+                {
+                    sb.AppendLine("[");
+                    sb.Append(new string(' ', dimensions - opens + 1));
+                }
+
+                sb.Append(new string('[', opens - 1));
+            }
+            else
+            {
+                sb.Append(new string('[', opens));
+            }
 
             if (opens > 0)
                 sb.Append(" ");

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using BitTensor.Abstractions;
+﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 
 // ReSharper disable NotAccessedVariable
@@ -8,6 +7,7 @@ using BitTensor.CUDA.Interop;
 namespace BitTensor.CUDA.ComputeOnly;
 
 using static cuBLAS;
+using static cuTENSOR;
 
 public partial class CuTensor
 {
@@ -29,9 +29,76 @@ public partial class CuTensor
 
     // inplace operations
 
-    public static void Add(CuTensor a, CuTensor b, CuTensor output)
+    public static unsafe void Add(CuTensor a, CuTensor b, CuTensor c)
     {
+        cutensorHandle* handle;
+        cutensorPlan* plan;
+        cutensorPlanPreference* planPreference;
+        cutensorTensorDescriptor* aDescriptor;
+        cutensorTensorDescriptor* bDescriptor;
+        cutensorTensorDescriptor* cDescriptor;
+        cutensorOperationDescriptor* operationDescriptor;
+        cutensorStatus_t status;
 
+        ulong workspaceSizeEstimate;
+
+        var aShape = stackalloc long[a.Dimensions];
+        var bShape = stackalloc long[b.Dimensions];
+        var cShape = stackalloc long[c.Dimensions];
+        var aStrides = stackalloc long[a.Dimensions];
+        var bStrides = stackalloc long[b.Dimensions];
+        var cStrides = stackalloc long[c.Dimensions];
+        var aModes = stackalloc int[a.Dimensions];
+        var bModes = stackalloc int[b.Dimensions];
+        var cModes = stackalloc int[c.Dimensions];
+
+        for (var i = 0; i < a.Dimensions; ++i)
+        {
+            aShape[i] = a.Shape[i];
+            bShape[i] = b.Shape[i];
+            cShape[i] = c.Shape[i];
+            aStrides[i] = a.Strides[i];
+            bStrides[i] = b.Strides[i];
+            cStrides[i] = c.Strides[i];
+            aModes[i] = i;
+            bModes[i] = i;
+            cModes[i] = i;
+        }
+
+        var alpha = 1f;
+        var gamma = 1f;
+
+        status = cutensorCreate(&handle);
+        status = cutensorCreateTensorDescriptor(handle, &aDescriptor, (uint) a.Dimensions, aShape, aStrides, cutensorDataType_t.CUTENSOR_R_32F, 128u);
+        status = cutensorCreateTensorDescriptor(handle, &bDescriptor, (uint) b.Dimensions, bShape, bStrides, cutensorDataType_t.CUTENSOR_R_32F, 128u);
+        status = cutensorCreateTensorDescriptor(handle, &cDescriptor, (uint) c.Dimensions, cShape, cStrides, cutensorDataType_t.CUTENSOR_R_32F, 128u);
+        status = cutensorCreateElementwiseBinary(
+            handle, 
+            &operationDescriptor,
+            aDescriptor, aModes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            bDescriptor, cModes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            cDescriptor, cModes, cutensorOperator_t.CUTENSOR_OP_ADD,
+            CUTENSOR_COMPUTE_DESC_32F);
+
+        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
+            Console.WriteLine(status);
+
+        status = cutensorCreatePlanPreference(handle, &planPreference, 
+            cutensorAlgo_t.CUTENSOR_ALGO_DEFAULT, 
+            cutensorJitMode_t.CUTENSOR_JIT_MODE_DEFAULT);
+
+        status = cutensorEstimateWorkspaceSize(handle, operationDescriptor, planPreference, cutensorWorksizePreference_t.CUTENSOR_WORKSPACE_DEFAULT, &workspaceSizeEstimate);
+        status = cutensorCreatePlan(handle, &plan, operationDescriptor, planPreference, workspaceSizeEstimate);
+
+        // TODO: check scalar
+
+        status = cutensorElementwiseBinaryExecute(handle, plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, (CUstream_st*) 0);
+
+        status = cutensorDestroyPlan(plan);
+        status = cutensorDestroyPlanPreference(planPreference);
+        status = cutensorDestroyOperationDescriptor(operationDescriptor);
+        status = cutensorDestroyTensorDescriptor(bDescriptor);
+        status = cutensorDestroyTensorDescriptor(aDescriptor);
     }
 
     public static unsafe void Multiply(CuTensor a, CuTensor b, CuTensor c)
@@ -46,7 +113,7 @@ public partial class CuTensor
         var c_batch_size = c.PrevDimension * c.LastDimension;
         
         var alpha = 1f;
-        var beta = 0f;
+        var beta = 0f; 
 
         status = cublasCreate_v2(&context);
 

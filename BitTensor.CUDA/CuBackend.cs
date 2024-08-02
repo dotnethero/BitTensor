@@ -225,7 +225,6 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         cutensorTensorDescriptor* aDescriptor;
         cutensorTensorDescriptor* bDescriptor;
         cutensorOperationDescriptor* operationDescriptor;
-        cutensorComputeDescriptor computeDescriptor = new();
         cutensorStatus_t status;
 
         ulong workspaceSizeEstimate;
