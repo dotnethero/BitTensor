@@ -1,14 +1,7 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.ComputeOnly.Wrappers;
-using BitTensor.CUDA.Interop;
-
-// ReSharper disable NotAccessedVariable
-// ReSharper disable JoinDeclarationAndInitializer
 
 namespace BitTensor.CUDA.ComputeOnly;
-
-using static cuBLAS;
-using static cuTENSOR;
 
 public partial class CuTensor
 {
@@ -43,7 +36,7 @@ public partial class CuTensor
         operation.Execute();
     }
 
-    public static unsafe void Multiply(CuTensor a, CuTensor b, CuTensor c)
+    public static void Multiply(CuTensor a, CuTensor b, CuTensor c)
     {
         var context = new CublasContext();
 
