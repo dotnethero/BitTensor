@@ -21,7 +21,7 @@ internal unsafe class CuTensorBinaryOperation : IDisposable
             context.Handle, 
             &descriptor,
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            b.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             c.Descriptor, c.Modes, operation,
             CUTENSOR_COMPUTE_DESC_32F);
 

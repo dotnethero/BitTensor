@@ -20,6 +20,13 @@ public partial class CuTensor
         Multiply(a, b, output);
         return output;
     }
+    
+    public static CuTensor operator *(CuTensor a, float b)
+    {
+        var output = new CuTensor(a.Shape);
+        Scale(a, b, output);
+        return output;
+    }
 
     // inplace operations
 
@@ -34,6 +41,13 @@ public partial class CuTensor
         using var operation = context.CreateElementwiseAdd(a1, b1, c1);
 
         operation.Execute();
+    }
+    
+    public static void Scale(CuTensor a, float b, CuTensor c)
+    {
+        var context = new CublasContext();
+
+        context.Axpy(a, b, c);
     }
 
     public static void Multiply(CuTensor a, CuTensor b, CuTensor c)
