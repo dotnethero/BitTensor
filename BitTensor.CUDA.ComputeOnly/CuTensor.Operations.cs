@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.ComputeOnly.Wrappers;
 using BitTensor.CUDA.Interop;
 
 // ReSharper disable NotAccessedVariable
@@ -29,116 +30,24 @@ public partial class CuTensor
 
     // inplace operations
 
-    public static unsafe void Add(CuTensor a, CuTensor b, CuTensor c)
+    public static void Add(CuTensor a, CuTensor b, CuTensor c)
     {
-        cutensorHandle* handle;
-        cutensorPlan* plan;
-        cutensorPlanPreference* planPreference;
-        cutensorTensorDescriptor* aDescriptor;
-        cutensorTensorDescriptor* bDescriptor;
-        cutensorTensorDescriptor* cDescriptor;
-        cutensorOperationDescriptor* operationDescriptor;
-        cutensorStatus_t status;
+        using var context = new CuTensorContext();
 
-        ulong workspaceSizeEstimate;
+        using var a1 = new CuTensorDescriptor(context, a);
+        using var b1 = new CuTensorDescriptor(context, b);
+        using var c1 = new CuTensorDescriptor(context, c);
 
-        var aShape = stackalloc long[a.Dimensions];
-        var bShape = stackalloc long[b.Dimensions];
-        var cShape = stackalloc long[c.Dimensions];
-        var aStrides = stackalloc long[a.Dimensions];
-        var bStrides = stackalloc long[b.Dimensions];
-        var cStrides = stackalloc long[c.Dimensions];
-        var aModes = stackalloc int[a.Dimensions];
-        var bModes = stackalloc int[b.Dimensions];
-        var cModes = stackalloc int[c.Dimensions];
+        using var operation = new CuTensorBinaryOperation(context, a1, b1, c1, cutensorOperator_t.CUTENSOR_OP_ADD);
+        using var plan = new CuTensorPlan(operation);
 
-        for (var i = 0; i < a.Dimensions; ++i)
-        {
-            aShape[i] = a.Shape[i];
-            bShape[i] = b.Shape[i];
-            cShape[i] = c.Shape[i];
-            aStrides[i] = a.Strides[i];
-            bStrides[i] = b.Strides[i];
-            cStrides[i] = c.Strides[i];
-            aModes[i] = i;
-            bModes[i] = i;
-            cModes[i] = i;
-        }
-
-        var alpha = 1f;
-        var gamma = 1f;
-
-        status = cutensorCreate(&handle);
-        status = cutensorCreateTensorDescriptor(handle, &aDescriptor, (uint) a.Dimensions, aShape, aStrides, cutensorDataType_t.CUTENSOR_R_32F, 128u);
-        status = cutensorCreateTensorDescriptor(handle, &bDescriptor, (uint) b.Dimensions, bShape, bStrides, cutensorDataType_t.CUTENSOR_R_32F, 128u);
-        status = cutensorCreateTensorDescriptor(handle, &cDescriptor, (uint) c.Dimensions, cShape, cStrides, cutensorDataType_t.CUTENSOR_R_32F, 128u);
-        status = cutensorCreateElementwiseBinary(
-            handle, 
-            &operationDescriptor,
-            aDescriptor, aModes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            bDescriptor, cModes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            cDescriptor, cModes, cutensorOperator_t.CUTENSOR_OP_ADD,
-            CUTENSOR_COMPUTE_DESC_32F);
-
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            Console.WriteLine(status);
-
-        status = cutensorCreatePlanPreference(handle, &planPreference, 
-            cutensorAlgo_t.CUTENSOR_ALGO_DEFAULT, 
-            cutensorJitMode_t.CUTENSOR_JIT_MODE_DEFAULT);
-
-        status = cutensorEstimateWorkspaceSize(handle, operationDescriptor, planPreference, cutensorWorksizePreference_t.CUTENSOR_WORKSPACE_DEFAULT, &workspaceSizeEstimate);
-        status = cutensorCreatePlan(handle, &plan, operationDescriptor, planPreference, workspaceSizeEstimate);
-
-        // TODO: check scalar
-
-        status = cutensorElementwiseBinaryExecute(handle, plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, (CUstream_st*) 0);
-
-        status = cutensorDestroyPlan(plan);
-        status = cutensorDestroyPlanPreference(planPreference);
-        status = cutensorDestroyOperationDescriptor(operationDescriptor);
-        status = cutensorDestroyTensorDescriptor(bDescriptor);
-        status = cutensorDestroyTensorDescriptor(aDescriptor);
+        plan.Execute();
     }
 
     public static unsafe void Multiply(CuTensor a, CuTensor b, CuTensor c)
     {
-        cublasContext* context;
-        cublasStatus_t status;
+        var context = new CublasContext();
 
-        var strides = Batching.GetBatchStrides(a, b, ..^2);
-
-        var a_batch_size = a.PrevDimension * a.LastDimension;
-        var b_batch_size = b.PrevDimension * b.LastDimension;
-        var c_batch_size = c.PrevDimension * c.LastDimension;
-        
-        var alpha = 1f;
-        var beta = 0f; 
-
-        status = cublasCreate_v2(&context);
-
-        foreach (var batch in Batching.GetMatMulBatches(strides, a, b, c))
-        {
-            status = cublasGemmEx(
-                context,
-                cublasOperation_t.CUBLAS_OP_N,
-                cublasOperation_t.CUBLAS_OP_N,
-                b.LastDimension, // b.T rows
-                a.PrevDimension, // a.T cols
-                a.LastDimension, // a.T rows
-                &alpha,
-                b.Pointer + batch.BatchIndexB * b_batch_size,
-                cudaDataType_t.CUDA_R_32F,
-                b.LastDimension,
-                a.Pointer + batch.BatchIndexA * a_batch_size,
-                cudaDataType_t.CUDA_R_32F,
-                a.LastDimension,
-                &beta,
-                c.Pointer + batch.BatchIndexR * c_batch_size,
-                cudaDataType_t.CUDA_R_32F,
-                c.LastDimension,
-                cublasComputeType_t.CUBLAS_COMPUTE_32F,
-                cublasGemmAlgo_t.CUBLAS_GEMM_ALGO0);
-        }
+        context.Gemm(a, b, c);
     }
 }

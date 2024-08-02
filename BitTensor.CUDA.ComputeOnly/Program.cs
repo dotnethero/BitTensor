@@ -13,6 +13,5 @@ internal class Program
         CuDebug.WriteLine(c);
         CuDebug.WriteLine(a + b);
         CuDebug.WriteLine(a * c);
-        CuDebug.WriteLine(b);
     }
 }
