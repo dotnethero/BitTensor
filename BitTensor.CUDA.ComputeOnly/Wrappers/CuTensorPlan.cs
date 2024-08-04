@@ -48,9 +48,9 @@ internal unsafe class CuTensorPlan : IDisposable
         Plan = plan;
     }
 
-    public void Execute(float alpha = 1f, float gamma = 1f)
+    public void Execute(CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
     {
-        var status = cutensorElementwiseBinaryExecute(Context.Handle, Plan, &alpha, Operation.A.Data, &gamma, Operation.B.Data, Operation.C.Data, (CUstream_st*) 0);
+        var status = cutensorElementwiseBinaryExecute(Context.Handle, Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, (CUstream_st*) 0);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }

@@ -42,6 +42,22 @@ public static class Shapes
         return (batch, rows, columns);
     }
 
+    public static int[] GetModes(this int[] shape)
+    {
+        var dims = shape.Length;
+        if (dims == 0)
+            return [];
+
+        var modes = new int[dims];
+
+        for (var i = dims - 1; i >= 0; --i)
+        {
+            modes[i] = dims - i;
+        }
+
+        return modes;
+    }
+
     public static unsafe int[] GetStrides(this int[] shape)
     {
         var dims = shape.Length;

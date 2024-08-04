@@ -1,5 +1,4 @@
-﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.ComputeOnly.Wrappers;
+﻿using BitTensor.CUDA.ComputeOnly.Wrappers;
 
 namespace BitTensor.CUDA.ComputeOnly;
 
@@ -7,15 +6,18 @@ public partial class CuTensor
 {
     public static CuTensor operator +(CuTensor a, CuTensor b)
     {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
-        var output = new CuTensor(shape);
+        Broadcast.EnsureBroadcastIsSupported(a.Shape, b.Shape);
+
+        var output = new CuTensor(b.Shape);
         Add(a, b, output);
         return output;
     }
 
     public static CuTensor operator *(CuTensor a, CuTensor b)
     {
-        var batchDimensions = Shapes.EnsureShapesAreCompatible(a.Shape[..^2], b.Shape[..^2]);
+        Broadcast.EnsureBroadcastIsSupported(a.Shape[..^2], b.Shape[..^2]);
+
+        var batchDimensions = b.Shape[..^2];
         var output = new CuTensor([..batchDimensions, a.PrevDimension, b.LastDimension]);
         Multiply(a, b, output);
         return output;
@@ -40,7 +42,7 @@ public partial class CuTensor
 
         using var operation = context.CreateElementwiseAdd(a1, b1, c1);
 
-        operation.Execute();
+        operation.Execute(a, b, c);
     }
     
     public static void Scale(CuTensor a, float b, CuTensor c)

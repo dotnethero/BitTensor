@@ -24,7 +24,7 @@ internal unsafe class CuTensorDescriptor : IDisposable
 
         for (var i = 0; i < a.Dimensions; ++i)
         {
-            Modes[i] = a.Dimensions - i;
+            Modes[i] = a.Modes[i];
             Extents[i] = a.Shape[i];
             Strides[i] = a.Strides[i];
         }

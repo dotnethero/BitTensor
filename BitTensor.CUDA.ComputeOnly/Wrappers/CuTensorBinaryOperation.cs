@@ -7,10 +7,6 @@ using static cuTENSOR;
 internal unsafe class CuTensorBinaryOperation : IDisposable
 {
     internal readonly CuTensorContext Context;
-    internal readonly CuTensorDescriptor A;
-    internal readonly CuTensorDescriptor B;
-    internal readonly CuTensorDescriptor C;
-
     internal readonly cutensorOperationDescriptor* Descriptor;
 
     public CuTensorBinaryOperation(CuTensorContext context, CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c, cutensorOperator_t operation)
@@ -21,26 +17,23 @@ internal unsafe class CuTensorBinaryOperation : IDisposable
             context.Handle, 
             &descriptor,
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            c.Descriptor, c.Modes, operation,
+            b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            b.Descriptor, b.Modes, operation,
             CUTENSOR_COMPUTE_DESC_32F);
 
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
 
-        A = a;
-        B = b;
-        C = c;
         Context = context;
         Descriptor = descriptor;
     }
     
     public CuTensorPlan CreatePlan() => new(this);
 
-    public void Execute()
+    public void Execute(CuTensor a, CuTensor b, CuTensor c)
     {
         using var plan = CreatePlan();
-        plan.Execute();
+        plan.Execute(a, b, c);
     }
 
     public void Dispose()
