@@ -20,8 +20,18 @@ internal unsafe class CuTensorContext : IDisposable
     public CuTensorDescriptor CreateDescriptor(CuTensor a) => 
         new(this, a);
 
-    public CuTensorBinaryOperation CreateElementwiseAdd(CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c) => 
-        new(this, a, b, c, cutensorOperator_t.CUTENSOR_OP_ADD);
+    public CuTensorBinaryOperation CreateElementwiseAdd(
+        CuTensorDescriptor a,
+        CuTensorDescriptor b,
+        CuTensorDescriptor c) => 
+        new(this, a, b, cutensorOperator_t.CUTENSOR_OP_ADD);
+    
+    public CuTensorContraction CreateContraction(
+        CuTensorDescriptor a,
+        CuTensorDescriptor b,
+        CuTensorDescriptor c,
+        CuTensorDescriptor d) => 
+        new(this, a, b, c, d);
 
     public void Dispose()
     {

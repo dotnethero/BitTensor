@@ -4,22 +4,22 @@ namespace BitTensor.CUDA.ComputeOnly.Wrappers;
 
 using static cuTENSOR;
 
-internal unsafe class CuTensorBinaryOperation : ICuTensorOperation
+internal unsafe class CuTensorContraction : ICuTensorOperation
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
-    public CuTensorBinaryOperation(CuTensorContext context, CuTensorDescriptor a, CuTensorDescriptor b, cutensorOperator_t operation)
+    public CuTensorContraction(CuTensorContext context, CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c, CuTensorDescriptor d)
     {
         cutensorOperationDescriptor* descriptor;
 
-        var status = cutensorCreateElementwiseBinary(
+        var status = cutensorCreateContraction(
             context.Handle, 
             &descriptor,
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            b.Descriptor, b.Modes, operation,
-            CUTENSOR_COMPUTE_DESC_32F);
+            c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY, 
+            d.Descriptor, d.Modes, CUTENSOR_COMPUTE_DESC_32F);
 
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
@@ -28,11 +28,14 @@ internal unsafe class CuTensorBinaryOperation : ICuTensorOperation
         Descriptor = descriptor;
     }
     
-    public void Execute(CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
+    public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
     {
         using var plan = new CuTensorPlan(this);
 
-        var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, (CUstream_st*) 0);
+        void* workspace = null;
+        ulong workspaceSize = 0;
+
+        var status = cutensorContract(Context.Handle, plan.Plan, &alpha, a.Pointer, b.Pointer, &beta, c.Pointer, d.Pointer, workspace, workspaceSize, (CUstream_st*) 0);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }

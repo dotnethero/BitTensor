@@ -5,11 +5,16 @@ internal class Program
     public static void Main()
     {
         using var a = CuTensor.Random.Uniform([3, 4]);
-        using var b = CuTensor.Random.Uniform([   4]);
+        using var b = CuTensor.Random.Uniform([1, 4]);
+        using var c = new CuTensor([3, 4]);
+        using var d = new CuTensor([3, 4]);
+
+        CuTensor.Contract(a, b, c, d);
 
         CuDebug.WriteLine(a);
         CuDebug.WriteLine(b);
-        CuDebug.WriteLine(b + a);
+        CuDebug.WriteLine(c);
+        CuDebug.WriteLine(d);
 
         return;
 

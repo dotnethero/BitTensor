@@ -45,6 +45,20 @@ public partial class CuTensor
         operation.Execute(a, b, c);
     }
     
+    public static void Contract(CuTensor a, CuTensor b, CuTensor c, CuTensor d)
+    {
+        using var context = new CuTensorContext();
+
+        using var a1 = context.CreateDescriptor(a);
+        using var b1 = context.CreateDescriptor(b);
+        using var c1 = context.CreateDescriptor(c);
+        using var d1 = context.CreateDescriptor(d);
+
+        using var operation = context.CreateContraction(a1, b1, c1, d1);
+
+        operation.Execute(a, b, c, d);
+    }
+
     public static void Scale(CuTensor a, float b, CuTensor c)
     {
         var context = new CublasContext();

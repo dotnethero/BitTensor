@@ -7,12 +7,12 @@ using static cuTENSOR;
 internal unsafe class CuTensorPlan : IDisposable
 {
     internal readonly CuTensorContext Context;
-    internal readonly CuTensorBinaryOperation Operation;
+    internal readonly ICuTensorOperation Operation;
 
     internal readonly cutensorPlanPreference* PlanReference;
     internal readonly cutensorPlan* Plan;
 
-    public CuTensorPlan(CuTensorBinaryOperation operation)
+    public CuTensorPlan(ICuTensorOperation operation)
     {
         cutensorPlan* plan;
         cutensorPlanPreference* planPreference;
@@ -46,13 +46,6 @@ internal unsafe class CuTensorPlan : IDisposable
         Operation = operation;
         PlanReference = planPreference;
         Plan = plan;
-    }
-
-    public void Execute(CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
-    {
-        var status = cutensorElementwiseBinaryExecute(Context.Handle, Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, (CUstream_st*) 0);
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(status);
     }
 
     public void Dispose()
