@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.ComputeOnly.Wrappers;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.ComputeOnly.Wrappers;
 
 namespace BitTensor.CUDA.ComputeOnly;
 
@@ -6,18 +7,15 @@ public partial class CuTensor
 {
     public static CuTensor operator +(CuTensor a, CuTensor b)
     {
-        Broadcast.EnsureBroadcastIsSupported(a.Shape, b.Shape);
-
-        var output = new CuTensor(b.Shape);
+        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
+        var output = new CuTensor(shape);
         Add(a, b, output);
         return output;
     }
 
     public static CuTensor operator *(CuTensor a, CuTensor b)
     {
-        Broadcast.EnsureBroadcastIsSupported(a.Shape[..^2], b.Shape[..^2]);
-
-        var batchDimensions = b.Shape[..^2];
+        var batchDimensions = Shapes.EnsureShapesAreCompatible(a.Shape[..^2], b.Shape[..^2]);
         var output = new CuTensor([..batchDimensions, a.PrevDimension, b.LastDimension]);
         Multiply(a, b, output);
         return output;
@@ -40,11 +38,11 @@ public partial class CuTensor
         using var b1 = context.CreateDescriptor(b);
         using var c1 = context.CreateDescriptor(c);
 
-        using var operation = context.CreateElementwiseAdd(a1, b1, c1);
+        using var operation = context.CreateElementwiseAdd(a1, b1, c1, c1);
 
-        operation.Execute(a, b, c);
+        operation.Execute(a, b, c, c, gamma: 0);
     }
-    
+
     public static void Contract(CuTensor a, CuTensor b, CuTensor c, CuTensor d)
     {
         using var context = new CuTensorContext();

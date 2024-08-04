@@ -15,7 +15,9 @@ public unsafe partial class CuTensor : AbstractTensor, IDisposable
     {
         Pointer = CuArray.Allocate(Size, values);
     }
-    
+
+    public static CuTensor Allocate(int[] shape) => new(shape);
+
     public float[] CopyToHost()
     {
         var destination = new float[Size];
@@ -43,4 +45,6 @@ public unsafe partial class CuTensor : AbstractTensor, IDisposable
     {
         CuArray.Free(Pointer);
     }
+
+    public override string ToString() => $"Tensor #{Id}, shape={Shape.Serialize()}";
 }
