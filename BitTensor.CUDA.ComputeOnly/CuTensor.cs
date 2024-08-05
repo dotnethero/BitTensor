@@ -15,6 +15,11 @@ public unsafe partial class CuTensor : AbstractTensor, IDisposable
     {
         Pointer = CuArray.Allocate(Size, values);
     }
+    
+    public CuTensor(int[] shape, float* pointer) : base(shape)
+    {
+        Pointer = pointer;
+    }
 
     public static CuTensor Allocate(int[] shape) => new(shape);
 

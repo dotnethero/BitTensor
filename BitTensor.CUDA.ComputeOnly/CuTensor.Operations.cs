@@ -3,7 +3,7 @@ using BitTensor.CUDA.ComputeOnly.Wrappers;
 
 namespace BitTensor.CUDA.ComputeOnly;
 
-public partial class CuTensor
+public unsafe partial class CuTensor
 {
     public static CuTensor operator +(CuTensor a, CuTensor b)
     {
@@ -34,6 +34,24 @@ public partial class CuTensor
         var output = new CuTensor(a.Shape);
         Scale(a, b, output);
         return output;
+    }
+
+    public static CuTensor Sum(CuTensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
+
+    public static CuTensor Sum(CuTensor a, HashSet<int> axis)
+    {
+        var shape = a.Shape.Where((s, i) => !axis.Contains(i)).ToArray();
+        var output = new CuTensor(shape);
+        Sum(a, axis, output);
+        return output;
+    }
+
+    public static CuTensor Reshape(CuTensor a, int[] shape)
+    {
+        if (shape.Product() != a.Size)
+            throw new InvalidOperationException($"Shape {shape.Serialize()} does not produce {a.Size} size");
+
+        return new CuTensor(shape, a.Pointer);
     }
 
     // inplace operations
@@ -76,6 +94,11 @@ public partial class CuTensor
         using var operation = context.CreateContraction(a1, b1, c1, d1);
 
         operation.Execute(a, b, c, d);
+    }
+    
+    private static void Sum(CuTensor a, HashSet<int> axis, CuTensor output)
+    {
+        throw new NotImplementedException();
     }
 
     public static void Scale(CuTensor a, float b, CuTensor c)

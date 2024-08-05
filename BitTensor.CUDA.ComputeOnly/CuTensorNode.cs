@@ -53,7 +53,18 @@ public class CuTensorNode : IDisposable
             output, 
             children: [a, b],
             forward: (self) => CuTensor.Add(a.Tensor, b.Tensor, output),
-            backward: (self, grad) => throw new NotImplementedException());
+            backward: (self, grad) =>
+            {
+                var adims = Shapes.GetBroadcastedAxis(a.Tensor.Shape, output.Shape);
+                var bdims = Shapes.GetBroadcastedAxis(b.Tensor.Shape, output.Shape);
+                var agrad = CuTensor.Sum(grad, axis: adims);
+                var bgrad = CuTensor.Sum(grad, axis: bdims);
+                return
+                [
+                    CuTensor.Reshape(agrad, a.Tensor.Shape),
+                    CuTensor.Reshape(bgrad, b.Tensor.Shape),
+                ];
+            });
     }
 
     public void Dispose()
