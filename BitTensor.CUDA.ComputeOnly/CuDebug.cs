@@ -1,10 +1,22 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using BitTensor.CUDA.ComputeOnly.Graph;
 
 namespace BitTensor.CUDA.ComputeOnly;
 
 public static class CuDebug
 {
+    public static void WriteLine(CuTensorNode node, [CallerArgumentExpression("node")] string tensorName = "")
+    {
+        node.EnsureHasUpdatedValues();
+
+        var values = node.Tensor.CopyToHost();
+        var shape = node.Tensor.Shape;
+        var text = View(values, shape, krStyle: true);
+
+        Console.WriteLine($"{tensorName} = {text}");
+    }
+
     public static void WriteLine(CuTensor tensor, [CallerArgumentExpression("tensor")] string tensorName = "")
     {
         var values = tensor.CopyToHost();

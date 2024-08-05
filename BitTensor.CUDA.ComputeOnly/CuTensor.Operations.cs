@@ -40,6 +40,9 @@ public unsafe partial class CuTensor
     
     public static CuTensor Sum(CuTensor a)
     {
+        if (a.IsScalar)
+            return a;
+
         var output = new CuTensor([]);
         Sum(a, output);
         return output;
@@ -47,6 +50,12 @@ public unsafe partial class CuTensor
 
     private static CuTensor Sum(CuTensor a, HashSet<int> axis)
     {
+        if (axis.Count == 0)
+            return a;
+
+        if (axis.Count == a.Dimensions)
+            return Sum(a);
+
         var shape = a.Shape.Where((s, i) => !axis.Contains(i)).ToArray();
         var output = new CuTensor(shape);
         Sum(a, axis, output);

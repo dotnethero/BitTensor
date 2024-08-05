@@ -1,10 +1,8 @@
 ﻿// ReSharper disable ConvertToPrimaryConstructor
 
-using BitTensor.Abstractions;
+namespace BitTensor.CUDA.ComputeOnly.Graph;
 
-namespace BitTensor.CUDA.ComputeOnly;
-
-public class CuTensorNode : IDisposable
+public partial class CuTensorNode : IDisposable
 {
     public delegate void ForwardFunction();
     public delegate CuTensor[] BackwardFunction(CuTensor grad);
@@ -43,28 +41,6 @@ public class CuTensorNode : IDisposable
 
         Forward?.Invoke();
         Outdated = false;
-    }
-
-    public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b)
-    {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Tensor.Shape, b.Tensor.Shape);
-        var output = new CuTensor(shape);
-        return new CuTensorNode(
-            output, 
-            children: [a, b],
-            forward: () => CuTensor.Add(a.Tensor, b.Tensor, output),
-            backward: (grad) =>
-            {
-                var adims = Shapes.GetBroadcastedAxis(a.Tensor.Shape, output.Shape);
-                var bdims = Shapes.GetBroadcastedAxis(b.Tensor.Shape, output.Shape);
-                var agrad = CuTensor.Sum(grad, axis: adims);
-                var bgrad = CuTensor.Sum(grad, axis: bdims);
-                return
-                [
-                    CuTensor.Reshape(agrad, a.Tensor.Shape),
-                    CuTensor.Reshape(bgrad, b.Tensor.Shape),
-                ];
-            });
     }
 
     public void Dispose()

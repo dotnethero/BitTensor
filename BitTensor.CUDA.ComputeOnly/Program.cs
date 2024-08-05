@@ -1,4 +1,6 @@
-﻿namespace BitTensor.CUDA.ComputeOnly;
+﻿using BitTensor.CUDA.ComputeOnly.Graph;
+
+namespace BitTensor.CUDA.ComputeOnly;
 
 internal class Program
 {
@@ -8,20 +10,32 @@ internal class Program
         using var b = CuTensor.Random.Uniform([3, 1]);
         using var c = CuTensor.Random.Uniform([1, 4]);
 
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(CuTensor.Sum(a, [0, 1]));
-        CuDebug.WriteLine(CuTensor.Sum(a, [0]));
-        CuDebug.WriteLine(CuTensor.Sum(a, [1]));
-        CuDebug.WriteLine(CuTensor.Sum(a));
+        using var na = new CuTensorNode(a);
+        using var nb = new CuTensorNode(b);
+        using var nc = new CuTensorNode(c);
+        using var nx = na + nb;
+        using var ny = na + nc;
 
-        using var inputA = new CuTensorNode(a);
-        using var inputB = new CuTensorNode(b);
-        using var output = inputA + inputB;
+        using var ones = new CuTensor(nx.Tensor.Shape, Enumerable.Repeat(1f, nx.Tensor.Size).ToArray());
 
-        output.EnsureHasUpdatedValues();
-
-        CuDebug.WriteLine(inputA.Tensor);
-        CuDebug.WriteLine(inputB.Tensor);
-        CuDebug.WriteLine(output.Tensor);
+        CuDebug.WriteLine(na);
+        CuDebug.WriteLine(nb);
+        CuDebug.WriteLine(nc);
+        CuDebug.WriteLine(nx);
+        CuDebug.WriteLine(ny);
+        
+        var nxgrads = nx.Backward?.Invoke(ones);
+        if (nxgrads is not null)
+        {
+            CuDebug.WriteLine(nxgrads[0]);
+            CuDebug.WriteLine(nxgrads[1]);
+        }
+        
+        var nygrads = ny.Backward?.Invoke(ones);
+        if (nygrads is not null)
+        {
+            CuDebug.WriteLine(nygrads[0]);
+            CuDebug.WriteLine(nygrads[1]);
+        }
     }
 }
