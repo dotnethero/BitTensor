@@ -8,15 +8,14 @@ internal class Program
         using var b = CuTensor.Random.Uniform([3, 1]);
         using var c = CuTensor.Random.Uniform([1, 4]);
 
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(b);
-        CuDebug.WriteLine(a + b);
-        CuDebug.WriteLine(a - b);
+        using var inputA = new CuTensorNode(a);
+        using var inputB = new CuTensorNode(b);
+        using var output = inputA + inputB;
 
-        Console.WriteLine(new string('=', 40));
+        output.EnsureHasUpdatedValues();
 
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(c);
-        CuDebug.WriteLine(a + c);
+        CuDebug.WriteLine(inputA.Tensor);
+        CuDebug.WriteLine(inputB.Tensor);
+        CuDebug.WriteLine(output.Tensor);
     }
 }
