@@ -13,7 +13,7 @@ internal class Program
         using var na = new CuTensorNode(a);
         using var nb = new CuTensorNode(b);
         using var nc = new CuTensorNode(c);
-        using var nx = na + nb;
+        using var nx = na + nb; // TODO: responsible for dispose
         using var ny = na + nc;
 
         CuDebug.WriteLine(na);
@@ -22,11 +22,11 @@ internal class Program
         CuDebug.WriteLine(nx);
         CuDebug.WriteLine(ny);
         
-        var nxgrads = nx.GetGradients();
+        using var nxgrads = nx.GetGradients();
         CuDebug.WriteLine(nxgrads[na]);
         CuDebug.WriteLine(nxgrads[nb]);
 
-        var nygrads = ny.GetGradients();
+        using var nygrads = ny.GetGradients();
         CuDebug.WriteLine(nygrads[na]);
         CuDebug.WriteLine(nygrads[nc]);
     }
