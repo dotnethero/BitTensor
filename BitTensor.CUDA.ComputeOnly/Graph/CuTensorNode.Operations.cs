@@ -20,7 +20,7 @@ public partial class CuTensorNode
                 var bgrad = CuTensor.Sum(grad, axis: bdims);
                 return
                 [
-                    CuTensor.Reshape(agrad, a.Tensor.Shape),
+                    CuTensor.Reshape(agrad, a.Tensor.Shape), // shares memory with `agrad`
                     CuTensor.Reshape(bgrad, b.Tensor.Shape),
                 ];
             });

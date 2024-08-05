@@ -71,6 +71,18 @@ public unsafe partial class CuTensor
     }
 
     // inplace operations
+    
+    public static void Add(CuTensor a, CuTensor r)
+    {
+        using var context = new CuTensorContext();
+
+        using var a1 = context.CreateDescriptor(a);
+        using var r1 = context.CreateDescriptor(r);
+
+        using var operation = context.CreateElementwiseAdd(a1, r1, r1);
+
+        operation.Execute(a, r, r);
+    }
 
     public static void Add(CuTensor a, CuTensor b, CuTensor r)
     {

@@ -1,4 +1,4 @@
-﻿// ReSharper disable ConvertToPrimaryConstructor
+﻿using System.Runtime.CompilerServices;
 
 namespace BitTensor.CUDA.ComputeOnly.Graph;
 
@@ -7,29 +7,37 @@ public partial class CuTensorNode : IDisposable
     public delegate void ForwardFunction();
     public delegate CuTensor[] BackwardFunction(CuTensor grad);
 
-    internal readonly CuTensor Tensor;
-    internal readonly CuTensorNode[] Children;
-    internal readonly ForwardFunction? Forward;
-    internal readonly BackwardFunction? Backward;
-
-    internal bool Outdated;
+    public readonly CuTensor Tensor;
+    public readonly ForwardFunction? Forward;
+    public readonly BackwardFunction? Backward;
+    public readonly CuTensorNode[] Children;
+    public readonly List<CuTensorNode> Dependents;
+    public bool Outdated;
 
     public CuTensorNode(CuTensor tensor)
     {
         Tensor = tensor;
         Children = [];
+        Dependents = new(3);
         Outdated = false;
     }
     
     public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
     {
         Tensor = tensor;
-        Children = children;
         Forward = forward;
         Backward = backward;
+        Children = children;
+        Dependents = new(3);
         Outdated = true;
+        
+        foreach (var child in Children)
+        {
+            child.Dependents.Add(this);
+        }
     }
 
+    [MethodImpl(MethodImplOptions.NoInlining)]
     public void EnsureHasUpdatedValues()
     {
         if (!Outdated) return;
@@ -42,6 +50,19 @@ public partial class CuTensorNode : IDisposable
         Forward?.Invoke();
         Outdated = false;
     }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    public void Invalidate()
+    {
+        foreach (var child in Dependents)
+        {
+            child.Invalidate();
+        }
+
+        Outdated = true;
+    }
+
+    public override int GetHashCode() => unchecked((int)Tensor.Id);
 
     public void Dispose()
     {

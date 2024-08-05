@@ -16,26 +16,18 @@ internal class Program
         using var nx = na + nb;
         using var ny = na + nc;
 
-        using var ones = new CuTensor(nx.Tensor.Shape, Enumerable.Repeat(1f, nx.Tensor.Size).ToArray());
-
         CuDebug.WriteLine(na);
         CuDebug.WriteLine(nb);
         CuDebug.WriteLine(nc);
         CuDebug.WriteLine(nx);
         CuDebug.WriteLine(ny);
         
-        var nxgrads = nx.Backward?.Invoke(ones);
-        if (nxgrads is not null)
-        {
-            CuDebug.WriteLine(nxgrads[0]);
-            CuDebug.WriteLine(nxgrads[1]);
-        }
-        
-        var nygrads = ny.Backward?.Invoke(ones);
-        if (nygrads is not null)
-        {
-            CuDebug.WriteLine(nygrads[0]);
-            CuDebug.WriteLine(nygrads[1]);
-        }
+        var nxgrads = nx.GetGradients();
+        CuDebug.WriteLine(nxgrads[na]);
+        CuDebug.WriteLine(nxgrads[nb]);
+
+        var nygrads = ny.GetGradients();
+        CuDebug.WriteLine(nygrads[na]);
+        CuDebug.WriteLine(nygrads[nc]);
     }
 }
