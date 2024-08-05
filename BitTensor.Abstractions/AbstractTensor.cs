@@ -9,7 +9,6 @@ public abstract class AbstractTensor
     public readonly int Dimensions;
     public readonly int[] Shape;
     public readonly int[] Strides;
-    public readonly int[] Modes;
     
     // tensor properties
     public readonly bool IsEmpty;
@@ -29,7 +28,6 @@ public abstract class AbstractTensor
         Id = Interlocked.Increment(ref MaxID);
         Size = size;
         Shape = shape;
-        Modes = shape.GetModes();
         Strides = shape.GetStrides();
         Dimensions = shape.Length;
 

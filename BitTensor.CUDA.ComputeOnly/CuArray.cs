@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Drawing;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.ComputeOnly;
@@ -9,11 +11,16 @@ public static unsafe class CuArray
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static uint Bytes(int size) => (uint)size  * sizeof(float);
-
+    
     public static float* Allocate(int size)
     {
-        float* pointer;
-        cudaMalloc((void**)&pointer, Bytes(size));
+        return (float*)AllocateBytes(Bytes(size));
+    }
+
+    public static void* AllocateBytes(uint bytes)
+    {
+        void* pointer;
+        cudaMalloc(&pointer, bytes);
         return pointer;
     }
 

@@ -19,6 +19,9 @@ internal unsafe class CuTensorContext : IDisposable
 
     public CuTensorDescriptor CreateDescriptor(CuTensor a) => 
         new(this, a);
+    
+    public CuTensorDescriptor CreateDescriptor(CuTensor a, int[] modes) => 
+        new(this, a, modes);
 
     public CuTensorTernaryOperation CreateElementwiseAdd(
         CuTensorDescriptor a,
@@ -33,6 +36,12 @@ internal unsafe class CuTensorContext : IDisposable
         CuTensorDescriptor c,
         CuTensorDescriptor d) => 
         new(this, a, b, c, d);
+    
+    public CuTensorReduction CreateSum(
+        CuTensorDescriptor a,
+        CuTensorDescriptor b,
+        CuTensorDescriptor c) => 
+        new(this, a, b, c, cutensorOperator_t.CUTENSOR_OP_ADD);
 
     public void Dispose()
     {

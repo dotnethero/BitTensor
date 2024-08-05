@@ -9,6 +9,7 @@ internal unsafe class CuTensorPlan : IDisposable
     internal readonly CuTensorContext Context;
     internal readonly ICuTensorOperation Operation;
 
+    internal readonly ulong WorkspaceSize;
     internal readonly cutensorPlanPreference* PlanReference;
     internal readonly cutensorPlan* Plan;
 
@@ -44,6 +45,7 @@ internal unsafe class CuTensorPlan : IDisposable
 
         Context = operation.Context;
         Operation = operation;
+        WorkspaceSize = workspaceSizeEstimate;
         PlanReference = planPreference;
         Plan = plan;
     }

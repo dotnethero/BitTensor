@@ -37,8 +37,15 @@ public unsafe partial class CuTensor
     }
 
     public static CuTensor Sum(CuTensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
+    
+    public static CuTensor Sum(CuTensor a)
+    {
+        var output = new CuTensor([]);
+        Sum(a, output);
+        return output;
+    }
 
-    public static CuTensor Sum(CuTensor a, HashSet<int> axis)
+    private static CuTensor Sum(CuTensor a, HashSet<int> axis)
     {
         var shape = a.Shape.Where((s, i) => !axis.Contains(i)).ToArray();
         var output = new CuTensor(shape);
@@ -56,62 +63,86 @@ public unsafe partial class CuTensor
 
     // inplace operations
 
-    public static void Add(CuTensor a, CuTensor b, CuTensor c)
+    public static void Add(CuTensor a, CuTensor b, CuTensor r)
     {
         using var context = new CuTensorContext();
 
         using var a1 = context.CreateDescriptor(a);
         using var b1 = context.CreateDescriptor(b);
-        using var c1 = context.CreateDescriptor(c);
+        using var r1 = context.CreateDescriptor(r);
 
-        using var operation = context.CreateElementwiseAdd(a1, b1, c1, c1);
+        using var operation = context.CreateElementwiseAdd(a1, b1, r1, r1);
 
-        operation.Execute(a, b, c, c, gamma: 0);
+        operation.Execute(a, b, r, r, gamma: 0);
     }
     
-    public static void Subtract(CuTensor a, CuTensor b, CuTensor c)
+    public static void Subtract(CuTensor a, CuTensor b, CuTensor r)
     {
         using var context = new CuTensorContext();
 
         using var a1 = context.CreateDescriptor(a);
         using var b1 = context.CreateDescriptor(b);
-        using var c1 = context.CreateDescriptor(c);
+        using var r1 = context.CreateDescriptor(r);
 
-        using var operation = context.CreateElementwiseAdd(a1, b1, c1, c1);
+        using var operation = context.CreateElementwiseAdd(a1, b1, r1, r1);
 
-        operation.Execute(a, b, c, c, gamma: 0, beta: -1);
+        operation.Execute(a, b, r, r, gamma: 0, beta: -1);
     }
 
-    public static void Contract(CuTensor a, CuTensor b, CuTensor c, CuTensor d)
+    public static void Contract(CuTensor a, CuTensor b, CuTensor c, CuTensor r)
     {
         using var context = new CuTensorContext();
 
         using var a1 = context.CreateDescriptor(a);
         using var b1 = context.CreateDescriptor(b);
         using var c1 = context.CreateDescriptor(c);
-        using var d1 = context.CreateDescriptor(d);
+        using var r1 = context.CreateDescriptor(r);
 
-        using var operation = context.CreateContraction(a1, b1, c1, d1);
+        using var operation = context.CreateContraction(a1, b1, c1, r1);
 
-        operation.Execute(a, b, c, d);
+        operation.Execute(a, b, c, r);
     }
     
-    private static void Sum(CuTensor a, HashSet<int> axis, CuTensor output)
+    private static void Sum(CuTensor a, CuTensor r)
     {
-        throw new NotImplementedException();
+        using var context = new CuTensorContext();
+
+        using var a1 = context.CreateDescriptor(a);
+        using var r1 = context.CreateDescriptor(r);
+
+        using var operation = context.CreateSum(a1, r1, r1);
+
+        operation.Execute(a, r, r, beta: 0);
     }
 
-    public static void Scale(CuTensor a, float b, CuTensor c)
+    private static void Sum(CuTensor a, HashSet<int> axis, CuTensor r)
+    {
+        var modes = a.Shape
+            .GetModes()
+            .Where((s, i) => !axis.Contains(i))
+            .ToArray();
+
+        using var context = new CuTensorContext();
+
+        using var a1 = context.CreateDescriptor(a);
+        using var r1 = context.CreateDescriptor(r, modes);
+
+        using var operation = context.CreateSum(a1, r1, r1);
+
+        operation.Execute(a, r, r, beta: 0);
+    }
+
+    public static void Scale(CuTensor a, float b, CuTensor r)
     {
         var context = new CublasContext();
 
-        context.Axpy(a, b, c);
+        context.Axpy(a, b, r);
     }
 
-    public static void Multiply(CuTensor a, CuTensor b, CuTensor c)
+    public static void Multiply(CuTensor a, CuTensor b, CuTensor r)
     {
         var context = new CublasContext();
 
-        context.Gemm(a, b, c);
+        context.Gemm(a, b, r);
     }
 }

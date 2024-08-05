@@ -8,6 +8,12 @@ internal class Program
         using var b = CuTensor.Random.Uniform([3, 1]);
         using var c = CuTensor.Random.Uniform([1, 4]);
 
+        CuDebug.WriteLine(a);
+        CuDebug.WriteLine(CuTensor.Sum(a, [0, 1]));
+        CuDebug.WriteLine(CuTensor.Sum(a, [0]));
+        CuDebug.WriteLine(CuTensor.Sum(a, [1]));
+        CuDebug.WriteLine(CuTensor.Sum(a));
+
         using var inputA = new CuTensorNode(a);
         using var inputB = new CuTensorNode(b);
         using var output = inputA + inputB;

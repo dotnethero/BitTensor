@@ -6,8 +6,8 @@ namespace BitTensor.CUDA.ComputeOnly;
 
 public class CuTensorNode : IDisposable
 {
-    public delegate void ForwardFunction(CuTensor self);
-    public delegate CuTensor[] BackwardFunction(CuTensor self, CuTensor grad);
+    public delegate void ForwardFunction();
+    public delegate CuTensor[] BackwardFunction(CuTensor grad);
 
     internal readonly CuTensor Tensor;
     internal readonly CuTensorNode[] Children;
@@ -41,7 +41,7 @@ public class CuTensorNode : IDisposable
             child.EnsureHasUpdatedValues();
         }
 
-        Forward?.Invoke(Tensor);
+        Forward?.Invoke();
         Outdated = false;
     }
 
@@ -52,8 +52,8 @@ public class CuTensorNode : IDisposable
         return new CuTensorNode(
             output, 
             children: [a, b],
-            forward: (self) => CuTensor.Add(a.Tensor, b.Tensor, output),
-            backward: (self, grad) =>
+            forward: () => CuTensor.Add(a.Tensor, b.Tensor, output),
+            backward: (grad) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Tensor.Shape, output.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Tensor.Shape, output.Shape);
