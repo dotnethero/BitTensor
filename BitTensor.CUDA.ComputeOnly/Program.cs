@@ -11,6 +11,7 @@ internal class Program
         CuDebug.WriteLine(a);
         CuDebug.WriteLine(b);
         CuDebug.WriteLine(a + b);
+        CuDebug.WriteLine(a - b);
 
         Console.WriteLine(new string('=', 40));
 
