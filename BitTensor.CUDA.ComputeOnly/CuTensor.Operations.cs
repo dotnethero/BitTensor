@@ -32,9 +32,6 @@ public unsafe partial class CuTensor
     
     public static CuTensor Sum(CuTensor a)
     {
-        if (a.IsScalar)
-            return a;
-
         var output = new CuTensor([]);
         Sum(a, output);
         return output;
@@ -42,13 +39,7 @@ public unsafe partial class CuTensor
 
     public static CuTensor Sum(CuTensor a, HashSet<int> axis)
     {
-        if (axis.Count == 0)
-            return a;
-
-        if (axis.Count == a.Dimensions)
-            return Sum(a);
-
-        var shape = a.Shape.Where((s, i) => !axis.Contains(i)).ToArray();
+        var shape = Shapes.Reduce(a.Shape, axis);
         var output = new CuTensor(shape);
         Sum(a, axis, output);
         return output;
@@ -62,12 +53,7 @@ public unsafe partial class CuTensor
         if (!axis.AreElementsUnique())
             throw new InvalidOperationException($"Axis {axis.Serialize()} does not contain all axes for {a.Shape.Serialize()} shape tensor");
 
-        var shape = new int[a.Dimensions];
-        for (var i = 0; i < a.Dimensions; ++i)
-        {
-            shape[i] = a.Shape[axis[i]];
-        }
-
+        var shape = Shapes.Transpose(a.Shape, axis);
         var output = new CuTensor(shape);
         Transpose(a, axis, output);
         return output;
@@ -83,63 +69,52 @@ public unsafe partial class CuTensor
 
     // inplace operations
     
-    internal static void Add(CuTensor a, CuTensor r)
+    internal static void AddInplace(CuTensor a, CuTensor z)
     {
         using var context = new CuTensorContext();
-
-        using var a1 = context.CreateDescriptor(a);
-        using var r1 = context.CreateDescriptor(r);
-
-        using var operation = context.CreateElementwiseAdd(a1, r1, r1);
-
-        operation.Execute(a, r, r);
+        using var plan = new CuTensorAddInplacePlan(context, a, z);
+        plan.Execute(a, z);
     }
 
-    internal static void Add(CuTensor a, CuTensor b, CuTensor r)
+    internal static void Add(CuTensor a, CuTensor b, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorAddPlan(context, a, b, r);
-
-        plan.Execute(a, b, r, beta: +1);
+        using var plan = new CuTensorAddPlan(context, a, b, z);
+        plan.Execute(a, b, z, beta: +1);
     }
     
-    internal static void Subtract(CuTensor a, CuTensor b, CuTensor r)
+    internal static void Subtract(CuTensor a, CuTensor b, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorAddPlan(context, a, b, r);
-
-        plan.Execute(a, b, r, beta: -1);
+        using var plan = new CuTensorAddPlan(context, a, b, z);
+        plan.Execute(a, b, z, beta: -1);
     }
     
-    internal static void Multiply(CuTensor a, CuTensor b, CuTensor r)
+    internal static void Multiply(CuTensor a, CuTensor b, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorMatMulPlan(context, a, b, r);
-
-        plan.Execute(a, b, r);
+        using var plan = new CuTensorMatMulPlan(context, a, b, z);
+        plan.Execute(a, b, z);
     }
 
-    internal static void Sum(CuTensor a, CuTensor r)
+    internal static void Sum(CuTensor a, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorSumPlan(context, a, r, []);
-
-        plan.Execute(a, r);
+        using var plan = new CuTensorSumPlan(context, a, z, []);
+        plan.Execute(a, z);
     }
 
-    internal static void Sum(CuTensor a, HashSet<int> axis, CuTensor r)
+    internal static void Sum(CuTensor a, HashSet<int> axis, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorSumPlan(context, a, r, axis); // TODO: axis as parameter
-
-        plan.Execute(a, r);
+        using var plan = new CuTensorSumPlan(context, a, z, axis);
+        plan.Execute(a, z);
     }
     
-    internal static void Transpose(CuTensor input, int[] axis, CuTensor output)
+    internal static void Transpose(CuTensor a, int[] axis, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorPermutationPlan(context, input, output, axis);
-
-        plan.Execute(input, output);
+        using var plan = new CuTensorPermutationPlan(context, a, z, axis);
+        plan.Execute(a, z);
     }
 }

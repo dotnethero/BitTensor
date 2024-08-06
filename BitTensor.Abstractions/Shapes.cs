@@ -21,7 +21,25 @@ public static class Shapes
 
         return result;
     }
-    
+
+    public static int[] Transpose(int[] shape, int[] axis)
+    {
+        var dims = shape.Length;
+        var result = new int[dims];
+        for (var i = 0; i < dims; ++i)
+        {
+            result[i] = shape[axis[i]];
+        }
+        return result;
+    }
+
+    public static int[] Reduce(int[] shape, HashSet<int> axis)
+    {
+        return shape
+            .Where((s, i) => !axis.Contains(i))
+            .ToArray();
+    }
+
     public static unsafe (int batch, int rows, int columns) GetBatchRowsColumns(int[] shape)
     {
         var dims = shape.Length;

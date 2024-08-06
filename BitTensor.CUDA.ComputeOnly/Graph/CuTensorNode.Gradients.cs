@@ -26,7 +26,7 @@ public partial class CuTensorNode
 
                 if (grads.ContainsKey(child))
                 {
-                    CuTensor.Add(grad, grads[child]);
+                    CuTensor.AddInplace(grad, grads[child]);
                 }
                 else
                 {

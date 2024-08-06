@@ -35,7 +35,7 @@ internal unsafe class CuTensorBinaryOperation : ICuTensorOperation
         ExecuteByPlan(plan, a, b, c, alpha, gamma);
     }
 
-    private void ExecuteByPlan(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
+    public void ExecuteByPlan(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
     {
         var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
