@@ -41,7 +41,7 @@ public static class Shapes
 
         return (batch, rows, columns);
     }
-
+    
     public static int[] GetReductionModes(this int[] shape, HashSet<int> axis) =>
         shape
             .GetModes()
