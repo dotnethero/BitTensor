@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.ComputeOnly.Graph;
+﻿using System.Diagnostics;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.ComputeOnly;
 
@@ -6,41 +7,53 @@ internal class Program
 {
     public static void Main()
     {
-        using var a = CuTensor.Random.Uniform([2, 3, 4]);
-        using var b = CuTensor.Random.Uniform([3, 1]);
-        using var c = CuTensor.Random.Uniform([1, 4]);
-        using var d = CuTensor.Random.Uniform([4, 5]);
+        const int B = 64;
+        const int N = 128;
+        const int M = 256;
+        const int K = 512;
 
-        using var z1 = CuTensor.Allocate([2, 3, 5]);
-        using var z2 = CuTensor.Allocate([2, 3, 5]);
+        using var a = CuTensor.Random.Uniform([B, N, M]);
+        using var b = CuTensor.Random.Uniform([B, M, K]);
 
-        CuTensor.Multiply(a, d, z1);
-        CuBLAS.Multiply(a, d, z2);
+        using var z1 = CuTensor.Allocate([B, N, K]);
+        using var z2 = CuTensor.Allocate([B, N, K]);
 
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(z1);
-        CuDebug.WriteLine(z2);
+        var sw = Stopwatch.StartNew();
 
-        return;
+        CuTensor.Multiply(a, b, z1);
+        cudaRT.cudaDeviceSynchronize();
+        Console.WriteLine($"cuTENSOR: {sw.Elapsed}");
 
-        using var na = new CuTensorNode(a);
-        using var nb = new CuTensorNode(b);
-        using var nc = new CuTensorNode(c);
-        using var nx = na + nb; // TODO: responsible for dispose
-        using var ny = na + nc;
-
-        CuDebug.WriteLine(na);
-        CuDebug.WriteLine(nb);
-        CuDebug.WriteLine(nc);
-        CuDebug.WriteLine(nx);
-        CuDebug.WriteLine(ny);
+        sw.Restart();
         
-        using var nxgrads = nx.GetGradients();
-        CuDebug.WriteLine(nxgrads[na]);
-        CuDebug.WriteLine(nxgrads[nb]);
+        CuTensor.Multiply(a, b, z1);
+        cudaRT.cudaDeviceSynchronize();
+        Console.WriteLine($"cuTENSOR: {sw.Elapsed}");
+        
+        sw.Restart();
+        
+        CuTensor.Multiply(a, b, z1);
+        cudaRT.cudaDeviceSynchronize();
+        Console.WriteLine($"cuTENSOR: {sw.Elapsed}");
 
-        using var nygrads = ny.GetGradients();
-        CuDebug.WriteLine(nygrads[na]);
-        CuDebug.WriteLine(nygrads[nc]);
+        sw.Restart();
+
+        CuBLAS.Multiply(a, b, z2);
+        cudaRT.cudaDeviceSynchronize();
+        Console.WriteLine($"cuBLAS: {sw.Elapsed}");
+        
+        sw.Restart();
+
+        CuBLAS.Multiply(a, b, z2);
+        cudaRT.cudaDeviceSynchronize();
+        Console.WriteLine($"cuBLAS: {sw.Elapsed}");
+        
+        sw.Restart();
+
+        CuBLAS.Multiply(a, b, z2);
+        cudaRT.cudaDeviceSynchronize();
+        Console.WriteLine($"cuBLAS: {sw.Elapsed}");
+
+        CuAsserts.ValuesAreEqual(z2, z1);
     }
 }
