@@ -131,10 +131,8 @@ public unsafe partial class CuTensor
 
     internal static void Sum(CuTensor a, HashSet<int> axis, CuTensor r)
     {
-        var modes = a.Shape.GetReductionModes(axis);
-
         using var context = new CuTensorContext();
-        using var plan = new CuTensorSumPlan(context, a, r, modes); // TODO: axis as parameter
+        using var plan = new CuTensorSumPlan(context, a, r, axis); // TODO: axis as parameter
 
         plan.Execute(a, r);
     }

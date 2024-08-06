@@ -10,5 +10,10 @@ internal class Program
         CuDebug.WriteLine(CuTensor.Transpose(a, [0, 1, 2]));
         CuDebug.WriteLine(CuTensor.Transpose(a, [0, 2, 1]));
         CuDebug.WriteLine(CuTensor.Transpose(a, [1, 2, 0]));
+
+        CuDebug.WriteLine(CuTensor.Sum(a, [0]));
+        CuDebug.WriteLine(CuTensor.Sum(a, [0, 1]));
+        CuDebug.WriteLine(CuTensor.Sum(a, [0, 1, 2]));
+        CuDebug.WriteLine(CuTensor.Sum(a));
     }
 }
