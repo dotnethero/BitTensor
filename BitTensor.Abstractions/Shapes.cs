@@ -42,7 +42,7 @@ public static class Shapes
         return (batch, rows, columns);
     }
 
-    public static int[] GetModes(this int[] shape)
+    public static int[] GetModes(this int[] shape, int offset = 0)
     {
         var dims = shape.Length;
         if (dims == 0)
@@ -52,7 +52,7 @@ public static class Shapes
 
         for (var i = dims - 1; i >= 0; --i)
         {
-            modes[i] = dims - i;
+            modes[i] = dims - i + offset;
         }
 
         return modes;

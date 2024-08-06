@@ -29,13 +29,6 @@ public unsafe partial class CuTensor
         return output;
     }
     
-    public static CuTensor operator *(CuTensor a, float b)
-    {
-        var output = new CuTensor(a.Shape);
-        Scale(a, b, output);
-        return output;
-    }
-
     public static CuTensor Sum(CuTensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
     
     public static CuTensor Sum(CuTensor a)
@@ -109,22 +102,21 @@ public unsafe partial class CuTensor
 
         operation.Execute(a, b, r, r, gamma: 0, beta: -1);
     }
-
-    public static void Contract(CuTensor a, CuTensor b, CuTensor r)
-    {
-        using var context = new CuTensorContext();
-
-        using var a1 = context.CreateDescriptor(a);
-        using var b1 = context.CreateDescriptor(b);
-        using var r1 = context.CreateDescriptor(r);
-
-        using var operation = context.CreateContraction(a1, b1, r1, r1);
-
-        operation.Execute(a, b, r, r, beta: 0);
-    }
     
-    public static void Contract(CuTensor a, int[] aModes, CuTensor b, int[] bModes, CuTensor r, int[] rModes)
+    public static void Multiply(CuTensor a, CuTensor b, CuTensor r)
     {
+        var aModes = a.Shape.GetModes(offset: 1);
+        aModes[^2] = 1;
+        aModes[^1] = 2;
+
+        var bModes = b.Shape.GetModes(offset: 1);
+        bModes[^2] = 2;
+        bModes[^1] = 3;
+
+        var rModes = r.Shape.GetModes(offset: 1);
+        rModes[^2] = 1;
+        rModes[^1] = 3;
+
         using var context = new CuTensorContext();
 
         using var a1 = context.CreateDescriptor(a, aModes);
@@ -163,19 +155,5 @@ public unsafe partial class CuTensor
         using var operation = context.CreateSum(a1, r1, r1);
 
         operation.Execute(a, r, r, beta: 0);
-    }
-
-    public static void Scale(CuTensor a, float b, CuTensor r)
-    {
-        var context = new CublasContext();
-
-        context.Axpy(a, b, r);
-    }
-
-    public static void Multiply(CuTensor a, CuTensor b, CuTensor r)
-    {
-        var context = new CublasContext();
-
-        context.Gemm(a, b, r);
     }
 }
