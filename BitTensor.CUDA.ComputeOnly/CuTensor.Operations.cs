@@ -105,29 +105,18 @@ public unsafe partial class CuTensor
     private static void Sum(CuTensor a, CuTensor r)
     {
         using var context = new CuTensorContext();
+        using var plan = new CuTensorSumPlan(context, a, r, []);
 
-        using var a1 = context.CreateDescriptor(a);
-        using var r1 = context.CreateDescriptor(r);
-
-        using var operation = context.CreateSum(a1, r1, r1);
-
-        operation.Execute(a, r, r, beta: 0);
+        plan.Execute(a, r);
     }
 
     private static void Sum(CuTensor a, HashSet<int> axis, CuTensor r)
     {
-        var modes = a.Shape
-            .GetModes()
-            .Where((s, i) => !axis.Contains(i))
-            .ToArray();
+        var modes = a.Shape.GetReductionModes(axis);
 
         using var context = new CuTensorContext();
+        using var plan = new CuTensorSumPlan(context, a, r, modes);
 
-        using var a1 = context.CreateDescriptor(a);
-        using var r1 = context.CreateDescriptor(r, modes);
-
-        using var operation = context.CreateSum(a1, r1, r1);
-
-        operation.Execute(a, r, r, beta: 0);
+        plan.Execute(a, r);
     }
 }

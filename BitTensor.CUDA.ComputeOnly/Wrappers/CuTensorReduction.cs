@@ -30,13 +30,22 @@ internal unsafe class CuTensorReduction : ICuTensorOperation
     
     public void Execute(CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float beta = 1f)
     {
-        using var plan = new CuTensorPlan(this);
-        using var ws = new CuTensorWorkspace(plan.WorkspaceSize);
+        using var plan = CreatePlan();
+        using var ws = CreateWorkspace(plan);
 
+        ExecuteByPlan(plan, ws, a, b, c, alpha, beta);
+    }
+
+    public void ExecuteByPlan(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, float alpha, float beta)
+    {
         var status = cutensorReduce(Context.Handle, plan.Plan, &alpha, a.Pointer, &beta, b.Pointer, c.Pointer, ws.Pointer, ws.Bytes, CuStream.Default);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }
+
+    public CuTensorPlan CreatePlan() => new(this);
+
+    public CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
 
     public void Dispose()
     {

@@ -42,6 +42,12 @@ public static class Shapes
         return (batch, rows, columns);
     }
 
+    public static int[] GetReductionModes(this int[] shape, HashSet<int> axis) =>
+        shape
+            .GetModes()
+            .Where((s, i) => !axis.Contains(i))
+            .ToArray();
+
     public static int[] GetModes(this int[] shape, int offset = 0)
     {
         var dims = shape.Length;
