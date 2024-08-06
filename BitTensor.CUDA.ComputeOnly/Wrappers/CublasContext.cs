@@ -22,18 +22,14 @@ internal unsafe class CublasContext : IDisposable
     {
         cudaRT.cudaMemset(r.Pointer, 0, (uint)r.Size);
 
-        var status = cuBLAS.cublasAxpyEx(
+        var status = cuBLAS.cublasSaxpy_v2(
             Handle,
             a.Size,
             &alpha,
-            cudaDataType_t.CUDA_R_32F,
             a.Pointer,
-            cudaDataType_t.CUDA_R_32F,
             incx: 1,
             r.Pointer,
-            cudaDataType_t.CUDA_R_32F,
-            incy: 1,
-            cudaDataType_t.CUDA_R_32F);
+            incy: 1);
 
         if (status != cublasStatus_t.CUBLAS_STATUS_SUCCESS)
             throw new CublasException(status);
@@ -79,7 +75,7 @@ internal unsafe class CublasContext : IDisposable
         
         foreach (var batch in Batching.GetMatrixBatches(strides, a, b, r))
         {
-            var status = cuBLAS.cublasGemmEx(
+            var status = cuBLAS.cublasSgemm_v2(
                 Handle,
                 cublasOperation_t.CUBLAS_OP_N,
                 cublasOperation_t.CUBLAS_OP_N,
@@ -88,17 +84,12 @@ internal unsafe class CublasContext : IDisposable
                 a.LastDimension, // a.T rows
                 &alpha,
                 b.Pointer + batch.BatchIndexB * b_batch_size,
-                cudaDataType_t.CUDA_R_32F,
                 b.LastDimension,
                 a.Pointer + batch.BatchIndexA * a_batch_size,
-                cudaDataType_t.CUDA_R_32F,
                 a.LastDimension,
                 &beta,
                 r.Pointer + batch.BatchIndexR * c_batch_size,
-                cudaDataType_t.CUDA_R_32F,
-                r.LastDimension,
-                cublasComputeType_t.CUBLAS_COMPUTE_32F,
-                cublasGemmAlgo_t.CUBLAS_GEMM_ALGO0);
+                r.LastDimension);
 
             if (status != cublasStatus_t.CUBLAS_STATUS_SUCCESS)
                 throw new CublasException(status);
