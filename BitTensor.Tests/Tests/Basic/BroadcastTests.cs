@@ -11,7 +11,8 @@ public class TensorShapeTests
     {
         int[] inputShape  = [2, 3, 4];
         int[] resultShape = [2, 3, 4];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         Assert.IsEmpty(result);
     }
@@ -21,7 +22,8 @@ public class TensorShapeTests
     {
         int[] inputShape = Array.Empty<int>();
         int[] resultShape = [2, 3, 4];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(new[] { 0, 1, 2 }, result);
     }
@@ -31,7 +33,8 @@ public class TensorShapeTests
     {
         int[] inputShape  = [2, 3, 1];
         int[] resultShape = [2, 3, 4];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(new[] { 2 }, result);
     }
@@ -41,7 +44,8 @@ public class TensorShapeTests
     {
         int[] inputShape  = [2, 1, 4];
         int[] resultShape = [2, 3, 4];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(new[] { 1 }, result);
     }
@@ -51,7 +55,8 @@ public class TensorShapeTests
     {
         int[] inputShape  = [1, 3, 1];
         int[] resultShape = [2, 3, 4];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(new[] { 0, 2 }, result);
     }
@@ -61,7 +66,8 @@ public class TensorShapeTests
     {
         int[] inputShape  = [2, 3, 4, 5];
         int[] resultShape =    [3, 4, 5];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         Assert.IsEmpty(result);
     }
@@ -71,7 +77,8 @@ public class TensorShapeTests
     {
         int[] inputShape  =       [4, 5];
         int[] resultShape = [2, 3, 4, 5];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(new[] { 0, 1 }, result);
     }
@@ -81,7 +88,8 @@ public class TensorShapeTests
     {
         int[] inputShape  =    [1, 5, 1];
         int[] resultShape = [2, 5, 5, 4];
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(new[] { 0, 1, 3 }, result);
     }
@@ -91,7 +99,7 @@ public class TensorShapeTests
     [TestCase(new int[] { 5 }, new int[] { 5 }, new int[] { })]
     public void GetBroadcastedAxis_EdgeCases_HandledCorrectly(int[] inputShape, int[] resultShape, int[] expected)
     {
-        int[] result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
+        var result = Shapes.GetBroadcastedAxis(inputShape, resultShape);
 
         CollectionAssert.AreEquivalent(expected, result);
     }

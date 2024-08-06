@@ -8,7 +8,7 @@ public partial class Tensor
 {
     public static Tensor Sum(Tensor a) => Ops.Sum(a);
 
-    public static Tensor Sum(Tensor a, int[] axis) => Ops.Sum(a, axis);
+    public static Tensor Sum(Tensor a, HashSet<int> axis) => Ops.Sum(a, axis);
 
     public static Tensor Outer(Tensor a, Tensor b)
     {

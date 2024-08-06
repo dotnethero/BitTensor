@@ -41,6 +41,28 @@ public static class Shapes
 
         return (batch, rows, columns);
     }
+    
+    public static int[] GetReductionModes(this int[] shape, HashSet<int> axis) =>
+        shape
+            .GetModes()
+            .Where((s, i) => !axis.Contains(i))
+            .ToArray();
+
+    public static int[] GetModes(this int[] shape, int offset = 0)
+    {
+        var dims = shape.Length;
+        if (dims == 0)
+            return [];
+
+        var modes = new int[dims];
+
+        for (var i = dims - 1; i >= 0; --i)
+        {
+            modes[i] = dims - i + offset;
+        }
+
+        return modes;
+    }
 
     public static unsafe int[] GetStrides(this int[] shape)
     {
@@ -113,11 +135,11 @@ public static class Shapes
         return true;
     }
     
-    public static int[] GetBroadcastedAxis(int[] inputShape, int[] resultShape)
+    public static HashSet<int> GetBroadcastedAxis(int[] inputShape, int[] resultShape)
     {
         var a_dims = inputShape.Length;
         var r_dims = resultShape.Length;
-        var broadcasted = new List<int>(r_dims);
+        var broadcasted = new HashSet<int>(r_dims);
 
         for (var i = 1; i <= r_dims; i++)
         {
@@ -125,7 +147,7 @@ public static class Shapes
                 broadcasted.Add(r_dims - i);
         }
 
-        return broadcasted.ToArray();
+        return broadcasted;
     }
 
     public static void EnsureShapesAreEqual(int[] a, int[] b)

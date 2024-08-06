@@ -151,11 +151,11 @@ internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
         if (strides.BatchCount * rowCount > 64 && colCount > 64)
         {
             ParallelOptions options = new();
-            Parallel.ForEach(Batching.GetMatMulRows(strides, a, bT, result), options, MatMulRow);
+            Parallel.ForEach(Batching.GetMatrixRows(strides, a, bT, result), options, MatMulRow);
         }
         else
         {
-            foreach (var atom in Batching.GetMatMulRows(strides, a, bT, result))
+            foreach (var atom in Batching.GetMatrixRows(strides, a, bT, result))
             {
                 MatMulRow(atom);
             }
@@ -169,14 +169,14 @@ internal readonly unsafe struct TensorBackend : ITensorBackend<Tensor>
 
         var strides = Batching.GetBatchStrides(a, bT, ..^2);
 
-        foreach (var atom in Batching.GetMatMulRows(strides, a, bT, result))
+        foreach (var atom in Batching.GetMatrixRows(strides, a, bT, result))
         {
             MatMulRow(atom);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static void MatMulRow(MatMulRow<Tensor> inputs)
+    private static void MatMulRow(MatrixRow<Tensor> inputs)
     {
         var rowSize = inputs.A.LastDimension;
         var rowCount = inputs.A.PrevDimension;
