@@ -35,7 +35,7 @@ internal unsafe class CuTensorContext : IDisposable
         CuTensorDescriptor c,
         CuTensorDescriptor d) => 
         new(this, a, b, c, d, cutensorOperator_t.CUTENSOR_OP_ADD, cutensorOperator_t.CUTENSOR_OP_ADD);
-
+    
     public CuTensorContraction CreateContraction(
         CuTensorDescriptor a,
         CuTensorDescriptor b,

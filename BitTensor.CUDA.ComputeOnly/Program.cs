@@ -19,31 +19,26 @@ internal class Program
 
         using var z = CuTensor.Allocate([B, N, K]);
 
-        BenchAdd(() => CuBLAS.Add(a, b, z));
-        BenchAdd(() => CuBLAS.Add(a, b, z));
-        BenchAdd(() => CuBLAS.Add(a, b, z));
-        
-        BenchAdd(() => CuTensor.Add(a, b, z));
-        BenchAdd(() => CuTensor.Add(a, b, z));
-        BenchAdd(() => CuTensor.Add(a, b, z));
-
         using var context = new CuTensorContext();
-        using var plan = new CuTensorElementwiseMultiplyContraction(context, a, b, z);
+        
+        using var plan1 = new CuTensorElementwiseMultiply(context, a, b, z);
+        BenchAdd(() => plan1.Execute(a, b, z), B, N, K);
+        BenchAdd(() => plan1.Execute(a, b, z), B, N, K);
+        BenchAdd(() => plan1.Execute(a, b, z), B, N, K);
+            ;
+        using var plan2 = new CuTensorElementwiseMultiplyContraction(context, a, b, z);
+        BenchAdd(() => plan2.Execute(a, b, z), B, N, K);
+        BenchAdd(() => plan2.Execute(a, b, z), B, N, K);
+        BenchAdd(() => plan2.Execute(a, b, z), B, N, K);
+    }
 
-        BenchAdd(() => plan.Execute(a, b, z));
-        BenchAdd(() => plan.Execute(a, b, z));
-        BenchAdd(() => plan.Execute(a, b, z));
+    private static void BenchAdd(Action action, int B, int N, int K, [CallerArgumentExpression("action")] string actionName = "")
+    {
+        var sw = Stopwatch.StartNew();
+        action();
+        cudaRT.cudaDeviceSynchronize();
 
-        return;
-
-        void BenchAdd(Action action, [CallerArgumentExpression("action")] string actionName = "")
-        {
-            var sw = Stopwatch.StartNew();
-            action();
-            cudaRT.cudaDeviceSynchronize();
-
-            var flops = (B * N * K / sw.Elapsed.TotalSeconds) / 1e9;
-            Console.WriteLine($"{actionName}: {sw.Elapsed}, {flops} GFLOPs");
-        }
+        var flops = (B * N * K / sw.Elapsed.TotalSeconds) / 1e9;
+        Console.WriteLine($"{actionName}: {sw.Elapsed}, {flops} GFLOPs");
     }
 }

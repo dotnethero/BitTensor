@@ -1,8 +1,23 @@
 ﻿using BitTensor.CUDA.ComputeOnly.Wrappers;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.ComputeOnly.Plans;
 
-internal sealed class CuTensorElementwiseAdd : IDisposable
+internal sealed class CuTensorElementwiseAdd(
+    CuTensorContext context,
+    CuTensor left,
+    CuTensor right,
+    CuTensor result) : 
+    CuTensorElementwisePlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_ADD);
+
+internal sealed class CuTensorElementwiseMultiply(
+    CuTensorContext context,
+    CuTensor left,
+    CuTensor right,
+    CuTensor result) : 
+    CuTensorElementwisePlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_MUL);
+
+internal abstract class CuTensorElementwisePlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -10,14 +25,22 @@ internal sealed class CuTensorElementwiseAdd : IDisposable
 
     internal readonly CuTensorTernaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
-    
-    public CuTensorElementwiseAdd(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
+
+    protected CuTensorElementwisePlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result, cutensorOperator_t op)
     {
         LeftDescriptor = context.CreateDescriptor(left);
         RightDescriptor = context.CreateDescriptor(right);
         ResultDescriptor = context.CreateDescriptor(result);
 
-        Operation = context.CreateElementwiseAdd(LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
+        Operation = new CuTensorTernaryOperation(
+            context,
+            LeftDescriptor,
+            RightDescriptor,
+            ResultDescriptor,
+            ResultDescriptor,
+            cutensorOperator_t.CUTENSOR_OP_ADD,
+            cutensorOperator_t.CUTENSOR_OP_ADD);
+
         OperationPlan = Operation.CreatePlan();
     }
     
