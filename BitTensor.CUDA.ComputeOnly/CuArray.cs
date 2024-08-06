@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.ComputeOnly;
@@ -39,7 +37,7 @@ public static unsafe class CuArray
     
     public static void CopyToDevice(ReadOnlySpan<float> source, float* destination, int size)
     {
-        fixed(float* sp = source)
+        fixed(float* sp = source) 
             cudaMemcpy(destination, sp, Bytes(size), cudaMemcpyKind.cudaMemcpyHostToDevice);
     }
 

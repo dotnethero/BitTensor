@@ -32,7 +32,7 @@ internal unsafe class CuTensorBinaryOperation : ICuTensorOperation
     {
         using var plan = new CuTensorPlan(this);
 
-        var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, (CUstream_st*) 0);
+        var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }

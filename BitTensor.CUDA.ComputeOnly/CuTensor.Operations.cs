@@ -110,18 +110,30 @@ public unsafe partial class CuTensor
         operation.Execute(a, b, r, r, gamma: 0, beta: -1);
     }
 
-    public static void Contract(CuTensor a, CuTensor b, CuTensor c, CuTensor r)
+    public static void Contract(CuTensor a, CuTensor b, CuTensor r)
     {
         using var context = new CuTensorContext();
 
         using var a1 = context.CreateDescriptor(a);
         using var b1 = context.CreateDescriptor(b);
-        using var c1 = context.CreateDescriptor(c);
         using var r1 = context.CreateDescriptor(r);
 
-        using var operation = context.CreateContraction(a1, b1, c1, r1);
+        using var operation = context.CreateContraction(a1, b1, r1, r1);
 
-        operation.Execute(a, b, c, r);
+        operation.Execute(a, b, r, r, beta: 0);
+    }
+    
+    public static void Contract(CuTensor a, int[] aModes, CuTensor b, int[] bModes, CuTensor r, int[] rModes)
+    {
+        using var context = new CuTensorContext();
+
+        using var a1 = context.CreateDescriptor(a, aModes);
+        using var b1 = context.CreateDescriptor(b, bModes);
+        using var r1 = context.CreateDescriptor(r, rModes);
+
+        using var operation = context.CreateContraction(a1, b1, r1, r1);
+
+        operation.Execute(a, b, r, r, beta: 0);
     }
     
     private static void Sum(CuTensor a, CuTensor r)

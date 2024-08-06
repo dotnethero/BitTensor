@@ -31,11 +31,17 @@ internal unsafe class CuTensorContraction : ICuTensorOperation
     public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
     {
         using var plan = new CuTensorPlan(this);
+        using var ws = new CuTensorWorkspace(plan.WorkspaceSize);
 
-        void* workspace = null;
-        ulong workspaceSize = 0;
+        var status = cutensorContract(
+            Context.Handle, 
+            plan.Plan, 
+            &alpha, a.Pointer, b.Pointer, 
+            &beta,  c.Pointer, d.Pointer, 
+            ws.Pointer, 
+            ws.Bytes,
+            CuStream.Default);
 
-        var status = cutensorContract(Context.Handle, plan.Plan, &alpha, a.Pointer, b.Pointer, &beta, c.Pointer, d.Pointer, workspace, workspaceSize, (CUstream_st*) 0);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }

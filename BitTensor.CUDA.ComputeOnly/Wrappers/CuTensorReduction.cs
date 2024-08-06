@@ -33,7 +33,7 @@ internal unsafe class CuTensorReduction : ICuTensorOperation
         using var plan = new CuTensorPlan(this);
         using var ws = new CuTensorWorkspace(plan.WorkspaceSize);
 
-        var status = cutensorReduce(Context.Handle, plan.Plan, &alpha, a.Pointer, &beta, b.Pointer, c.Pointer, ws.Pointer, ws.Bytes, (CUstream_st*) 0);
+        var status = cutensorReduce(Context.Handle, plan.Plan, &alpha, a.Pointer, &beta, b.Pointer, c.Pointer, ws.Pointer, ws.Bytes, CuStream.Default);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }

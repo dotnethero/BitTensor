@@ -18,7 +18,7 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
             &descriptor,
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            d.Descriptor, d.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             d.Descriptor, d.Modes, opAB, opABC,
             CUTENSOR_COMPUTE_DESC_32F);
 
@@ -40,7 +40,7 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
             &beta,  b.Pointer, 
             &gamma, c.Pointer, 
             d.Pointer, 
-            (CUstream_st*) 0);
+            CuStream.Default);
 
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
