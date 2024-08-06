@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.ComputeOnly.Plans;
 using BitTensor.CUDA.ComputeOnly.Wrappers;
 
 namespace BitTensor.CUDA.ComputeOnly;
@@ -103,31 +104,14 @@ public unsafe partial class CuTensor
         operation.Execute(a, b, r, r, gamma: 0, beta: -1);
     }
     
-    public static void Multiply(CuTensor a, CuTensor b, CuTensor r)
+    internal static void Multiply(CuTensor a, CuTensor b, CuTensor r)
     {
-        var aModes = a.Shape.GetModes(offset: 1);
-        aModes[^2] = 1;
-        aModes[^1] = 2;
-
-        var bModes = b.Shape.GetModes(offset: 1);
-        bModes[^2] = 2;
-        bModes[^1] = 3;
-
-        var rModes = r.Shape.GetModes(offset: 1);
-        rModes[^2] = 1;
-        rModes[^1] = 3;
-
         using var context = new CuTensorContext();
+        using var plan = new CuTensorMatrixMultiplication(context, a, b, r);
 
-        using var a1 = context.CreateDescriptor(a, aModes);
-        using var b1 = context.CreateDescriptor(b, bModes);
-        using var r1 = context.CreateDescriptor(r, rModes);
-
-        using var operation = context.CreateContraction(a1, b1, r1, r1);
-
-        operation.Execute(a, b, r, r, beta: 0);
+        plan.Execute(a, b, r);
     }
-    
+
     private static void Sum(CuTensor a, CuTensor r)
     {
         using var context = new CuTensorContext();

@@ -30,9 +30,14 @@ internal unsafe class CuTensorContraction : ICuTensorOperation
     
     public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
     {
-        using var plan = new CuTensorPlan(this);
-        using var ws = new CuTensorWorkspace(plan.WorkspaceSize);
+        using var plan = CreatePlan();
+        using var ws = CreateWorkspace(plan);
 
+        ExecuteWithPlan(plan, ws, a, b, c, d, alpha, beta);
+    }
+
+    public void ExecuteWithPlan(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
+    {
         var status = cutensorContract(
             Context.Handle, 
             plan.Plan, 
@@ -45,6 +50,10 @@ internal unsafe class CuTensorContraction : ICuTensorOperation
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }
+
+    internal CuTensorPlan CreatePlan() => new(this);
+
+    internal CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
 
     public void Dispose()
     {

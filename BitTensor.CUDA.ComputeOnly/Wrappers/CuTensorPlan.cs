@@ -24,7 +24,7 @@ internal unsafe class CuTensorPlan : IDisposable
             operation.Context.Handle, 
             &planPreference, 
             cutensorAlgo_t.CUTENSOR_ALGO_DEFAULT,
-            cutensorJitMode_t.CUTENSOR_JIT_MODE_NONE);
+            cutensorJitMode_t.CUTENSOR_JIT_MODE_DEFAULT);
         
         if (preferenceStatus != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(preferenceStatus);
