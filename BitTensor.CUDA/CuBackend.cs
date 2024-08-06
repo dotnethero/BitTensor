@@ -198,7 +198,7 @@ internal readonly struct CuBackend : ITensorBackend<CuTensor>
         var b_batch_size = b.PrevDimension * b.LastDimension;
         var r_batch_size = c.PrevDimension * c.LastDimension;
 
-        foreach (var atom in Batching.GetMatMulBatches(strides, a, b, c))
+        foreach (var atom in Batching.GetMatrixBatches(strides, a, b, c))
         {
             context.Gemm(
                 CuBlasOperation.NonTranspose,

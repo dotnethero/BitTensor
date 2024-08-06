@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using BitTensor.CUDA.ComputeOnly.Plans;
 using BitTensor.CUDA.ComputeOnly.Wrappers;
 using BitTensor.CUDA.Interop;
@@ -11,65 +12,34 @@ internal class Program
     {
         const int B = 1024;
         const int N = 128;
-        const int M = 256;
         const int K = 512;
 
-        using var a = CuTensor.Random.Uniform([B, N, M]);
-        using var b = CuTensor.Random.Uniform([M, K]);
+        using var a = CuTensor.Random.Uniform([B, N, K]);
+        using var b = CuTensor.Random.Uniform([B, N, K]);
 
         using var z1 = CuTensor.Allocate([B, N, K]);
         using var z2 = CuTensor.Allocate([B, N, K]);
-        using var z3 = CuTensor.Allocate([B, N, K]);
 
-        BenchCuBLAS();
-        BenchCuBLAS();
-        BenchCuBLAS();
+        BenchAdd(() => CuTensor.Add(a, b, z1));
+        BenchAdd(() => CuTensor.Add(a, b, z1));
+        BenchAdd(() => CuTensor.Add(a, b, z1));
+        
+        BenchAdd(() => CuBLAS.Add(a, b, z2));
+        BenchAdd(() => CuBLAS.Add(a, b, z2));
+        BenchAdd(() => CuBLAS.Add(a, b, z2));
 
-        BenchCuTensor();
-        BenchCuTensor();
-        BenchCuTensor();
-
-        using var context = new CuTensorContext();
-        using var plan = new CuTensorMatrixMultiplication(context, a, b, z3);
-
-        BenchCuTensorCachedPlan();
-        BenchCuTensorCachedPlan();
-        BenchCuTensorCachedPlan();
-
-        CuAsserts.ValuesAreEqual(z3, z1);
+        CuAsserts.ValuesAreEqual(z2, z1);
 
         return;
 
-        double GFLOPS(TimeSpan elapsed) => (2 / elapsed.TotalSeconds * M * N * K) / 1e9 * B;
-        
-        void BenchCuBLAS()
+        void BenchAdd(Action action, [CallerArgumentExpression("action")] string actionName = "")
         {
             var sw = Stopwatch.StartNew();
-            CuBLAS.Multiply(a, b, z1);
+            action();
             cudaRT.cudaDeviceSynchronize();
 
-            var flops = GFLOPS(sw.Elapsed);
-            Console.WriteLine($"cuBLAS: {sw.Elapsed}, {flops} GFLOPs");
-        }
-
-        void BenchCuTensor()
-        {
-            var sw = Stopwatch.StartNew();
-            CuTensor.Multiply(a, b, z2);
-            cudaRT.cudaDeviceSynchronize();
-
-            var flops = GFLOPS(sw.Elapsed);
-            Console.WriteLine($"cuTENSOR: {sw.Elapsed}, {flops} GFLOPs");
-        }
-
-        void BenchCuTensorCachedPlan()
-        {
-            var sw = Stopwatch.StartNew();
-            plan.Execute(a, b, z3);
-            cudaRT.cudaDeviceSynchronize();
-
-            var flops = GFLOPS(sw.Elapsed);
-            Console.WriteLine($"cuTENSOR cached: {sw.Elapsed}, {flops} GFLOPs");
+            var flops = (B * N * K / sw.Elapsed.TotalSeconds) / 1e9;
+            Console.WriteLine($"{actionName}: {sw.Elapsed}, {flops} GFLOPs");
         }
     }
 }
