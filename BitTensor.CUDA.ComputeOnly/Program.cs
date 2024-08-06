@@ -10,7 +10,7 @@ internal class Program
 {
     public static void Main()
     {
-        const int B = 1024;
+        const int B = 64;
         const int N = 128;
         const int K = 512;
 
@@ -28,7 +28,7 @@ internal class Program
         BenchAdd(() => CuTensor.Add(a, b, z));
 
         using var context = new CuTensorContext();
-        using var plan = new CuTensorElementwiseAdd(context, a, b, z);
+        using var plan = new CuTensorElementwiseMultiplyContraction(context, a, b, z);
 
         BenchAdd(() => plan.Execute(a, b, z));
         BenchAdd(() => plan.Execute(a, b, z));
