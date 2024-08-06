@@ -81,7 +81,7 @@ public unsafe partial class CuTensor
     public static void Add(CuTensor a, CuTensor b, CuTensor r)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorElementwiseAdd(context, a, b, r);
+        using var plan = new CuTensorAddPlan(context, a, b, r);
 
         plan.Execute(a, b, r);
     }
@@ -102,7 +102,7 @@ public unsafe partial class CuTensor
     internal static void Multiply(CuTensor a, CuTensor b, CuTensor r)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorMatrixMultiplication(context, a, b, r);
+        using var plan = new CuTensorMatMulPlan(context, a, b, r);
 
         plan.Execute(a, b, r);
     }

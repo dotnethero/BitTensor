@@ -3,21 +3,21 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.ComputeOnly.Plans;
 
-internal sealed class CuTensorElementwiseAdd(
+internal sealed class CuTensorAddPlan(
     CuTensorContext context,
     CuTensor left,
     CuTensor right,
     CuTensor result) : 
-    CuTensorElementwisePlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_ADD);
+    CuTensorTernaryPlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_ADD);
 
-internal sealed class CuTensorElementwiseMultiply(
+internal sealed class CuTensorMultiplyPlan(
     CuTensorContext context,
     CuTensor left,
     CuTensor right,
     CuTensor result) : 
-    CuTensorElementwisePlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_MUL);
+    CuTensorTernaryPlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_MUL);
 
-internal abstract class CuTensorElementwisePlan : IDisposable
+internal abstract class CuTensorTernaryPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -26,7 +26,7 @@ internal abstract class CuTensorElementwisePlan : IDisposable
     internal readonly CuTensorTernaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
 
-    protected CuTensorElementwisePlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result, cutensorOperator_t op)
+    protected CuTensorTernaryPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result, cutensorOperator_t op)
     {
         LeftDescriptor = context.CreateDescriptor(left);
         RightDescriptor = context.CreateDescriptor(right);

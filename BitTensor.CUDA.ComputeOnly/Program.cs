@@ -10,24 +10,24 @@ internal class Program
 {
     public static void Main()
     {
-        const int B = 64;
+        const int B = 256;
         const int N = 128;
         const int K = 512;
 
-        using var a = CuTensor.Random.Uniform([B, N, K]);
-        using var b = CuTensor.Random.Uniform([B, N, K]);
+        using var a = CuTensor.Random.Uniform([B, N, 1]);
+        using var b = CuTensor.Random.Uniform([   1, K]);
 
         using var z1 = CuTensor.Allocate([B, N, K]);
         using var z2 = CuTensor.Allocate([B, N, K]);
 
         using var context = new CuTensorContext();
         
-        using var plan1 = new CuTensorElementwiseMultiply(context, a, b, z1);
+        using var plan1 = new CuTensorMultiplyPlan(context, a, b, z1);
         BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
         BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
         BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
             ;
-        using var plan2 = new CuTensorElementwiseMultiplyContraction(context, a, b, z2);
+        using var plan2 = new CuTensorContractionPlan(context, a, b, z2);
         BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
         BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
         BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);

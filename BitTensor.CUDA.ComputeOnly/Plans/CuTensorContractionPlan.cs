@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.ComputeOnly.Plans;
 
-internal sealed class CuTensorElementwiseMultiplyContraction : IDisposable
+internal sealed class CuTensorContractionPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -12,7 +12,7 @@ internal sealed class CuTensorElementwiseMultiplyContraction : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
     
-    public CuTensorElementwiseMultiplyContraction(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
+    public CuTensorContractionPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
     {
         LeftDescriptor = context.CreateDescriptor(left);
         RightDescriptor = context.CreateDescriptor(right);

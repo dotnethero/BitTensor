@@ -3,7 +3,7 @@ using BitTensor.CUDA.ComputeOnly.Wrappers;
 
 namespace BitTensor.CUDA.ComputeOnly.Plans;
 
-internal sealed class CuTensorMatrixMultiplication : IDisposable
+internal sealed class CuTensorMatMulPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -13,7 +13,7 @@ internal sealed class CuTensorMatrixMultiplication : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    public CuTensorMatrixMultiplication(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
+    public CuTensorMatMulPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
     {
         LeftDescriptor = PrepareLeft(context, left);
         RightDescriptor = PrepareRight(context, right);
