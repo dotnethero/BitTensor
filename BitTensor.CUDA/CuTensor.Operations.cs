@@ -44,7 +44,7 @@ public partial class CuTensor
 
     public static CuTensor Sum(CuTensor a) => Ops.Sum(a);
 
-    public static CuTensor Sum(CuTensor a, int[] axis) => Ops.Sum(a, axis);
+    public static CuTensor Sum(CuTensor a, HashSet<int> axis) => Ops.Sum(a, axis);
 
     public static CuTensor MatMul(CuTensor a, CuTensor b)
     {

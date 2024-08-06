@@ -30,8 +30,6 @@ public unsafe partial class CuTensor
         return output;
     }
     
-    public static CuTensor Sum(CuTensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
-    
     public static CuTensor Sum(CuTensor a)
     {
         if (a.IsScalar)
@@ -42,7 +40,7 @@ public unsafe partial class CuTensor
         return output;
     }
 
-    private static CuTensor Sum(CuTensor a, HashSet<int> axis)
+    public static CuTensor Sum(CuTensor a, HashSet<int> axis)
     {
         if (axis.Count == 0)
             return a;

@@ -40,7 +40,7 @@ class SumComparisonTests
         var x = scope.GetTensor("x");
         var d = scope.GetTensor("d");
 
-        var z = Tensor.Sum(x, axis: ax);
+        var z = Tensor.Sum(x, axis: ax.ToHashSet());
         
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);

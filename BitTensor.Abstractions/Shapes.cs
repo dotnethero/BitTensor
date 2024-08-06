@@ -135,11 +135,11 @@ public static class Shapes
         return true;
     }
     
-    public static int[] GetBroadcastedAxis(int[] inputShape, int[] resultShape)
+    public static HashSet<int> GetBroadcastedAxis(int[] inputShape, int[] resultShape)
     {
         var a_dims = inputShape.Length;
         var r_dims = resultShape.Length;
-        var broadcasted = new List<int>(r_dims);
+        var broadcasted = new HashSet<int>(r_dims);
 
         for (var i = 1; i <= r_dims; i++)
         {
@@ -147,7 +147,7 @@ public static class Shapes
                 broadcasted.Add(r_dims - i);
         }
 
-        return broadcasted.ToArray();
+        return broadcasted;
     }
 
     public static void EnsureShapesAreEqual(int[] a, int[] b)

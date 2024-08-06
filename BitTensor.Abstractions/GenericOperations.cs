@@ -93,7 +93,7 @@ public static class GenericOperations<TTensor, TBackend>
             forward: static self => TBackend.ExecuteSum(self.A, self),
             backward: static (grad, self) => [Broadcast(grad, self.A.Shape)]);
 
-    private static TTensor Sum(TTensor a, HashSet<int> axis)
+    public static TTensor Sum(TTensor a, HashSet<int> axis)
     {
         if (axis.Count == 0)
             return a;
@@ -107,8 +107,6 @@ public static class GenericOperations<TTensor, TBackend>
             forward: self => TBackend.ExecuteSum(self.A, axis, self),
             backward: NotSupported);
     }
-
-    public static TTensor Sum(TTensor a, int[] axis) => Sum(a, new HashSet<int>(axis));
 
     public static TTensor[] NotSupported(TTensor grad, TTensor self) => throw new NotSupportedException("Operation is not supported");
 }
