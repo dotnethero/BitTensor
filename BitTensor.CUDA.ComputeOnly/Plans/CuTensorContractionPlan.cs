@@ -23,19 +23,17 @@ internal sealed class CuTensorContractionPlan : IDisposable
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
     }
     
-    public void Execute(CuTensor left, CuTensor right, CuTensor result)
-    {
-        Contraction.ExecuteWithPlan(
+    public void Execute(CuTensor left, CuTensor right, CuTensor result, float alpha = 1f, float beta = 1f) =>
+        Contraction.ExecuteByPlan(
             ContractionPlan,
             Workspace,
             left,
             right,
             result,
             result,
-            alpha: 1,
-            beta: 0);
-    }
-    
+            alpha,
+            beta);
+
     public void Dispose()
     {
         ContractionPlan.Dispose();

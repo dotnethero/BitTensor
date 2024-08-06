@@ -4,6 +4,8 @@ using BitTensor.CUDA.ComputeOnly.Plans;
 using BitTensor.CUDA.ComputeOnly.Wrappers;
 using BitTensor.CUDA.Interop;
 
+// ReSharper disable AccessToDisposedClosure
+
 namespace BitTensor.CUDA.ComputeOnly;
 
 internal class Program
@@ -14,8 +16,8 @@ internal class Program
         const int N = 128;
         const int K = 512;
 
-        using var a = CuTensor.Random.Uniform([B, N, 1]);
-        using var b = CuTensor.Random.Uniform([   1, K]);
+        using var a = CuTensor.Random.Uniform([B, N, K]);
+        using var b = CuTensor.Random.Uniform([   N, K]);
 
         using var z1 = CuTensor.Allocate([B, N, K]);
         using var z2 = CuTensor.Allocate([B, N, K]);
@@ -26,7 +28,7 @@ internal class Program
         BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
         BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
         BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
-            ;
+
         using var plan2 = new CuTensorContractionPlan(context, a, b, z2);
         BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
         BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
@@ -35,13 +37,13 @@ internal class Program
         CuAsserts.ValuesAreEqual(z1, z2);
     }
 
-    private static void BenchAdd(Action action, int B, int N, int K, [CallerArgumentExpression("action")] string actionName = "")
+    private static void BenchAdd(Action action, int b, int n, int k, [CallerArgumentExpression("action")] string actionName = "")
     {
         var sw = Stopwatch.StartNew();
         action();
         cudaRT.cudaDeviceSynchronize();
 
-        var flops = (B * N * K / sw.Elapsed.TotalSeconds) / 1e9;
+        var flops = (b * n * k / sw.Elapsed.TotalSeconds) / 1e9;
         Console.WriteLine($"{actionName}: {sw.Elapsed}, {flops} GFLOPs");
     }
 }

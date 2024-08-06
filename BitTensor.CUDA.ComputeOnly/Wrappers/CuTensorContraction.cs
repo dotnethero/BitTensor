@@ -33,10 +33,10 @@ internal unsafe class CuTensorContraction : ICuTensorOperation
         using var plan = CreatePlan();
         using var ws = CreateWorkspace(plan);
 
-        ExecuteWithPlan(plan, ws, a, b, c, d, alpha, beta);
+        ExecuteByPlan(plan, ws, a, b, c, d, alpha, beta);
     }
 
-    public void ExecuteWithPlan(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
+    public void ExecuteByPlan(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
     {
         var status = cutensorContract(
             Context.Handle, 

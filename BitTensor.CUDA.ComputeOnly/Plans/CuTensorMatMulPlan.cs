@@ -24,9 +24,8 @@ internal sealed class CuTensorMatMulPlan : IDisposable
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
     }
 
-    public void Execute(CuTensor left, CuTensor right, CuTensor result)
-    {
-        Contraction.ExecuteWithPlan(
+    public void Execute(CuTensor left, CuTensor right, CuTensor result) =>
+        Contraction.ExecuteByPlan(
             ContractionPlan,
             Workspace,
             left,
@@ -35,7 +34,6 @@ internal sealed class CuTensorMatMulPlan : IDisposable
             result,
             alpha: 1,
             beta: 0);
-    }
 
     private static CuTensorDescriptor PrepareLeft(CuTensorContext context, CuTensor left)
     {

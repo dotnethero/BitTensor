@@ -44,19 +44,17 @@ internal abstract class CuTensorTernaryPlan : IDisposable
         OperationPlan = Operation.CreatePlan();
     }
     
-    public void Execute(CuTensor left, CuTensor right, CuTensor result)
-    {
-        Operation.ExecuteWithPlan(
+    public void Execute(CuTensor left, CuTensor right, CuTensor result, float alpha = 1f, float beta = 1f, float gamma = 0f) =>
+        Operation.ExecuteByPlan(
             OperationPlan,
             left,
             right,
             result,
             result,
-            alpha: 1,
-            beta: 1,
-            gamma: 0);
-    }
-    
+            alpha,
+            beta,
+            gamma);
+
     public void Dispose()
     {
         OperationPlan.Dispose();

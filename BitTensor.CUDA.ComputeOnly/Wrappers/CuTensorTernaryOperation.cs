@@ -29,14 +29,14 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
         Descriptor = descriptor;
     }
     
-    public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f, float gamma = 1f)
+    public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f, float gamma = 0f)
     {
         using var plan = CreatePlan();
 
-        ExecuteWithPlan(plan, a, b, c, d, alpha, beta, gamma);
+        ExecuteByPlan(plan, a, b, c, d, alpha, beta, gamma);
     }
 
-    public void ExecuteWithPlan(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha, float beta, float gamma)
+    public void ExecuteByPlan(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f, float gamma = 0f)
     {
         var status = cutensorElementwiseTrinaryExecute(
             Context.Handle,
