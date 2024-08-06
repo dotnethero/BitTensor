@@ -30,12 +30,19 @@ internal unsafe class CuTensorBinaryOperation : ICuTensorOperation
     
     public void Execute(CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
     {
-        using var plan = new CuTensorPlan(this);
+        using var plan = CreatePlan();
 
+        ExecuteByPlan(plan, a, b, c, alpha, gamma);
+    }
+
+    private void ExecuteByPlan(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
+    {
         var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
             throw new CuTensorException(status);
     }
+
+    internal CuTensorPlan CreatePlan() => new(this);
 
     public void Dispose()
     {
