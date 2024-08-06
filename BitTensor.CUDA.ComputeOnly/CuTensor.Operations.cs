@@ -81,14 +81,9 @@ public unsafe partial class CuTensor
     public static void Add(CuTensor a, CuTensor b, CuTensor r)
     {
         using var context = new CuTensorContext();
+        using var plan = new CuTensorElementwiseAdd(context, a, b, r);
 
-        using var a1 = context.CreateDescriptor(a);
-        using var b1 = context.CreateDescriptor(b);
-        using var r1 = context.CreateDescriptor(r);
-
-        using var operation = context.CreateElementwiseAdd(a1, b1, r1, r1);
-
-        operation.Execute(a, b, r, r, gamma: 0);
+        plan.Execute(a, b, r);
     }
     
     public static void Subtract(CuTensor a, CuTensor b, CuTensor r)

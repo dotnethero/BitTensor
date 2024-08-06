@@ -17,18 +17,22 @@ internal class Program
         using var a = CuTensor.Random.Uniform([B, N, K]);
         using var b = CuTensor.Random.Uniform([B, N, K]);
 
-        using var z1 = CuTensor.Allocate([B, N, K]);
-        using var z2 = CuTensor.Allocate([B, N, K]);
+        using var z = CuTensor.Allocate([B, N, K]);
 
-        BenchAdd(() => CuTensor.Add(a, b, z1));
-        BenchAdd(() => CuTensor.Add(a, b, z1));
-        BenchAdd(() => CuTensor.Add(a, b, z1));
+        BenchAdd(() => CuBLAS.Add(a, b, z));
+        BenchAdd(() => CuBLAS.Add(a, b, z));
+        BenchAdd(() => CuBLAS.Add(a, b, z));
         
-        BenchAdd(() => CuBLAS.Add(a, b, z2));
-        BenchAdd(() => CuBLAS.Add(a, b, z2));
-        BenchAdd(() => CuBLAS.Add(a, b, z2));
+        BenchAdd(() => CuTensor.Add(a, b, z));
+        BenchAdd(() => CuTensor.Add(a, b, z));
+        BenchAdd(() => CuTensor.Add(a, b, z));
 
-        CuAsserts.ValuesAreEqual(z2, z1);
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorElementwiseAdd(context, a, b, z);
+
+        BenchAdd(() => plan.Execute(a, b, z));
+        BenchAdd(() => plan.Execute(a, b, z));
+        BenchAdd(() => plan.Execute(a, b, z));
 
         return;
 
