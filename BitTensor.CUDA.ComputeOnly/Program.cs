@@ -17,19 +17,22 @@ internal class Program
         using var a = CuTensor.Random.Uniform([B, N, K]);
         using var b = CuTensor.Random.Uniform([B, N, K]);
 
-        using var z = CuTensor.Allocate([B, N, K]);
+        using var z1 = CuTensor.Allocate([B, N, K]);
+        using var z2 = CuTensor.Allocate([B, N, K]);
 
         using var context = new CuTensorContext();
         
-        using var plan1 = new CuTensorElementwiseMultiply(context, a, b, z);
-        BenchAdd(() => plan1.Execute(a, b, z), B, N, K);
-        BenchAdd(() => plan1.Execute(a, b, z), B, N, K);
-        BenchAdd(() => plan1.Execute(a, b, z), B, N, K);
+        using var plan1 = new CuTensorElementwiseMultiply(context, a, b, z1);
+        BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
+        BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
+        BenchAdd(() => plan1.Execute(a, b, z1), B, N, K);
             ;
-        using var plan2 = new CuTensorElementwiseMultiplyContraction(context, a, b, z);
-        BenchAdd(() => plan2.Execute(a, b, z), B, N, K);
-        BenchAdd(() => plan2.Execute(a, b, z), B, N, K);
-        BenchAdd(() => plan2.Execute(a, b, z), B, N, K);
+        using var plan2 = new CuTensorElementwiseMultiplyContraction(context, a, b, z2);
+        BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
+        BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
+        BenchAdd(() => plan2.Execute(a, b, z2), B, N, K);
+
+        CuAsserts.ValuesAreEqual(z1, z2);
     }
 
     private static void BenchAdd(Action action, int B, int N, int K, [CallerArgumentExpression("action")] string actionName = "")

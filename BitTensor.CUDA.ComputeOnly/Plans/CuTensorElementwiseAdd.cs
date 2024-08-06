@@ -38,7 +38,7 @@ internal abstract class CuTensorElementwisePlan : IDisposable
             RightDescriptor,
             ResultDescriptor,
             ResultDescriptor,
-            cutensorOperator_t.CUTENSOR_OP_ADD,
+            op,
             cutensorOperator_t.CUTENSOR_OP_ADD);
 
         OperationPlan = Operation.CreatePlan();
