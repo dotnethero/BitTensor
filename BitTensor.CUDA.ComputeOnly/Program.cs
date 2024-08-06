@@ -18,42 +18,38 @@ internal class Program
         using var z1 = CuTensor.Allocate([B, N, K]);
         using var z2 = CuTensor.Allocate([B, N, K]);
 
-        var sw = Stopwatch.StartNew();
+        BenchCuBLAS();
+        BenchCuBLAS();
+        BenchCuBLAS();
 
-        CuTensor.Multiply(a, b, z1);
-        cudaRT.cudaDeviceSynchronize();
-        Console.WriteLine($"cuTENSOR: {sw.Elapsed}");
-
-        sw.Restart();
-        
-        CuTensor.Multiply(a, b, z1);
-        cudaRT.cudaDeviceSynchronize();
-        Console.WriteLine($"cuTENSOR: {sw.Elapsed}");
-        
-        sw.Restart();
-        
-        CuTensor.Multiply(a, b, z1);
-        cudaRT.cudaDeviceSynchronize();
-        Console.WriteLine($"cuTENSOR: {sw.Elapsed}");
-
-        sw.Restart();
-
-        CuBLAS.Multiply(a, b, z2);
-        cudaRT.cudaDeviceSynchronize();
-        Console.WriteLine($"cuBLAS: {sw.Elapsed}");
-        
-        sw.Restart();
-
-        CuBLAS.Multiply(a, b, z2);
-        cudaRT.cudaDeviceSynchronize();
-        Console.WriteLine($"cuBLAS: {sw.Elapsed}");
-        
-        sw.Restart();
-
-        CuBLAS.Multiply(a, b, z2);
-        cudaRT.cudaDeviceSynchronize();
-        Console.WriteLine($"cuBLAS: {sw.Elapsed}");
+        BenchCuTensor();
+        BenchCuTensor();
+        BenchCuTensor();
 
         CuAsserts.ValuesAreEqual(z2, z1);
+
+        return;
+
+        double GFLOPS(TimeSpan elapsed) => (2 / elapsed.TotalSeconds * M * N * K) / 1e9 * B;
+        
+        void BenchCuBLAS()
+        {
+            var sw = Stopwatch.StartNew();
+            CuBLAS.Multiply(a, b, z1);
+            cudaRT.cudaDeviceSynchronize();
+
+            var flops = GFLOPS(sw.Elapsed);
+            Console.WriteLine($"cuBLAS: {sw.Elapsed}, {flops} GFLOPs");
+        }
+
+        void BenchCuTensor()
+        {
+            var sw = Stopwatch.StartNew();
+            CuBLAS.Multiply(a, b, z2);
+            cudaRT.cudaDeviceSynchronize();
+
+            var flops = GFLOPS(sw.Elapsed);
+            Console.WriteLine($"cuTENSOR: {sw.Elapsed}, {flops} GFLOPs");
+        }
     }
 }
