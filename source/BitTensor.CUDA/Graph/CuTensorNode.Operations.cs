@@ -11,7 +11,7 @@ public partial class CuTensorNode
         return new(
             output,
             children: [a, b],
-            forward: () => CuTensor.Add(a.Tensor, b.Tensor, output),
+            forward: () => CuBackend.Add(a.Tensor, b.Tensor, output),
             backward: (grad) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Tensor.Shape, output.Shape);
@@ -33,7 +33,7 @@ public partial class CuTensorNode
         return new(
             output,
             children: [a, b],
-            forward: () => CuTensor.Multiply(a.Tensor, b.Tensor, output),
+            forward: () => CuBackend.Multiply(a.Tensor, b.Tensor, output),
             backward: _ => throw new NotImplementedException());
     }
 
@@ -43,7 +43,7 @@ public partial class CuTensorNode
         return new(
             output,
             children: [a],
-            forward: () => CuTensor.Sum(a.Tensor, output),
+            forward: () => CuBackend.Sum(a.Tensor, output),
             backward: _ => throw new NotImplementedException());
     }
 }
