@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA;
@@ -25,14 +26,14 @@ public static class CuDebug
         Console.WriteLine($"{tensorName} =\n{text}");
     }
 
-    public static string View(float[] values, int[] shape, int dimensionsPerLine = 1)
+    public static string View(float[] values, Shape shape, int dimensionsPerLine = 1)
     {
         if (values.Length == 0)
         {
             return "[]";
         }
 
-        var dimensions = shape.Length;
+        var dimensions = shape.Dimensions;
         if (dimensions == 0)
         {
             return values[0].ToString("0.00#");

@@ -27,16 +27,16 @@ static class PythonModuleExtensions
         scope.Execute(script);
     }
     
-    public static int[] GetShape(this PyModule scope, string jnptensor)
+    public static Shape GetShape(this PyModule scope, string jnptensor)
     {
-        var array = scope.Eval<int[]>($"{jnptensor}.shape")!;
-        return array;
+        var extents = scope.Eval<int[]>($"{jnptensor}.shape")!;
+        return Shape.Create(extents);
     }
     
     public static CuTensor GetTensor(this PyModule scope, string jnptensor)
     {
         var values = scope.Eval<float[]>($"{jnptensor}.flatten().tolist()")!;
-        var shape = scope.Eval<int[]>($"{jnptensor}.shape")!;
+        var shape = scope.GetShape(jnptensor);
         return new(shape, values);
     }
 

@@ -1,5 +1,4 @@
-﻿using BitTensor.Abstractions;
-using BitTensor.Core.Tests;
+﻿using BitTensor.Core.Tests;
 using NUnit.Framework;
 using Python.Runtime;
 
@@ -30,7 +29,7 @@ class MatmulComparisonTests
             z = jnp.dot(x, y)
             """);
 
-        var x = scope.Get2D("x");;
+        var x = scope.Get2D("x");
         var y = scope.Get2D("y");
         var z_true = scope.Get2D("z");
         var z = x * y;
@@ -62,8 +61,8 @@ class MatmulComparisonTests
         var ab_shape = scope.Eval<int[]>("ab.shape")!;
         var ca_shape = scope.Eval<int[]>("ca.shape")!;
 
-        Console.WriteLine(ab_shape.Serialize());
-        Console.WriteLine(ca_shape.Serialize());
+        Console.WriteLine(ab_shape);
+        Console.WriteLine(ca_shape);
 
         var a = scope.Get1D("a");
         var b = scope.Get2D("b");
@@ -106,8 +105,8 @@ class MatmulComparisonTests
         var ac_shape = scope.Eval<int[]>("ac.shape")!;
         var cb_shape = scope.Eval<int[]>("cb.shape")!;
 
-        Console.WriteLine(ac_shape.Serialize());
-        Console.WriteLine(cb_shape.Serialize());
+        Console.WriteLine(ac_shape);
+        Console.WriteLine(cb_shape);
 
         var a = scope.Get1D("a");
         var b = scope.Get1D("b");

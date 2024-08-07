@@ -30,7 +30,7 @@ public unsafe partial class CuTensor
         return output;
     }
 
-    internal static int[] GetMultiplicationShape(AbstractTensor a, AbstractTensor b)
+    internal static Shape GetMultiplicationShape(AbstractTensor a, AbstractTensor b)
     {
         if (a.IsScalar)
             return b.Shape;
@@ -45,7 +45,7 @@ public unsafe partial class CuTensor
             return a.Shape[..^1];
         
         if (a.LastDimension != b.PrevDimension)
-            throw new InvalidOperationException($"Shapes are not compatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
+            throw new InvalidOperationException($"Shapes are not compatible: {a.Shape} and {b.Shape}");
 
         var batches = Shapes.Broadcast(a.Shape[..^2], b.Shape[..^2]);
 
@@ -61,7 +61,7 @@ public unsafe partial class CuTensor
 
     public static CuTensor Sum(CuTensor a, HashSet<int> axis)
     {
-        var shape = Shapes.Reduce(a.Shape, axis);
+        var shape = a.Shape.Reduce(axis);
         var output = new CuTensor(shape);
         Sum(a, axis, output);
         return output;
@@ -70,21 +70,21 @@ public unsafe partial class CuTensor
     public static CuTensor Transpose(CuTensor a, int[] axis)
     {
         if (axis.Length != a.Dimensions)
-            throw new InvalidOperationException($"Axis {axis.Serialize()} is not valid argument for {a.Shape.Serialize()} shape tensor");
+            throw new InvalidOperationException($"Axis {axis.ToText()} is not valid argument for {a.Shape} shape tensor");
 
-        if (!axis.AreElementsUnique())
-            throw new InvalidOperationException($"Axis {axis.Serialize()} does not contain all axes for {a.Shape.Serialize()} shape tensor");
+        if (!axis.AllElementsAreUnique())
+            throw new InvalidOperationException($"Axis {axis.ToText()} does not contain all axes for {a.Shape} shape tensor");
 
-        var shape = Shapes.Transpose(a.Shape, axis);
+        var shape = a.Shape.Transpose(axis);
         var output = new CuTensor(shape);
         Transpose(a, axis, output);
         return output;
     }
 
-    public static CuTensor Reshape(CuTensor a, int[] shape)
+    public static CuTensor Reshape(CuTensor a, Shape shape)
     {
-        if (shape.Product() != a.Size)
-            throw new InvalidOperationException($"Shape {shape.Serialize()} does not produce {a.Size} size");
+        if (shape.ArraySize != a.Size)
+            throw new InvalidOperationException($"Shape {shape} does not produce {a.Size} size");
 
         return new CuTensor(shape, a.Pointer);
     }

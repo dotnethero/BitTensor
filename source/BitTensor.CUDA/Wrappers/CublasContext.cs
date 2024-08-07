@@ -37,13 +37,13 @@ internal unsafe class CublasContext : IDisposable
     
     public void Geam(CuTensor a, CuTensor b, CuTensor r, float alpha = 1f, float beta = 1f)
     {
-        var strides = Batching.GetBatchStrides(a, b, ..^2);
+        var enumerator = Batching.GetBatchEnumerator(a, b, ..^2);
 
         var a_batch_size = a.PrevDimension * a.LastDimension;
         var b_batch_size = b.PrevDimension * b.LastDimension;
         var c_batch_size = r.PrevDimension * r.LastDimension;
         
-        foreach (var batch in Batching.GetMatrixBatches(strides, a, b, r))
+        foreach (var batch in enumerator.GetBatches(a, b, r))
         {
             var status = cuBLAS.cublasSgeam(
                 Handle,
@@ -67,13 +67,13 @@ internal unsafe class CublasContext : IDisposable
 
     public void Gemm(CuTensor a, CuTensor b, CuTensor r, float alpha = 1f, float beta = 0f)
     {
-        var strides = Batching.GetBatchStrides(a, b, ..^2);
+        var enumerator = Batching.GetBatchEnumerator(a, b, ..^2);
 
         var a_batch_size = a.PrevDimension * a.LastDimension;
         var b_batch_size = b.PrevDimension * b.LastDimension;
         var c_batch_size = r.PrevDimension * r.LastDimension;
         
-        foreach (var batch in Batching.GetMatrixBatches(strides, a, b, r))
+        foreach (var batch in enumerator.GetBatches(a, b, r))
         {
             var status = cuBLAS.cublasSgemm_v2(
                 Handle,

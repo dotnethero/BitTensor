@@ -6,8 +6,7 @@ internal static class CuAsserts
 {
     public static unsafe void ValuesAreEqual(CuTensor expected, CuTensor actual, float tolerance = 1e-4f)
     {
-        if (!Shapes.AreEqual(expected.Shape, actual.Shape))
-            throw new Exception("Shapes are not equal");
+        Shapes.EnsureAreEqual(expected.Shape, actual.Shape);
 
         var expects = expected.CopyToHost();
         var actuals = actual.CopyToHost();

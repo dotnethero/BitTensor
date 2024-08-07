@@ -1,5 +1,4 @@
-﻿using BitTensor.Abstractions;
-using BitTensor.Core.Tests;
+﻿using BitTensor.Core.Tests;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
 using NUnit.Framework;
@@ -87,10 +86,10 @@ class MatmulGradientTests
         var ca_dc_shape = scope.GetShape("ca_dc");
         var ca_da_shape = scope.GetShape("ca_da");
 
-        Console.WriteLine(ab_da_shape.Serialize());
-        Console.WriteLine(ab_db_shape.Serialize());
-        Console.WriteLine(ca_dc_shape.Serialize());
-        Console.WriteLine(ca_da_shape.Serialize());
+        Console.WriteLine(ab_da_shape);
+        Console.WriteLine(ab_db_shape);
+        Console.WriteLine(ca_dc_shape);
+        Console.WriteLine(ca_da_shape);
         
         var ab_da_true = scope.Get1D("ab_da");
         var ab_db_true = scope.Get2D("ab_db");
@@ -161,10 +160,10 @@ class MatmulGradientTests
         var cb_dc_shape = scope.GetShape("cb_dc");
         var cb_db_shape = scope.GetShape("cb_db");
 
-        Console.WriteLine(aс_da_shape.Serialize());
-        Console.WriteLine(aс_dс_shape.Serialize());
-        Console.WriteLine(cb_dc_shape.Serialize());
-        Console.WriteLine(cb_db_shape.Serialize());
+        Console.WriteLine(aс_da_shape);
+        Console.WriteLine(aс_dс_shape);
+        Console.WriteLine(cb_dc_shape);
+        Console.WriteLine(cb_db_shape);
 
         var aс_da_true = scope.Get1D("aс_da");
         var aс_dс_true = scope.Get2D("aс_dс");

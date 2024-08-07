@@ -7,7 +7,7 @@ public abstract class AbstractTensor
     public readonly long Id;
     public readonly int Size;
     public readonly int Dimensions;
-    public readonly int[] Shape;
+    public readonly Shape Shape;
     public readonly int[] Strides;
     
     // tensor properties
@@ -21,15 +21,13 @@ public abstract class AbstractTensor
     public readonly int PrevDimension;
     public readonly int LastDimension;
 
-    protected internal AbstractTensor(int[] shape)
+    protected internal AbstractTensor(Shape shape)
     {
-        var size = shape.Product();
-
         Id = Interlocked.Increment(ref MaxID);
-        Size = size;
+        Size = shape.ArraySize;
         Shape = shape;
-        Strides = shape.GetStrides();
-        Dimensions = shape.Length;
+        Strides = shape.Strides;
+        Dimensions = shape.Dimensions;
 
         IsEmpty = Size == 0;
         IsScalar = Dimensions == 0;

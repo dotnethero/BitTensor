@@ -2,26 +2,26 @@
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor : AbstractTensor, IDisposable
+public unsafe partial class CuTensor : AbstractTensor, IDeviceArray, IDisposable
 {
     internal readonly float* Pointer;
 
-    public CuTensor(int[] shape) : base(shape)
+    public static CuTensor Allocate(Shape shape) => new(shape);
+
+    public CuTensor(Shape shape) : base(shape)
     {
         Pointer = CuArray.Allocate(Size);
     }
 
-    public CuTensor(int[] shape, float[] values) : base(shape)
+    public CuTensor(Shape shape, float[] values) : base(shape)
     {
         Pointer = CuArray.Allocate(Size, values);
     }
     
-    public CuTensor(int[] shape, float* pointer) : base(shape)
+    public CuTensor(Shape shape, float* pointer) : base(shape)
     {
         Pointer = pointer;
     }
-
-    public static CuTensor Allocate(int[] shape) => new(shape);
 
     public float[] CopyToHost()
     {
@@ -51,5 +51,5 @@ public unsafe partial class CuTensor : AbstractTensor, IDisposable
         CuArray.Free(Pointer);
     }
 
-    public override string ToString() => $"Tensor #{Id}, shape={Shape.Serialize()}";
+    public override string ToString() => $"Tensor #{Id}, shape={Shape}";
 }

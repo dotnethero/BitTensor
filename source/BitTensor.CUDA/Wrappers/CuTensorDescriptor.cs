@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Wrappers;
 
