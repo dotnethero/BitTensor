@@ -28,13 +28,13 @@ public partial class CuTensorNode
 
     public static CuTensorNode operator *(CuTensorNode a, CuTensorNode b)
     {
-        var outputShape = CuTensor.GetMultiplicationShape(a.Tensor, b.Tensor);
+        var outputShape = Shapes.BroadcastMatMul(a.Tensor.Shape, b.Tensor.Shape);
         var output = new CuTensor(outputShape);
         return new(
             output,
             children: [a, b],
             forward: () => CuTensor.Multiply(a.Tensor, b.Tensor, output),
-            backward: (grad) => throw new NotImplementedException());
+            backward: _ => throw new NotImplementedException());
     }
 
     public static CuTensorNode Sum(CuTensorNode a)
@@ -44,6 +44,6 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuTensor.Sum(a.Tensor, output),
-            backward: (grad) => throw new NotImplementedException());
+            backward: _ => throw new NotImplementedException());
     }
 }

@@ -52,6 +52,28 @@ public static class Shapes
         return shape;
     }
 
+    public static Shape BroadcastMatMul(Shape a, Shape b)
+    {
+        if (a.Dimensions == 0)
+            return b;
+
+        if (b.Dimensions == 0)
+            return a;
+        
+        if (a.Dimensions == 1)
+            return b[1..];
+
+        if (b.Dimensions == 1) 
+            return a[..^1];
+        
+        if (a[^1] != b[^2])
+            throw new InvalidOperationException($"Shapes are not compatible for matrix multiplication: {a} and {b}");
+
+        var batches = Broadcast(a[..^2], b[..^2]);
+
+        return [..batches, a[^2], b[^1]];
+    }
+
     public static HashSet<int> GetBroadcastedAxis(Shape input, Shape output)
     {
         var id = input.Dimensions;

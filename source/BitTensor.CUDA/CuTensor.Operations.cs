@@ -24,32 +24,10 @@ public unsafe partial class CuTensor
 
     public static CuTensor operator *(CuTensor a, CuTensor b)
     {
-        var outputShape = GetMultiplicationShape(a, b);
+        var outputShape = Shapes.BroadcastMatMul(a.Shape, b.Shape);
         var output = new CuTensor(outputShape);
         Multiply(a, b, output);
         return output;
-    }
-
-    internal static Shape GetMultiplicationShape(AbstractTensor a, AbstractTensor b)
-    {
-        if (a.IsScalar)
-            return b.Shape;
-
-        if (b.IsScalar)
-            return a.Shape;
-        
-        if (a.IsVector)
-            return b.Shape[1..];
-
-        if (b.IsVector) 
-            return a.Shape[..^1];
-        
-        if (a.LastDimension != b.PrevDimension)
-            throw new InvalidOperationException($"Shapes are not compatible: {a.Shape} and {b.Shape}");
-
-        var batches = Shapes.Broadcast(a.Shape[..^2], b.Shape[..^2]);
-
-        return [..batches, a.Shape[^2], b.Shape[^1]];
     }
 
     public static CuTensor Sum(CuTensor a)
