@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.ComputeOnly;
 
-public static class CuBLAS
+public static unsafe class CuBLAS
 {
     public static void Add(CuTensor a, CuTensor b, CuTensor r)
     {
