@@ -15,13 +15,42 @@ internal sealed class CuTensorMatMulPlan : IDisposable
 
     public CuTensorMatMulPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
     {
-        LeftDescriptor = PrepareLeft(context, left);
-        RightDescriptor = PrepareRight(context, right);
-        ResultDescriptor = PrepareResult(context, result);
+        var (leftModes, rightModes, resultModes) = GetModes(left, right, result);
+
+        LeftDescriptor = context.CreateDescriptor(left, leftModes);
+        RightDescriptor = context.CreateDescriptor(right, rightModes);
+        ResultDescriptor = context.CreateDescriptor(result, resultModes);
 
         Contraction = context.CreateContraction(LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
         ContractionPlan = Contraction.CreatePlan();
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
+    }
+
+    private static (int[] leftModes, int[] rightModes, int[] resultModes) GetModes(AbstractTensor left, AbstractTensor right, AbstractTensor result)
+    {
+        var leftModes = left.Shape.GetOrdinaryModes();
+        var rightModes = right.Shape.GetOrdinaryModes();
+        var resultModes = result.Shape.GetOrdinaryModes();
+
+        var contractionMode = Math.Max(left.Dimensions, right.Dimensions) + 1;
+
+        if (left.Dimensions > 0)
+        {
+            if (right.Dimensions == 1)
+            {
+                leftModes[^1] = contractionMode;
+                rightModes[^1] = contractionMode;
+                resultModes = result.Shape.GetOrdinaryModes(offset: +1);
+            }
+            if (right.Dimensions > 1)
+            {
+                leftModes[^1] = contractionMode;
+                rightModes[^2] = contractionMode;
+                resultModes = result.Shape.GetOrdinaryModes();
+            }
+        }
+
+        return (leftModes, rightModes, resultModes);
     }
 
     public void Execute(CuTensor left, CuTensor right, CuTensor result) =>
@@ -34,33 +63,6 @@ internal sealed class CuTensorMatMulPlan : IDisposable
             result,
             alpha: 1,
             beta: 0);
-
-    private static CuTensorDescriptor PrepareLeft(CuTensorContext context, CuTensor left)
-    {
-        var modes = left.Shape.GetModes(offset: 1);
-        modes[^2] = 1;
-        modes[^1] = 2;
-
-        return context.CreateDescriptor(left, modes);
-    }
-
-    private static CuTensorDescriptor PrepareRight(CuTensorContext context, CuTensor right)
-    {
-        var modes = right.Shape.GetModes(offset: 1);
-        modes[^2] = 2;
-        modes[^1] = 3;
-
-        return context.CreateDescriptor(right, modes);
-    }
-
-    private static CuTensorDescriptor PrepareResult(CuTensorContext context, CuTensor result)
-    {
-        var modes = result.Shape.GetModes(offset: 1);
-        modes[^2] = 1;
-        modes[^1] = 3;
-
-        return context.CreateDescriptor(result, modes);
-    }
 
     public void Dispose()
     {

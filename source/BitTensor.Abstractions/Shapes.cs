@@ -40,33 +40,13 @@ public static class Shapes
             .ToArray();
     }
 
-    public static unsafe (int batch, int rows, int columns) GetBatchRowsColumns(int[] shape)
-    {
-        var dims = shape.Length;
-        var batch = 1;
-        var rows = 0;
-        var columns = 0;
-
-        fixed (int* sh = shape)
-        {
-            for (var i = dims - 3; i >= 0; --i)
-            {
-                batch *= sh[i];
-            }
-            rows = sh[dims - 2];
-            columns = sh[dims - 1];
-        }
-
-        return (batch, rows, columns);
-    }
-    
     public static int[] GetReductionModes(this int[] shape, HashSet<int> axis) =>
         shape
-            .GetModes()
+            .GetOrdinaryModes()
             .Where((s, i) => !axis.Contains(i))
             .ToArray();
 
-    public static int[] GetModes(this int[] shape, int offset = 0)
+    public static int[] GetOrdinaryModes(this int[] shape, int offset = 0)
     {
         var dims = shape.Length;
         if (dims == 0)
@@ -74,9 +54,9 @@ public static class Shapes
 
         var modes = new int[dims];
 
-        for (var i = dims - 1; i >= 0; --i)
+        for (var i = 1; i <= dims; ++i)
         {
-            modes[i] = dims - i + offset;
+            modes[^i] = i + offset;
         }
 
         return modes;
@@ -174,7 +154,7 @@ public static class Shapes
             throw new InvalidOperationException($"Shapes are not equal: {a.Serialize()} and {b.Serialize()}");
     }
     
-    public static int[] EnsureShapesAreCompatible(int[] a, int[] b)
+    public static int[] Broadcast(int[] a, int[] b)
     {
         if (!AreCompatible(a, b, out var shape))
             throw new InvalidOperationException($"Shapes are not compatible: {a.Serialize()} and {b.Serialize()}");

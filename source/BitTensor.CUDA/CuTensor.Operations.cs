@@ -8,7 +8,7 @@ public unsafe partial class CuTensor
 {
     public static CuTensor operator +(CuTensor a, CuTensor b)
     {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
+        var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
         Add(a, b, output);
         return output;
@@ -16,7 +16,7 @@ public unsafe partial class CuTensor
 
     public static CuTensor operator -(CuTensor a, CuTensor b)
     {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Shape, b.Shape);
+        var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
         Subtract(a, b, output);
         return output;
@@ -24,12 +24,34 @@ public unsafe partial class CuTensor
 
     public static CuTensor operator *(CuTensor a, CuTensor b)
     {
-        var batchDimensions = Shapes.EnsureShapesAreCompatible(a.Shape[..^2], b.Shape[..^2]);
-        var output = new CuTensor([..batchDimensions, a.PrevDimension, b.LastDimension]);
+        var outputShape = GetMultiplicationShape(a, b);
+        var output = new CuTensor(outputShape);
         Multiply(a, b, output);
         return output;
     }
-    
+
+    internal static int[] GetMultiplicationShape(AbstractTensor a, AbstractTensor b)
+    {
+        if (a.IsScalar)
+            return b.Shape;
+
+        if (b.IsScalar)
+            return a.Shape;
+        
+        if (a.IsVector)
+            return b.Shape[1..];
+
+        if (b.IsVector) 
+            return a.Shape[..^1];
+        
+        if (a.LastDimension != b.PrevDimension)
+            throw new InvalidOperationException($"Shapes are not compatible: {a.Shape.Serialize()} and {b.Shape.Serialize()}");
+
+        var batches = Shapes.Broadcast(a.Shape[..^2], b.Shape[..^2]);
+
+        return [..batches, a.Shape[^2], b.Shape[^1]];
+    }
+
     public static CuTensor Sum(CuTensor a)
     {
         var output = new CuTensor([]);

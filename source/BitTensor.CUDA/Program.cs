@@ -4,16 +4,11 @@ internal class Program
 {
     public static void Main()
     {
-        using var a = CuTensor.Random.Uniform([2, 3, 4]);
+        using var a = new CuTensor([2, 3], [1, 2, 3, 4, 5, 6]);
+        using var b = new CuTensor([3], [2, 1, 0]);
 
         CuDebug.WriteLine(a);
-        CuDebug.WriteLine(CuTensor.Transpose(a, [0, 1, 2]));
-        CuDebug.WriteLine(CuTensor.Transpose(a, [0, 2, 1]));
-        CuDebug.WriteLine(CuTensor.Transpose(a, [1, 2, 0]));
-
-        CuDebug.WriteLine(CuTensor.Sum(a, [0]));
-        CuDebug.WriteLine(CuTensor.Sum(a, [0, 1]));
-        CuDebug.WriteLine(CuTensor.Sum(a, [0, 1, 2]));
-        CuDebug.WriteLine(CuTensor.Sum(a));
+        CuDebug.WriteLine(b);
+        CuDebug.WriteLine(a * b);
     }
 }

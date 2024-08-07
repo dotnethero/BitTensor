@@ -13,7 +13,7 @@ internal unsafe class CuTensorDescriptor : IDisposable
     internal readonly long* Strides;
     internal readonly float* Data;
 
-    public CuTensorDescriptor(CuTensorContext context, CuTensor a) : this(context, a, a.Shape.GetModes())
+    public CuTensorDescriptor(CuTensorContext context, CuTensor a) : this(context, a, a.Shape.GetOrdinaryModes())
     {
     }
 

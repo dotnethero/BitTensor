@@ -6,7 +6,7 @@ public partial class CuTensorNode
 {
     public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b)
     {
-        var shape = Shapes.EnsureShapesAreCompatible(a.Tensor.Shape, b.Tensor.Shape);
+        var shape = Shapes.Broadcast(a.Tensor.Shape, b.Tensor.Shape);
         var output = new CuTensor(shape);
         return new(
             output,
@@ -28,8 +28,8 @@ public partial class CuTensorNode
 
     public static CuTensorNode operator *(CuTensorNode a, CuTensorNode b)
     {
-        var batchDimensions = Shapes.EnsureShapesAreCompatible(a.Tensor.Shape[..^2], b.Tensor.Shape[..^2]);
-        var output = new CuTensor([..batchDimensions, a.Tensor.PrevDimension, b.Tensor.LastDimension]);
+        var outputShape = CuTensor.GetMultiplicationShape(a.Tensor, b.Tensor);
+        var output = new CuTensor(outputShape);
         return new(
             output,
             children: [a, b],
