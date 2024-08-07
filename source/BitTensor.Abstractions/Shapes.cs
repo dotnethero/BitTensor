@@ -44,6 +44,22 @@ public static class Shapes
         return true;
     }
 
+    public static bool CanBroadcastTo(this Shape input, Shape output)
+    {
+        if (output.Dimensions < input.Dimensions)
+            return false;
+
+        for (var i = 0; i < output.Dimensions; ++i)
+        {
+            var od = output[^(i+1)];
+            var id = i >= input.Dimensions ? 1 : input[^(i+1)];
+            if (id != od && id != 1)
+                return false;
+        }
+
+        return true;
+    }
+
     public static Shape Broadcast(Shape a, Shape b)
     {
         if (!TryBroadcast(a, b, out var shape))
@@ -73,7 +89,7 @@ public static class Shapes
 
         return [..batches, a[^2], b[^1]];
     }
-
+    
     public static HashSet<int> GetBroadcastedAxis(Shape input, Shape output)
     {
         var id = input.Dimensions;

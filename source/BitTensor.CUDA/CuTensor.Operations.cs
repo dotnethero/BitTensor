@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA;
 
@@ -40,6 +41,16 @@ public unsafe partial class CuTensor
         var shape = a.Shape.Reduce(axis);
         var output = new CuTensor(shape);
         CuBackend.Sum(a, axis, output);
+        return output;
+    }
+    
+    public static CuTensor Broadcast(CuTensor a, Shape shape)
+    {
+        if (!a.Shape.CanBroadcastTo(shape))
+            throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
+
+        var output = new CuTensor(shape);
+        CuBackend.Broadcast(a, output);
         return output;
     }
 

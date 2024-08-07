@@ -47,6 +47,13 @@ internal static class CuBackend
         plan.Execute(a, z);
     }
 
+    public static void Broadcast(CuTensor a, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorAddInplacePlan(context, a, z);
+        plan.Execute(a, z, gamma: 0);
+    }
+
     public static void Transpose(CuTensor a, int[] axis, CuTensor z)
     {
         using var context = new CuTensorContext();

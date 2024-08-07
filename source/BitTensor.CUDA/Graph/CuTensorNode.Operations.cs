@@ -44,6 +44,6 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuBackend.Sum(a.Tensor, output),
-            backward: _ => throw new NotImplementedException());
+            backward: grad => [CuTensor.Broadcast(grad, a.Shape)]);
     }
 }
