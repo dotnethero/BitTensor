@@ -30,8 +30,8 @@ internal unsafe class CuTensorDescriptor : IDisposable
         for (var i = 0; i < a.Dimensions; ++i)
         {
             Modes[i] = modes[i];
-            Extents[i] = a.Shape[i];
-            Strides[i] = a.Strides[i];
+            Extents[i] = a.Shape.Extents[i];
+            Strides[i] = a.Shape.Strides[i];
         }
 
         var status = cuTENSOR.cutensorCreateTensorDescriptor(

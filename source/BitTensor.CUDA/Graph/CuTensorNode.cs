@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -8,6 +9,7 @@ public partial class CuTensorNode : IDisposable
     public delegate CuTensor[] BackwardFunction(CuTensor grad);
 
     public readonly CuTensor Tensor;
+    public readonly Shape Shape;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
     public readonly CuTensorNode[] Children;
@@ -17,6 +19,7 @@ public partial class CuTensorNode : IDisposable
     public CuTensorNode(CuTensor tensor)
     {
         Tensor = tensor;
+        Shape = tensor.Shape;
         Children = [];
         Dependents = new(3);
         Outdated = false;
@@ -25,6 +28,7 @@ public partial class CuTensorNode : IDisposable
     public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
     {
         Tensor = tensor;
+        Shape = tensor.Shape;
         Forward = forward;
         Backward = backward;
         Children = children;

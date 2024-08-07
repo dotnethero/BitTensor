@@ -6,7 +6,7 @@ public partial class CuTensorNode
 {
     public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b)
     {
-        var shape = Shapes.Broadcast(a.Tensor.Shape, b.Tensor.Shape);
+        var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
         return new(
             output,
@@ -14,22 +14,22 @@ public partial class CuTensorNode
             forward: () => CuBackend.Add(a.Tensor, b.Tensor, output),
             backward: (grad) =>
             {
-                var adims = Shapes.GetBroadcastedAxis(a.Tensor.Shape, output.Shape);
-                var bdims = Shapes.GetBroadcastedAxis(b.Tensor.Shape, output.Shape);
+                var adims = Shapes.GetBroadcastedAxis(a.Shape, output.Shape);
+                var bdims = Shapes.GetBroadcastedAxis(b.Shape, output.Shape);
                 var agrad = CuTensor.Sum(grad, axis: adims);
                 var bgrad = CuTensor.Sum(grad, axis: bdims);
                 return
                 [
-                    CuTensor.Reshape(agrad, a.Tensor.Shape), // shares memory with `agrad`
-                    CuTensor.Reshape(bgrad, b.Tensor.Shape),
+                    CuTensor.Reshape(agrad, a.Shape), // shares memory with `agrad`
+                    CuTensor.Reshape(bgrad, b.Shape),
                 ];
             });
     }
 
     public static CuTensorNode operator *(CuTensorNode a, CuTensorNode b)
     {
-        var outputShape = Shapes.BroadcastMatMul(a.Tensor.Shape, b.Tensor.Shape);
-        var output = new CuTensor(outputShape);
+        var shape = Shapes.BroadcastMatMul(a.Shape, b.Shape);
+        var output = new CuTensor(shape);
         return new(
             output,
             children: [a, b],

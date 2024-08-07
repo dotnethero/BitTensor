@@ -1,6 +1,4 @@
 ﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Plans;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA;
 
