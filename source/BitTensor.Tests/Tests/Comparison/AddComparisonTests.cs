@@ -44,12 +44,12 @@ class AddComparisonTests
              d = jnp.add(x, y)
              """);
 
-        var x = scope.GetTensor("x");
-        var y = scope.GetTensor("y");
-        var d = scope.GetTensor("d");
+        using var x = scope.GetTensor("x");
+        using var y = scope.GetTensor("y");
+        using var d = scope.GetTensor("d");
 
-        var z1 = x + y;
-        var z2 = y + x;
+        using var z1 = x + y;
+        using var z2 = y + x;
 
         Assert.Multiple(() =>
         {

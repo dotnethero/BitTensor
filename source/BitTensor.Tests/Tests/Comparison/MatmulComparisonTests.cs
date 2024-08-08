@@ -29,10 +29,10 @@ class MatmulComparisonTests
             z = jnp.dot(x, y)
             """);
 
-        var x = scope.Get2D("x");
-        var y = scope.Get2D("y");
-        var z_true = scope.Get2D("z");
-        var z = x * y;
+        using var x = scope.Get2D("x");
+        using var y = scope.Get2D("y");
+        using var z_true = scope.Get2D("z");
+        using var z = x * y;
 
         TensorAsserts.ShapesAreEqual(z_true, z);
         TensorAsserts.ValuesAreEqual(z_true, z);
@@ -64,14 +64,14 @@ class MatmulComparisonTests
         Console.WriteLine(ab_shape);
         Console.WriteLine(ca_shape);
 
-        var a = scope.Get1D("a");
-        var b = scope.Get2D("b");
-        var c = scope.Get2D("c");
-        var ab_true = scope.Get1D("ab");
-        var ca_true = scope.Get1D("ca");
+        using var a = scope.Get1D("a");
+        using var b = scope.Get2D("b");
+        using var c = scope.Get2D("c");
+        using var ab_true = scope.Get1D("ab");
+        using var ca_true = scope.Get1D("ca");
 
-        var ab = a * b;
-        var ca = c * a;
+        using var ab = a * b;
+        using var ca = c * a;
 
         Assert.Multiple(() =>
         {
@@ -108,14 +108,14 @@ class MatmulComparisonTests
         Console.WriteLine(ac_shape);
         Console.WriteLine(cb_shape);
 
-        var a = scope.Get1D("a");
-        var b = scope.Get1D("b");
-        var c = scope.Get2D("c");
-        var ac_true = scope.Get1D("ac");
-        var cb_true = scope.Get1D("cb");
+        using var a = scope.Get1D("a");
+        using var b = scope.Get1D("b");
+        using var c = scope.Get2D("c");
+        using var ac_true = scope.Get1D("ac");
+        using var cb_true = scope.Get1D("cb");
 
-        var ac = a * c;
-        var cb = c * b;
+        using var ac = a * c;
+        using var cb = c * b;
 
         Assert.Multiple(() =>
         {
@@ -181,10 +181,10 @@ class MatmulComparisonTests
              d = jnp.matmul(x, y)
              """);
 
-        var x = scope.GetTensor("x");
-        var y = scope.GetTensor("y");
-        var d = scope.GetTensor("d");
-        var z = x * y;
+        using var x = scope.GetTensor("x");
+        using var y = scope.GetTensor("y");
+        using var d = scope.GetTensor("d");
+        using var z = x * y;
 
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);

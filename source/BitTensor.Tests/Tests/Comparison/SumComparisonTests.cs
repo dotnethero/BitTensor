@@ -37,10 +37,10 @@ class SumComparisonTests
              d = jnp.sum(x, axis={axis})
              """);
 
-        var x = scope.GetTensor("x");
-        var d = scope.GetTensor("d");
+        using var x = scope.GetTensor("x");
+        using var d = scope.GetTensor("d");
 
-        var z = CuTensor.Sum(x, axis: ax.ToHashSet());
+        using var z = CuTensor.Sum(x, axis: ax.ToHashSet());
         
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);
