@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorMatMulPlan : IDisposable
+internal sealed class CuTensorOuterProductPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -12,13 +12,22 @@ internal sealed class CuTensorMatMulPlan : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    public CuTensorMatMulPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
+    public CuTensorOuterProductPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
     {
-        var (leftModes, rightModes, resultModes) = Modes.GetMultiplicationModes(left.Shape, right.Shape, result.Shape);
+        var leftModes = left.Shape.GetOrdinaryModes();
+        var rightModes = right.Shape.GetOrdinaryModes();
+        var lastMode = Math.Max(left.Dimensions, right.Dimensions);
+
+        leftModes[^1] = ++lastMode;
+        rightModes[^1] = ++lastMode;
+
+        var longest = leftModes.Length > rightModes.Length 
+            ? leftModes[..^1] 
+            : rightModes[..^1];
 
         LeftDescriptor = context.CreateDescriptor(left, leftModes);
         RightDescriptor = context.CreateDescriptor(right, rightModes);
-        ResultDescriptor = context.CreateDescriptor(result, resultModes);
+        ResultDescriptor = context.CreateDescriptor(result, [..longest, leftModes[^1], rightModes[^1]]);
 
         Contraction = context.CreateContraction(LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
         ContractionPlan = Contraction.CreatePlan();

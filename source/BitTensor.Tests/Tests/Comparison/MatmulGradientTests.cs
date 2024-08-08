@@ -195,7 +195,16 @@ class MatmulGradientTests
     }
     
     [Test]
-    // Simple cases
+
+    // Scalars
+    [TestCase(new int[0], new int[0])] // Scalar x Scalar
+    [TestCase(new int[0], new[] { 3 })] // Scalar x Vector
+    [TestCase(new int[0], new[] { 3, 2 })] // Scalar x Matrix
+    [TestCase(new int[0], new[] { 4, 3, 2 })] // Scalar x Batched matrix
+    [TestCase(new[] { 3 }, new int[0])] // Vector x Scalar
+    [TestCase(new[] { 3, 2 }, new int[0])] // Matrix x Scalar
+    [TestCase(new[] { 4, 3, 2 }, new int[0])] // Batched matrix x Scalar
+
     [TestCase(new[] { 1 }, new[] { 1 })] // Scalar multiplication
     [TestCase(new[] { 3 }, new[] { 3 })] // Dot product
     [TestCase(new[] { 2, 3 }, new[] { 3, 4 })] // Regular matrix multiplication
@@ -242,11 +251,15 @@ class MatmulGradientTests
         
         var x_py_shape = $"[{string.Join(",", a)}]";
         var y_py_shape = $"[{string.Join(",", b)}]";
+        
+        var function = a.Length == 0 || b.Length == 0 
+            ? "multiply" 
+            : "matmul";
 
         scope.ExecuteJax(
             $"""
              def func(A, B):
-                return jnp.sum(jnp.matmul(A, B))
+                return jnp.sum(jnp.{function}(A, B))
              
              key = jax.random.PRNGKey(0)
              xk, yk = jax.random.split(key)
@@ -267,6 +280,10 @@ class MatmulGradientTests
         using var xy_grads = CuTensorNode.Sum(z).GetGradients();
         var xy_dx = xy_grads[x];
         var xy_dy = xy_grads[y];
+
+        CuDebug.WriteLine(x);
+        CuDebug.WriteLine(y);
+        CuDebug.WriteLine(z);
         
         Assert.Multiple(() =>
         {

@@ -22,7 +22,11 @@ public unsafe partial class CuTensor : AbstractTensor, IDeviceArray, IDisposable
     {
         Pointer = pointer;
     }
-    
+
+    public CuTensor PadLeft() => Reshape([1, ..Shape]);
+
+    public CuTensor PadRight() => Reshape([..Shape, 1]);
+
     public CuTensor Reshape(Shape shape) // no allocation
     {
         if (shape.ArraySize != Size)

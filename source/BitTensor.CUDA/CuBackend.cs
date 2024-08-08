@@ -12,24 +12,31 @@ internal static class CuBackend
         plan.Execute(a, z);
     }
 
-    public static void Add(CuTensor a, CuTensor b, CuTensor z, float beta = 1f)
+    public static void ElementwiseSum(CuTensor a, CuTensor b, CuTensor z, float beta = 1f)
     {
         using var context = new CuTensorContext();
         using var plan = new CuTensorAddPlan(context, a, b, z);
         plan.Execute(a, b, z, beta);
     }
-
-    public static void Multiply(CuTensor a, CuTensor b, CuTensor z)
+    
+    public static void ElementwiseProduct(CuTensor a, CuTensor b, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorMatMulPlan(context, a, b, z);
+        using var plan = new CuTensorMultiplyPlan(context, a, b, z);
+        plan.Execute(a, b, z);
+    }
+
+    public static void MatrixProduct(CuTensor a, CuTensor b, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorMatrixProductPlan(context, a, b, z);
         plan.Execute(a, b, z);
     }
     
-    public static void Outer(CuTensor a, CuTensor b, CuTensor z)
+    public static void OuterProduct(CuTensor a, CuTensor b, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorOuterProduct(context, a, b, z);
+        using var plan = new CuTensorOuterProductPlan(context, a, b, z);
         plan.Execute(a, b, z);
     }
 
@@ -44,6 +51,20 @@ internal static class CuBackend
     {
         using var context = new CuTensorContext();
         using var plan = new CuTensorSumPlan(context, a, z, axis);
+        plan.Execute(a, z);
+    }
+    
+    public static void Product(CuTensor a, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorProductPlan(context, a, z, []);
+        plan.Execute(a, z);
+    }
+
+    public static void Product(CuTensor a, HashSet<int> axis, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorProductPlan(context, a, z, axis);
         plan.Execute(a, z);
     }
 

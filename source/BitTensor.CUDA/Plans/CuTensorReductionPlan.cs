@@ -1,8 +1,14 @@
-﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
+﻿using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
+
+internal sealed class CuTensorProductPlan(
+    CuTensorContext context,
+    CuTensor input,
+    CuTensor output,
+    HashSet<int> axis) : 
+    CuTensorReductionPlan(context, input, output, axis, cutensorOperator_t.CUTENSOR_OP_MUL);
 
 internal sealed class CuTensorSumPlan(
     CuTensorContext context,

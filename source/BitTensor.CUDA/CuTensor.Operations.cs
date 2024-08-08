@@ -6,39 +6,54 @@ namespace BitTensor.CUDA;
 public unsafe partial class CuTensor
 {
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CuTensor operator +(CuTensor a, CuTensor b) => Add(a, b, beta: +1);
+    public static CuTensor operator +(CuTensor a, CuTensor b) => ElementwiseSum(a, b, beta: +1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CuTensor operator -(CuTensor a, CuTensor b) => Add(a, b, beta: -1);
+    public static CuTensor operator -(CuTensor a, CuTensor b) => ElementwiseSum(a, b, beta: -1);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CuTensor operator *(CuTensor a, CuTensor b) => Mul(a, b);
-    
-    public static CuTensor Add(CuTensor a, CuTensor b, float beta = 1f)
+    public static CuTensor operator *(CuTensor a, CuTensor b)
+    {
+        if (a.IsScalar ||
+            b.IsScalar)
+            return ElementwiseProduct(a, b);
+
+        if (a.IsVector && 
+            b.IsVector)
+            return MatrixProduct(a, b);
+
+        return MatrixProduct(a, b);
+    }
+
+    public static CuTensor ElementwiseSum(CuTensor a, CuTensor b, float beta = 1f)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
-        CuBackend.Add(a, b, output, beta);
+        CuBackend.ElementwiseSum(a, b, output, beta);
+        return output;
+    }
+    
+    public static CuTensor ElementwiseProduct(CuTensor a, CuTensor b)
+    {
+        var shape = Shapes.Broadcast(a.Shape, b.Shape);
+        var output = new CuTensor(shape);
+        CuBackend.ElementwiseProduct(a, b, output);
         return output;
     }
 
-    public static CuTensor Mul(CuTensor a, CuTensor b)
+    public static CuTensor MatrixProduct(CuTensor a, CuTensor b)
     {
-        var outputShape = Shapes.BroadcastMatMul(a.Shape, b.Shape);
-        var output = new CuTensor(outputShape);
-        CuBackend.Multiply(a, b, output);
+        var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
+        var output = new CuTensor(shape);
+        CuBackend.MatrixProduct(a, b, output);
         return output;
     }
 
-    public static CuTensor Outer(CuTensor a, CuTensor b)
+    public static CuTensor OuterProduct(CuTensor a, CuTensor b)
     {
-        if (a.Dimensions < 1 ||
-            b.Dimensions < 1)
-            throw new InvalidOperationException($"Can't calculate outer product for {a.Shape} and {b.Shape} tensors");
-
-        var batchDimensions = Shapes.Broadcast(a.Shape[..^1], b.Shape[..^1]);
-        var output = new CuTensor([..batchDimensions, a.LastDimension, b.LastDimension]);
-        CuBackend.Outer(a, b, output);
+        var shape = Shapes.BroadcastOuterProduct(a.Shape, b.Shape);
+        var output = new CuTensor(shape);
+        CuBackend.OuterProduct(a, b, output);
         return output;
     }
 
@@ -57,6 +72,21 @@ public unsafe partial class CuTensor
         return output;
     }
     
+    public static CuTensor Product(CuTensor a)
+    {
+        var output = new CuTensor([]);
+        CuBackend.Product(a, output);
+        return output;
+    }
+
+    public static CuTensor Product(CuTensor a, HashSet<int> axis)
+    {
+        var shape = a.Shape.Reduce(axis);
+        var output = new CuTensor(shape);
+        CuBackend.Product(a, axis, output);
+        return output;
+    }
+
     public static CuTensor Broadcast(CuTensor a, Shape shape)
     {
         if (!a.Shape.CanBroadcastTo(shape))

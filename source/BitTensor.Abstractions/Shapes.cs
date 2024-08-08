@@ -71,7 +71,7 @@ public static class Shapes
         return shape;
     }
 
-    public static Shape BroadcastMatMul(Shape a, Shape b)
+    public static Shape BroadcastMatrixProduct(Shape a, Shape b)
     {
         if (a.Dimensions == 0)
             return b;
@@ -86,11 +86,22 @@ public static class Shapes
             return [..b[..^2], b[^1]];
 
         if (a[^1] != b[^2])
-            throw new InvalidOperationException($"Shapes are not compatible for matrix multiplication: {a} and {b}");
+            throw new InvalidOperationException($"Shapes are not compatible for matrix product: {a} and {b}");
 
         var batches = Broadcast(a[..^2], b[..^2]);
 
         return [..batches, a[^2], b[^1]];
+    }
+
+    public static Shape BroadcastOuterProduct(Shape a, Shape b)
+    {
+        if (a.Dimensions < 1 ||
+            b.Dimensions < 1)
+            throw new InvalidOperationException($"Shapes are not compatible for outer product: {a} and {b}");
+
+        var batches = Broadcast(a[..^1], b[..^1]);
+
+        return [..batches, a[^1], b[^1]];
     }
     
     public static HashSet<int> GetBroadcastedAxis(Shape input, Shape output)

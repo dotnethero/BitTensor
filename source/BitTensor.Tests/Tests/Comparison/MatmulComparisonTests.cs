@@ -128,6 +128,16 @@ class MatmulComparisonTests
     }
 
     [Test]
+
+    // Scalars
+    [TestCase(new int[0], new int[0])] // Scalar x Scalar
+    [TestCase(new int[0], new[] { 3 })] // Scalar x Vector
+    [TestCase(new int[0], new[] { 3, 2 })] // Scalar x Matrix
+    [TestCase(new int[0], new[] { 4, 3, 2 })] // Scalar x Batched matrix
+    [TestCase(new[] { 3 }, new int[0])] // Vector x Scalar
+    [TestCase(new[] { 3, 2 }, new int[0])] // Matrix x Scalar
+    [TestCase(new[] { 4, 3, 2 }, new int[0])] // Batched matrix x Scalar
+
     // Simple cases
     [TestCase(new[] { 1 }, new[] { 1 })] // Scalar multiplication
     [TestCase(new[] { 3 }, new[] { 3 })] // Dot product
@@ -176,13 +186,17 @@ class MatmulComparisonTests
         var x_py_shape = $"[{string.Join(",", a)}]";
         var y_py_shape = $"[{string.Join(",", b)}]";
 
+        var function = a.Length == 0 || b.Length == 0 
+            ? "multiply" 
+            : "matmul";
+
         scope.ExecuteJax(
             $"""
              key = jax.random.PRNGKey(0)
              xk, yk = jax.random.split(key)
              x = jax.random.normal(xk, {x_py_shape})
              y = jax.random.normal(yk, {y_py_shape})
-             d = jnp.matmul(x, y)
+             d = jnp.{function}(x, y)
              """);
 
         using var x = scope.GetTensor("x");
