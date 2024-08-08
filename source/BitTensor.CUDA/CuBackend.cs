@@ -12,18 +12,11 @@ internal static class CuBackend
         plan.Execute(a, z);
     }
 
-    public static void Add(CuTensor a, CuTensor b, CuTensor z)
+    public static void Add(CuTensor a, CuTensor b, CuTensor z, float beta = 1f)
     {
         using var context = new CuTensorContext();
         using var plan = new CuTensorAddPlan(context, a, b, z);
-        plan.Execute(a, b, z, beta: +1);
-    }
-
-    public static void Subtract(CuTensor a, CuTensor b, CuTensor z)
-    {
-        using var context = new CuTensorContext();
-        using var plan = new CuTensorAddPlan(context, a, b, z);
-        plan.Execute(a, b, z, beta: -1);
+        plan.Execute(a, b, z, beta);
     }
 
     public static void Multiply(CuTensor a, CuTensor b, CuTensor z)

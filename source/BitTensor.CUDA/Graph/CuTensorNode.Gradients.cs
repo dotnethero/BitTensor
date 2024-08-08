@@ -1,4 +1,6 @@
-﻿namespace BitTensor.CUDA.Graph;
+﻿using BitTensor.Abstractions;
+
+namespace BitTensor.CUDA.Graph;
 
 public partial class CuTensorNode
 {
@@ -24,6 +26,7 @@ public partial class CuTensorNode
                 var child = children[i];
                 var grad = childrenGrads[i];
 
+                Shapes.EnsureAreEqual(child.Shape, grad.Shape);
                 if (grads.ContainsKey(child))
                 {
                     CuBackend.AddInplace(grad, grads[child]);

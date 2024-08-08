@@ -15,11 +15,19 @@ internal sealed class CuTensorOuterProduct : IDisposable
     public CuTensorOuterProduct(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
     {
         var leftModes = left.Shape.GetOrdinaryModes();
-        var rightModes = right.Shape.GetOrdinaryModes(offset: left.Dimensions);
+        var rightModes = right.Shape.GetOrdinaryModes();
+        var lastMode = Math.Max(left.Dimensions, right.Dimensions);
+
+        leftModes[^1] = ++lastMode;
+        rightModes[^1] = ++lastMode;
+
+        var longest = leftModes.Length > rightModes.Length 
+            ? leftModes[..^1] 
+            : rightModes[..^1];
 
         LeftDescriptor = context.CreateDescriptor(left, leftModes);
         RightDescriptor = context.CreateDescriptor(right, rightModes);
-        ResultDescriptor = context.CreateDescriptor(result, [..leftModes, ..rightModes]);
+        ResultDescriptor = context.CreateDescriptor(result, [..longest, leftModes[^1], rightModes[^1]]);
 
         Contraction = context.CreateContraction(LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
         ContractionPlan = Contraction.CreatePlan();

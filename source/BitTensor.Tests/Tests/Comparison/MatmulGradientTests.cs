@@ -197,6 +197,7 @@ class MatmulGradientTests
     [Test]
     // Simple cases
     [TestCase(new[] { 1 }, new[] { 1 })] // Scalar multiplication
+    [TestCase(new[] { 3 }, new[] { 3 })] // Dot product
     [TestCase(new[] { 2, 3 }, new[] { 3, 4 })] // Regular matrix multiplication
 
     // Vector and matrix multiplication

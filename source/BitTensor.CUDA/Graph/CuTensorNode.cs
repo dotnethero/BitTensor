@@ -69,7 +69,9 @@ public partial class CuTensorNode : IDisposable
         Outdated = true;
     }
 
-    public override int GetHashCode() => unchecked((int)Tensor.Id);
+    public override int GetHashCode() => unchecked((int)Tensor.Id); // TODO: count nodes, not tensors
+
+    public override string ToString() => $"Tensor #{Tensor.Id}, shape={Shape}";
 
     public void Dispose()
     {

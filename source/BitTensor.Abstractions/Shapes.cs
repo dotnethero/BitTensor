@@ -2,16 +2,19 @@
 
 public static class Shapes
 {
-    public static bool AreEqual(Shape a, Shape b)
+    public static unsafe bool AreEqual(Shape a, Shape b)
     {
-        if (a.Dimensions != b.Dimensions)
+        var adims = a.Dimensions;
+        var bdims = b.Dimensions;
+        if (bdims != adims)
             return false;
 
-        for (var i = 0; i < a.Dimensions; i++)
-        {
-            if (a[i] != b[i])
-                return false;
-        }
+        fixed (int* ap = a.Extents, bp = b.Extents)
+            for (var i = 0; i < adims; ++i)
+            {
+                if (ap[i] != bp[i])
+                    return false;
+            }
 
         return true;
     }
