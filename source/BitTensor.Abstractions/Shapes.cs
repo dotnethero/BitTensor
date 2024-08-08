@@ -76,12 +76,12 @@ public static class Shapes
         if (b.Dimensions == 0)
             return a;
         
-        if (a.Dimensions == 1)
-            return b[1..];
-
         if (b.Dimensions == 1) 
             return a[..^1];
-        
+
+        if (a.Dimensions == 1)
+            return [..b[..^2], b[^1]];
+
         if (a[^1] != b[^2])
             throw new InvalidOperationException($"Shapes are not compatible for matrix multiplication: {a} and {b}");
 

@@ -200,8 +200,10 @@ class MatmulGradientTests
     [TestCase(new[] { 2, 3 }, new[] { 3, 4 })] // Regular matrix multiplication
 
     // Vector and matrix multiplication
-    [TestCase(new[] { 3 }, new[] { 3, 2 })] // Vector and matrix
-    [TestCase(new[] { 2, 3 }, new[] { 3 })] // Matrix and vector
+    [TestCase(new[] { 3 }, new[] { 3, 2 })]    // Vector and matrix
+    [TestCase(new[] { 3 }, new[] { 5, 3, 2 })] // Vector and matrix batch
+    [TestCase(new[] { 2, 3 }, new[] { 3 })]    // Matrix and vector
+    [TestCase(new[] { 5, 2, 3 }, new[] { 3 })] // Matrix batch and vector
 
     // Broadcasting cases
     [TestCase(new[] { 2, 1 }, new[] { 1, 2 })] // Broadcasting with different dimensions
