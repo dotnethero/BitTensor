@@ -20,7 +20,7 @@ public unsafe partial class CuTensor
 
         if (a.IsVector && 
             b.IsVector)
-            return MatrixProduct(a, b);
+            return DotProduct(a, b);
 
         return MatrixProduct(a, b);
     }
@@ -46,6 +46,16 @@ public unsafe partial class CuTensor
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
         var output = new CuTensor(shape);
         CuBackend.MatrixProduct(a, b, output);
+        return output;
+    }
+    
+    public static CuTensor DotProduct(CuTensor a, CuTensor b)
+    {
+        Shapes.EnsureAreEqual(a.Shape, b.Shape);
+        CuDebug.WriteLine(a);
+        CuDebug.WriteLine(b);
+        var output = new CuTensor([]);
+        CuBackend.DotProduct(a, b, output);
         return output;
     }
 

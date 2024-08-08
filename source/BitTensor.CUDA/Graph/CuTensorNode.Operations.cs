@@ -65,7 +65,7 @@ public partial class CuTensorNode
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.MatrixProduct(a.Tensor, b.Tensor, output), // TODO: contract?
+            forward: () => CuBackend.DotProduct(a.Tensor, b.Tensor, output),
             backward: grad => [grad * b.Tensor, a.Tensor * grad]);
     }
 

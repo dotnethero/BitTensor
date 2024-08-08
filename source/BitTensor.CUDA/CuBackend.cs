@@ -33,6 +33,13 @@ internal static class CuBackend
         plan.Execute(a, b, z);
     }
     
+    public static void DotProduct(CuTensor a, CuTensor b, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorContractionPlan(context, a, b, z);
+        plan.Execute(a, b, z);
+    }
+
     public static void OuterProduct(CuTensor a, CuTensor b, CuTensor z)
     {
         using var context = new CuTensorContext();
