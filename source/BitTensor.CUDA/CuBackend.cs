@@ -32,6 +32,13 @@ internal static class CuBackend
         using var plan = new CuTensorMatMulPlan(context, a, b, z);
         plan.Execute(a, b, z);
     }
+    
+    public static void Outer(CuTensor a, CuTensor b, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorOuterProduct(context, a, b, z);
+        plan.Execute(a, b, z);
+    }
 
     public static void Sum(CuTensor a, CuTensor z)
     {

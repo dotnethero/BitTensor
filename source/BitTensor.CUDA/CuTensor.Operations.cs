@@ -1,5 +1,4 @@
 ﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA;
 
@@ -28,6 +27,13 @@ public unsafe partial class CuTensor
         CuBackend.Multiply(a, b, output);
         return output;
     }
+    
+    public static CuTensor Outer(CuTensor a, CuTensor b)
+    {
+        var output = new CuTensor([..a.Shape, ..b.Shape]);
+        CuBackend.Outer(a, b, output);
+        return output;
+    }
 
     public static CuTensor Sum(CuTensor a)
     {
@@ -54,6 +60,15 @@ public unsafe partial class CuTensor
         return output;
     }
 
+    public static CuTensor Transpose(CuTensor a)
+    {
+        var axis = a.Shape.GetTransposeAxis();
+        var shape = a.Shape.Transpose(axis);
+        var output = new CuTensor(shape);
+        CuBackend.Transpose(a, axis, output);
+        return output;
+    }
+
     public static CuTensor Transpose(CuTensor a, int[] axis)
     {
         if (axis.Length != a.Dimensions)
@@ -66,13 +81,5 @@ public unsafe partial class CuTensor
         var output = new CuTensor(shape);
         CuBackend.Transpose(a, axis, output);
         return output;
-    }
-
-    public static CuTensor Reshape(CuTensor a, Shape shape)
-    {
-        if (shape.ArraySize != a.Size)
-            throw new InvalidOperationException($"Shape {shape} does not produce {a.Size} size");
-
-        return new CuTensor(shape, a.Pointer);
     }
 }

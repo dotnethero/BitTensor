@@ -22,6 +22,14 @@ public unsafe partial class CuTensor : AbstractTensor, IDeviceArray, IDisposable
     {
         Pointer = pointer;
     }
+    
+    public CuTensor Reshape(Shape shape) // no allocation
+    {
+        if (shape.ArraySize != Size)
+            throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
+
+        return new CuTensor(shape, Pointer);
+    }
 
     public float[] CopyToHost()
     {
