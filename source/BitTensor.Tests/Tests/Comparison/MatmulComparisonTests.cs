@@ -203,11 +203,8 @@ class MatmulComparisonTests
         using var y = scope.GetTensor("y");
         using var d = scope.GetTensor("d");
 
-        CuDebug.WriteLine(d);
-
         using var z = x * y;
 
-        CuDebug.WriteLine(z);
 
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);

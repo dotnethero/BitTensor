@@ -52,8 +52,6 @@ public unsafe partial class CuTensor
     public static CuTensor DotProduct(CuTensor a, CuTensor b)
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(b);
         var output = new CuTensor([]);
         CuBackend.DotProduct(a, b, output);
         return output;
