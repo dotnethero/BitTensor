@@ -50,23 +50,19 @@ class AddGradientTests
              xy_dy = jax.grad(func, argnums=1)(x, y)
              """);
 
-        using var x = scope.GetTensor("x");
-        using var y = scope.GetTensor("y");
+        using var x = scope.GetTensor("x").ToNode();
+        using var y = scope.GetTensor("y").ToNode();
         
         using var xy_dx_true = scope.GetTensor("xy_dx");
         using var xy_dy_true = scope.GetTensor("xy_dy");
         
-        using var x_node = new CuTensorNode(x);
-        using var y_node = new CuTensorNode(y);
+        using var xy_grads = CuTensorNode.Sum(x + y).GetGradients();
+        var xy_dx = xy_grads[x];
+        var xy_dy = xy_grads[y];
 
-        using var xy_grads = CuTensorNode.Sum(x_node + y_node).GetGradients();
-        var xy_dx = xy_grads[x_node];
-        var xy_dy = xy_grads[y_node];
-
-        using var yx_grads = CuTensorNode.Sum(y_node + x_node).GetGradients();
-        var yx_dx = yx_grads[x_node];
-        var yx_dy = yx_grads[y_node];
-
+        using var yx_grads = CuTensorNode.Sum(x + y).GetGradients();
+        var yx_dx = yx_grads[x];
+        var yx_dy = yx_grads[y];
         
         Assert.Multiple(() =>
         {

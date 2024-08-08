@@ -36,17 +36,15 @@ class MatmulGradientTests
             yg = jax.grad(func, argnums=1)(x, y)
             """);
 
-        using var x = scope.Get2D("x");
-        using var y = scope.Get2D("y");
+        using var x = scope.Get2D("x").ToNode();
+        using var y = scope.Get2D("y").ToNode();
+
         using var xg_true = scope.Get2D("xg");
         using var yg_true = scope.Get2D("yg");
 
-        using var x_node = new CuTensorNode(x);
-        using var y_node = new CuTensorNode(y);
-        using var grads = CuTensorNode.Sum(x_node * y_node).GetGradients();
-
-        var xg = grads[x_node];
-        var yg = grads[y_node];
+        using var grads = CuTensorNode.Sum(x * y).GetGradients();
+        var xg = grads[x];
+        var yg = grads[y];
 
         CuDebug.WriteLine(xg);
         CuDebug.WriteLine(yg);
@@ -97,21 +95,17 @@ class MatmulGradientTests
         using var ca_dc_true = scope.Get2D("ca_dc");
         using var ca_da_true = scope.Get1D("ca_da");
 
-        using var a = scope.Get1D("a");
-        using var b = scope.Get2D("b");
-        using var c = scope.Get2D("c");
+        using var a = scope.Get1D("a").ToNode();
+        using var b = scope.Get2D("b").ToNode();
+        using var c = scope.Get2D("c").ToNode();
         
-        using var a_node = new CuTensorNode(a);
-        using var b_node = new CuTensorNode(b);
-        using var c_node = new CuTensorNode(c);
-
-        using var ab_grads = CuTensorNode.Sum(a_node * b_node).GetGradients();
-        var ab_da = ab_grads[a_node];
-        var ab_db = ab_grads[b_node];
+        using var ab_grads = CuTensorNode.Sum(a * b).GetGradients();
+        var ab_da = ab_grads[a];
+        var ab_db = ab_grads[b];
         
-        using var ca_grads = CuTensorNode.Sum(c_node * a_node).GetGradients();
-        var ca_dc = ca_grads[c_node];
-        var ca_da = ca_grads[a_node];
+        using var ca_grads = CuTensorNode.Sum(c * a).GetGradients();
+        var ca_dc = ca_grads[c];
+        var ca_da = ca_grads[a];
 
         Assert.Multiple(() =>
         {
@@ -171,21 +165,17 @@ class MatmulGradientTests
         using var cb_dc_true = scope.Get2D("cb_dc");
         using var cb_db_true = scope.Get1D("cb_db");
 
-        using var a = scope.Get1D("a");
-        using var b = scope.Get1D("b");
-        using var c = scope.Get2D("c");
+        using var a = scope.Get1D("a").ToNode();
+        using var b = scope.Get1D("b").ToNode();
+        using var c = scope.Get2D("c").ToNode();
 
-        using var a_node = new CuTensorNode(a);
-        using var b_node = new CuTensorNode(b);
-        using var c_node = new CuTensorNode(c);
-
-        using var aс_grads = CuTensorNode.Sum(a_node * c_node).GetGradients();
-        var aс_da = aс_grads[a_node];
-        var ac_dc = aс_grads[c_node];
+        using var aс_grads = CuTensorNode.Sum(a * c).GetGradients();
+        var aс_da = aс_grads[a];
+        var ac_dc = aс_grads[c];
         
-        using var cb_grads = CuTensorNode.Sum(c_node * b_node).GetGradients();
-        var cb_dc = cb_grads[c_node];
-        var cb_db = cb_grads[b_node];
+        using var cb_grads = CuTensorNode.Sum(c * b).GetGradients();
+        var cb_dc = cb_grads[c];
+        var cb_db = cb_grads[b];
 
         Assert.Multiple(() =>
         {
@@ -264,20 +254,16 @@ class MatmulGradientTests
              xy_dy = jax.grad(func, argnums=1)(x, y)
              """);
 
-
-        using var x = scope.GetTensor("x");
-        using var y = scope.GetTensor("y");
-        
-        using var x_node = new CuTensorNode(x);
-        using var y_node = new CuTensorNode(y);
-        using var z_node = x_node * y_node;
+        using var x = scope.GetTensor("x").ToNode();
+        using var y = scope.GetTensor("y").ToNode();
+        using var z = x * y;
 
         using var xy_dx_true = scope.GetTensor("xy_dx");
         using var xy_dy_true = scope.GetTensor("xy_dy");
         
-        using var xy_grads = CuTensorNode.Sum(z_node).GetGradients();
-        var xy_dx = xy_grads[x_node];
-        var xy_dy = xy_grads[y_node];
+        using var xy_grads = CuTensorNode.Sum(z).GetGradients();
+        var xy_dx = xy_grads[x];
+        var xy_dy = xy_grads[y];
         
         Assert.Multiple(() =>
         {

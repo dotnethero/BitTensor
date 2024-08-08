@@ -14,15 +14,17 @@ public partial class CuTensorNode : IDisposable
     public readonly BackwardFunction? Backward;
     public readonly CuTensorNode[] Children;
     public readonly List<CuTensorNode> Dependents;
+    public readonly bool Owned;
     public bool Outdated;
 
-    public CuTensorNode(CuTensor tensor)
+    public CuTensorNode(CuTensor tensor, bool owned = false)
     {
         Tensor = tensor;
         Shape = tensor.Shape;
         Children = [];
         Dependents = new(3);
         Outdated = false;
+        Owned = owned;
     }
     
     public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
@@ -34,7 +36,8 @@ public partial class CuTensorNode : IDisposable
         Children = children;
         Dependents = new(3);
         Outdated = true;
-        
+        Owned = true;
+
         foreach (var child in Children)
         {
             child.Dependents.Add(this);
@@ -70,6 +73,9 @@ public partial class CuTensorNode : IDisposable
 
     public void Dispose()
     {
-        // TODO release managed resources here
+        if (Owned)
+        {
+            Tensor.Dispose();
+        }
     }
 }
