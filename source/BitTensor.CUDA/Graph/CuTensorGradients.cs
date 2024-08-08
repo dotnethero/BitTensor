@@ -9,8 +9,14 @@ public class CuTensorGradients : IDisposable
         get => _gradients[node];
         set => _gradients[node] = value;
     }
-    public bool ContainsKey(CuTensorNode node) => _gradients.ContainsKey(node);
+    
+    public CuTensor[] By(IEnumerable<CuTensorNode> variables) =>
+        variables
+            .Select(node => _gradients[node])
+            .ToArray();
 
+    public bool ContainsKey(CuTensorNode node) => _gradients.ContainsKey(node);
+    
     public void Push(CuTensorNode node, CuTensor gradient) => _gradients[node] = gradient;
 
     public void Dispose()

@@ -6,6 +6,8 @@ public partial class CuTensorNode
 {
     public CuTensorGradients GetGradients()
     {
+        EnsureHasUpdatedValues();
+
         var nodes = new Stack<CuTensorNode>(16);
         var grads = new CuTensorGradients();
         var ones = new CuTensor(Tensor.Shape, Enumerable.Repeat(1f, Tensor.Size).ToArray());

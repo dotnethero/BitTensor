@@ -3,13 +3,13 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA;
 
-internal static class CuBackend
+public static class CuBackend
 {
-    public static void AddInplace(CuTensor a, CuTensor z)
+    public static void AddInplace(CuTensor a, CuTensor z, float scale = 1f)
     {
         using var context = new CuTensorContext();
         using var plan = new CuTensorAddInplacePlan(context, a, z);
-        plan.Execute(a, z);
+        plan.Execute(a, z, alpha: scale);
     }
 
     public static void ElementwiseSum(CuTensor a, CuTensor b, CuTensor z, float beta = 1f)
@@ -33,11 +33,11 @@ internal static class CuBackend
         plan.Execute(a, b, z);
     }
     
-    public static void DotProduct(CuTensor a, CuTensor b, CuTensor z)
+    public static void DotProduct(CuTensor a, CuTensor b, CuTensor z, float scale = 1f)
     {
         using var context = new CuTensorContext();
         using var plan = new CuTensorContractionPlan(context, a, b, z);
-        plan.Execute(a, b, z);
+        plan.Execute(a, b, z, alpha: scale);
     }
 
     public static void OuterProduct(CuTensor a, CuTensor b, CuTensor z)
@@ -54,11 +54,11 @@ internal static class CuBackend
         plan.Execute(a, z);
     }
 
-    public static void Sum(CuTensor a, HashSet<int> axis, CuTensor z)
+    public static void Sum(CuTensor a, HashSet<int> axis, CuTensor z, float scale = 1f)
     {
         using var context = new CuTensorContext();
         using var plan = new CuTensorSumPlan(context, a, z, axis);
-        plan.Execute(a, z);
+        plan.Execute(a, z, scale);
     }
     
     public static void Product(CuTensor a, CuTensor z)

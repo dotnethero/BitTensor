@@ -68,11 +68,11 @@ public partial class CuTensor
         return output;
     }
 
-    public static CuTensor Sum(CuTensor a, HashSet<int> axis)
+    public static CuTensor Sum(CuTensor a, HashSet<int> axis, float scale = 1f)
     {
         var shape = a.Shape.Reduce(axis);
         var output = new CuTensor(shape);
-        CuBackend.Sum(a, axis, output);
+        CuBackend.Sum(a, axis, output, scale);
         return output;
     }
     

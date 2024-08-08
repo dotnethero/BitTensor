@@ -4,7 +4,9 @@ namespace BitTensor.CUDA.Graph;
 
 public partial class CuTensorNode
 {
-    public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b) => ElementwiseSum(a, b);
+    public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b) => ElementwiseSum(a, b, beta: +1);
+
+    public static CuTensorNode operator -(CuTensorNode a, CuTensorNode b) => ElementwiseSum(a, b, beta: -1);
 
     public static CuTensorNode operator *(CuTensorNode a, CuTensorNode b)
     {
@@ -19,21 +21,21 @@ public partial class CuTensorNode
         return MatrixProduct(a, b);
     }
     
-    public static CuTensorNode ElementwiseSum(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode ElementwiseSum(CuTensorNode a, CuTensorNode b, float beta = 1f)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.ElementwiseSum(a.Tensor, b.Tensor, output),
+            forward: () => CuBackend.ElementwiseSum(a.Tensor, b.Tensor, output, beta),
             backward: grad =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, grad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, grad.Shape);
                 return
                 [
-                    CuTensor.Sum(grad, axis: adims).Reshape(a.Shape),
+                    CuTensor.Sum(grad, axis: adims, scale: beta).Reshape(a.Shape),
                     CuTensor.Sum(grad, axis: bdims).Reshape(b.Shape)
                 ];
             });
@@ -61,15 +63,15 @@ public partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode DotProduct(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode DotProduct(CuTensorNode a, CuTensorNode b, float scale = 1f)
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var output = new CuTensor([]);
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.DotProduct(a.Tensor, b.Tensor, output),
-            backward: grad => [grad * b.Tensor, a.Tensor * grad]);
+            forward: () => CuBackend.DotProduct(a.Tensor, b.Tensor, output, scale),
+            backward: grad => [grad * b.Tensor, a.Tensor * grad]); // TODO: scale!
     }
 
     public static CuTensorNode MatrixProduct(CuTensorNode a, CuTensorNode b)
