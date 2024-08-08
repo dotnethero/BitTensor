@@ -2,11 +2,9 @@
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor : AbstractTensor, IDeviceArray, IDisposable
+public unsafe partial class CuTensor : AbstractTensor, ITensor<CuTensor>, IDeviceArray, IDisposable
 {
     internal readonly float* Pointer;
-
-    public static CuTensor Allocate(Shape shape) => new(shape);
 
     public CuTensor(Shape shape) : base(shape)
     {

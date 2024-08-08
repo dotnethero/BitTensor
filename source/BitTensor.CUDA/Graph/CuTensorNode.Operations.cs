@@ -4,7 +4,22 @@ namespace BitTensor.CUDA.Graph;
 
 public partial class CuTensorNode
 {
-    public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode operator +(CuTensorNode a, CuTensorNode b) => ElementwiseSum(a, b);
+
+    public static CuTensorNode operator *(CuTensorNode a, CuTensorNode b)
+    {
+        if (a.Tensor.IsScalar ||
+            b.Tensor.IsScalar)
+            return ElementwiseProduct(a, b);
+
+        if (a.Tensor.IsVector && 
+            b.Tensor.IsVector)
+            return DotProduct(a, b);
+
+        return MatrixProduct(a, b);
+    }
+    
+    public static CuTensorNode ElementwiseSum(CuTensorNode a, CuTensorNode b)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
@@ -24,20 +39,7 @@ public partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode operator *(CuTensorNode a, CuTensorNode b)
-    {
-        if (a.Tensor.IsScalar ||
-            b.Tensor.IsScalar)
-            return ElementwiseProduct(a, b);
-
-        if (a.Tensor.IsVector && 
-            b.Tensor.IsVector)
-            return DotProduct(a, b);
-
-        return MatrixProduct(a, b);
-    }
-    
-    private static CuTensorNode ElementwiseProduct(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode ElementwiseProduct(CuTensorNode a, CuTensorNode b)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
@@ -59,8 +61,9 @@ public partial class CuTensorNode
             });
     }
 
-    private static CuTensorNode DotProduct(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode DotProduct(CuTensorNode a, CuTensorNode b)
     {
+        Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var output = new CuTensor([]);
         return new(
             output,
@@ -69,7 +72,7 @@ public partial class CuTensorNode
             backward: grad => [grad * b.Tensor, a.Tensor * grad]);
     }
 
-    private static CuTensorNode MatrixProduct(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode MatrixProduct(CuTensorNode a, CuTensorNode b)
     {
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape); // desired shape
         var output = new CuTensor(shape); // true output

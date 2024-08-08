@@ -1,17 +1,13 @@
-﻿using System.Runtime.CompilerServices;
-using BitTensor.Abstractions;
+﻿using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor
+public partial class CuTensor
 {
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static CuTensor operator +(CuTensor a, CuTensor b) => ElementwiseSum(a, b, beta: +1);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static CuTensor operator -(CuTensor a, CuTensor b) => ElementwiseSum(a, b, beta: -1);
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static CuTensor operator *(CuTensor a, CuTensor b)
     {
         if (a.IsScalar ||

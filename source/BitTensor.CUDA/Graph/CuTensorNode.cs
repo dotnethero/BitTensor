@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode : IDisposable
+public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
 {
     public delegate void ForwardFunction();
     public delegate CuTensor[] BackwardFunction(CuTensor grad);

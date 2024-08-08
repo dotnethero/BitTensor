@@ -1,4 +1,6 @@
-﻿namespace BitTensor.CUDA;
+﻿using BitTensor.CUDA;
+
+namespace BitTensor;
 
 internal class Program
 {
