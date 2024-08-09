@@ -172,7 +172,7 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, gamma: 0),
-            backward: (grad, self) => [grad * self * (one - self)]);
+            backward: (grad, self) => [ElementwiseProduct(grad, ElementwiseProduct(self, one - self))]);
     }
 
     public static CuTensorNode Transpose(CuTensorNode a)

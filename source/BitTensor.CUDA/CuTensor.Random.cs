@@ -26,5 +26,28 @@ public partial class CuTensor
         {
             return Debug.NextSingle() * (max - min) + min;
         }
+
+        public static CuTensor Normal(Shape shape, float mean = 0f, float std = 1f)
+        {
+            var tensor = new CuTensor(shape);
+            var values = new float[tensor.Size];
+
+            for (var i = 0; i < values.Length; i++)
+            {
+                values[i] = NextNormal(mean, std);
+            }
+
+            tensor.CopyToDevice(values);
+            return tensor;
+        }
+
+        private static float NextNormal(float mean = 0f, float std = 1f)
+        {
+            var u1 = 1f - System.Random.Shared.NextSingle();
+            var u2 = 1f - System.Random.Shared.NextSingle();
+            var magnitude = std * MathF.Sqrt(-2f * MathF.Log(u1));
+            var normal = magnitude * MathF.Sin(2f * MathF.PI * u2) + mean;
+            return  normal;
+        }
     }
 }
