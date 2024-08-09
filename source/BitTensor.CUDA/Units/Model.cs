@@ -31,6 +31,8 @@ public abstract class Model : ILayer
 
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
+                Console.WriteLine($"Epoch #{i}");
+                Console.WriteLine($"Allocated: {CuTensor.BytesAllocated >> 20} MiB");
                 CuDebug.WriteLine(compilation.Loss);
             }
 

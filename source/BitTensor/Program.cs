@@ -14,9 +14,9 @@ internal class Program
 
     public static void Test_linear_module()
     {
-        const int inputCount = 3;
-        const int outputCount = 1;
-        const int batchSize = 5;
+        const int inputCount = 3000;
+        const int outputCount = 10;
+        const int batchSize = 500;
         const int dataDimension = 1;
 
         using var x = CuTensor.Random.Uniform([batchSize, inputCount]).ToNode();
@@ -29,7 +29,7 @@ internal class Program
 
         var compilation = model.Compile(x, d);
         var sw = Stopwatch.StartNew();
-        model.Fit(compilation, lr: 0.001f, epochs: 10000, trace: true);
+        model.Fit(compilation, lr: 0.0001f, epochs: 1000, trace: true);
         Console.WriteLine(sw.Elapsed);
     }
 }
