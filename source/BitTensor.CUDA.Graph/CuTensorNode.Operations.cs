@@ -1,4 +1,6 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Plans;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -84,10 +86,13 @@ public partial class CuTensorNode
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
 
+        var context = new CuTensorContext();
+        var plan = new CuTensorMatrixProductPlan(context, modA.Tensor, modB.Tensor, modOutput);
+
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.MatrixProduct(modA.Tensor, modB.Tensor, modOutput),
+            forward: () => plan.Execute(modA.Tensor, modB.Tensor, modOutput),
             backward: (grad, _) =>
             {
                 var gpad = grad.Reshape(modShape);

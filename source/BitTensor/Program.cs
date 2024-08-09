@@ -30,6 +30,6 @@ internal class Program
         var compilation = model.Compile(x, d);
         var sw = Stopwatch.StartNew();
         model.Fit(compilation, lr: 0.0001f, epochs: 1000, trace: true);
-        Console.WriteLine(sw.Elapsed); // 00:00:16.93
+        Console.WriteLine(sw.Elapsed); // cached matmul plan: 00:00:02.71
     }
 }
