@@ -1,6 +1,6 @@
 ﻿using BitTensor.CUDA.Graph;
 
-namespace BitTensor.CUDA.Units;
+namespace BitTensor.CUDA.Models;
 
 public sealed record Compilation(CuTensorNode Loss, CuTensorNode[] Gradients, CuTensorNode Input, CuTensorNode Output, CuTensorNode Desired);
 
@@ -32,7 +32,7 @@ public abstract class Model : ILayer
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
                 Console.WriteLine($"Allocated: {CuTensor.BytesAllocated >> 20} MiB");
-                CuDebug.WriteLine(compilation.Loss);
+                CuGraphDebug.WriteLine(compilation.Loss);
             }
 
             ApplyGradients(Parameters, compilation.Gradients, lr);

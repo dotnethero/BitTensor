@@ -1,4 +1,5 @@
 ﻿using BitTensor.Core.Tests;
+using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
 using NUnit.Framework;
 using Python.Runtime;

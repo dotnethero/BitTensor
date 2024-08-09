@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA;
-using BitTensor.CUDA.Graph;
-using BitTensor.CUDA.Units;
+using BitTensor.CUDA.Models;
 
 namespace BitTensor;
 

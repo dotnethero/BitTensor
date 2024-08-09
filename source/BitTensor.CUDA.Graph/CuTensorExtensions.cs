@@ -1,4 +1,8 @@
-﻿namespace BitTensor.CUDA.Graph;
+﻿using BitTensor.CUDA.Graph;
+
+// ReSharper disable CheckNamespace
+
+namespace BitTensor.CUDA;
 
 public static class CuTensorExtensions
 {

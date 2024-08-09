@@ -1,30 +1,17 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA;
 
 public static class CuDebug
 {
-    public static void WriteLine(CuTensorNode node, [CallerArgumentExpression("node")] string tensorName = "")
-    {
-        var text = View(node);
-        Console.WriteLine($"{tensorName} =\n{text}");
-    }
-
     public static void WriteLine(CuTensor tensor, [CallerArgumentExpression("tensor")] string tensorName = "")
     {
         var text = View(tensor);
         Console.WriteLine($"{tensorName} =\n{text}");
     }
     
-    public static string View(CuTensorNode node, int dimensionsPerLine = 1)
-    {
-        node.EnsureHasUpdatedValues();
-        return View(node.Tensor);
-    }
-
     public static string View(CuTensor tensor, int dimensionsPerLine = 1)
     {
         var values = tensor.CopyToHost();

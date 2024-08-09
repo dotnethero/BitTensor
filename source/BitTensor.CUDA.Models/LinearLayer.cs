@@ -2,7 +2,7 @@
 
 using BitTensor.CUDA.Graph;
 
-namespace BitTensor.CUDA.Units;
+namespace BitTensor.CUDA.Models;
 
 public class LinearLayer : ILayer, IDisposable
 {

@@ -1,6 +1,6 @@
 ﻿using BitTensor.CUDA.Graph;
 
-namespace BitTensor.CUDA.Units;
+namespace BitTensor.CUDA.Models;
 
 public sealed class SequentialModel(ILayer[] layers) : Model
 {

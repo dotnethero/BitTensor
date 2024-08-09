@@ -4,7 +4,7 @@ namespace BitTensor.CUDA;
 
 public unsafe partial class CuTensor : AbstractTensor, ITensor<CuTensor>, IDeviceArray, IDisposable
 {
-    internal static long BytesAllocated = 0;
+    public static long BytesAllocated = 0;
     
     internal readonly float* Pointer;
 
