@@ -1,5 +1,8 @@
-﻿using BitTensor.Core;
+﻿using System.Diagnostics;
+using BitTensor.Core;
 using BitTensor.CUDA;
+using BitTensor.Models;
+using BitTensor.Units;
 using ILGPU;
 using ILGPU.Runtime.Cuda;
 
@@ -9,7 +12,29 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        TestTranspose();
+        Test_linear_module();
+    }
+
+    public static void Test_linear_module()
+    {
+        const int inputCount = 400;
+        const int hiddenCount = 100;
+        const int outputCount = 20;
+        const int batchSize = 50;
+
+        var x = Tensor.Random.Uniform([batchSize, inputCount]);
+        var d = Tensor.Random.Uniform([batchSize, outputCount]);
+
+        var model = Model.Sequential(
+        [
+            new LinearLayer(inputCount, hiddenCount, a => a),
+            new LinearLayer(hiddenCount, outputCount, a => a)
+        ]);
+
+        var compilation = model.Compile(x, d);
+        var sw = Stopwatch.StartNew();
+        model.Fit(compilation, lr: 1e-5f, epochs: 1000, trace: true);
+        Console.WriteLine(sw.Elapsed);
     }
 
     private static void TestTranspose()

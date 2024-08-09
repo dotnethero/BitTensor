@@ -31,8 +31,8 @@ public abstract class Model : ILayer
            
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
-                Console.WriteLine($"Allocated: {CuTensor.BytesAllocated >> 20} MiB");
-                CuGraphDebug.WriteLine(compilation.Loss);
+                var loss = CuGraphDebug.View(compilation.Loss);
+                Console.WriteLine($"Loss={loss}");
             }
 
             ApplyGradients(Parameters, compilation.Gradients, lr);
