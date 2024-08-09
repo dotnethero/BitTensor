@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Units;
 
-public sealed record Compilation(CuTensorNode Loss, CuTensorNode Input, CuTensorNode Desired);
+public sealed record Compilation(CuTensorNode Loss, CuTensorNode[] Gradients, CuTensorNode Input, CuTensorNode Output, CuTensorNode Desired);
 
 public abstract class Model : ILayer
 {
@@ -17,7 +17,9 @@ public abstract class Model : ILayer
         var output = Compute(input);
         var diff = output - desired;
         var loss = CuTensorNode.DotProduct(diff, diff, scale: 1f);
-        return new(loss, input, desired);
+        var grads = loss.GetGradients();
+        var gradients = grads.By(Parameters);
+        return new(loss, gradients, input, output, desired);
     }
 
     public void Fit(Compilation compilation, float lr, int epochs, bool trace = false)
@@ -27,26 +29,24 @@ public abstract class Model : ILayer
             compilation.Input.Invalidate();
             compilation.Desired.Invalidate();
            
-            using var gradients = compilation.Loss.GetGradients();
-
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
-                Console.WriteLine($"Epoch #{i}");
                 Console.WriteLine($"Allocated: {CuTensor.BytesAllocated >> 20} MiB");
                 CuDebug.WriteLine(compilation.Loss);
             }
 
-            ApplyGradients(Parameters, gradients.By(Parameters), lr);
+            ApplyGradients(Parameters, compilation.Gradients, lr);
         }
     }
 
-    public static void ApplyGradients(CuTensorNode[] variables, CuTensor[] gradients, float lr)
+    public static void ApplyGradients(CuTensorNode[] variables, CuTensorNode[] gradients, float lr)
     {
         for (var i = 0; i < variables.Length; ++i)
         {
             var gradient = gradients[i];
             var variable = variables[i];
-            CuBackend.AddInplace(gradient, variable.Tensor, -lr);
+            gradient.EnsureHasUpdatedValues();
+            CuBackend.AddInplace(gradient.Tensor, variable.Tensor, -lr);
             variable.Invalidate();
         }
     }

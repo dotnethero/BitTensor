@@ -35,8 +35,8 @@ public partial class CuTensorNode
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, grad.Shape);
                 return
                 [
-                    CuTensor.Sum(grad, axis: adims, scale: beta).Reshape(a.Shape),
-                    CuTensor.Sum(grad, axis: bdims).Reshape(b.Shape)
+                    Sum(grad, axis: adims, scale: beta).Reshape(a.Shape),
+                    Sum(grad, axis: bdims, scale: 1f).Reshape(b.Shape)
                 ];
             });
     }
@@ -51,14 +51,14 @@ public partial class CuTensorNode
             forward: () => CuBackend.ElementwiseProduct(a.Tensor, b.Tensor, output),
             backward: grad =>
             {
-                using var agrad = CuTensor.ElementwiseProduct(grad, b.Tensor);
-                using var bgrad = CuTensor.ElementwiseProduct(grad, a.Tensor);
+                var agrad = ElementwiseProduct(grad, b);
+                var bgrad = ElementwiseProduct(grad, a);
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, agrad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, bgrad.Shape);
                 return
                 [
-                    CuTensor.Sum(agrad, axis: adims).Reshape(a.Shape),
-                    CuTensor.Sum(bgrad, axis: bdims).Reshape(b.Shape)
+                    Sum(agrad, axis: adims).Reshape(a.Shape),
+                    Sum(bgrad, axis: bdims).Reshape(b.Shape)
                 ];
             });
     }
@@ -71,7 +71,7 @@ public partial class CuTensorNode
             output,
             children: [a, b],
             forward: () => CuBackend.DotProduct(a.Tensor, b.Tensor, output, scale),
-            backward: grad => [grad * b.Tensor, a.Tensor * grad]); // TODO: scale!
+            backward: grad => [grad * b, a * grad]); // TODO: scale!
     }
 
     public static CuTensorNode MatrixProduct(CuTensorNode a, CuTensorNode b)
@@ -79,32 +79,26 @@ public partial class CuTensorNode
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape); // desired shape
         var output = new CuTensor(shape); // true output
 
-        var modA = PadLeft(a.Tensor);
-        var modB = PadRight(b.Tensor);
+        var modA = PadLeft(a);
+        var modB = PadRight(b);
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
 
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.MatrixProduct(modA, modB, modOutput),
+            forward: () => CuBackend.MatrixProduct(modA.Tensor, modB.Tensor, modOutput),
             backward: g =>
             {
                 var gpad = g.Reshape(modShape);
-
-                using var apadT = CuTensor.Transpose(modA);
-                using var bpadT = CuTensor.Transpose(modB);
-
-                var da = gpad * bpadT;
-                var db = apadT * gpad;
+                var da = gpad * Transpose(modB);
+                var db = Transpose(modA) * gpad;
                 
-                var ax = Shapes.GetBroadcastedAxis(modA.Shape, da.Shape);
-                var bx = Shapes.GetBroadcastedAxis(modB.Shape, db.Shape);
-
-                var ag = CuTensor.Sum(da, axis: ax).Reshape(a.Shape);
-                var bg = CuTensor.Sum(db, axis: bx).Reshape(b.Shape);
-
-                return [ag, bg];
+                var adims = Shapes.GetBroadcastedAxis(modA.Shape, da.Shape);
+                var bdims = Shapes.GetBroadcastedAxis(modB.Shape, db.Shape);
+                var agrad = Sum(da, axis: adims).Reshape(a.Shape);
+                var bgrad = Sum(db, axis: bdims).Reshape(b.Shape);
+                return [agrad, bgrad];
             });
     }
 
@@ -115,16 +109,80 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuBackend.Sum(a.Tensor, output),
-            backward: grad => [CuTensor.Broadcast(grad, a.Shape)]);
+            backward: grad => [Broadcast(grad, a.Shape)]);
+    }
+    
+    public static CuTensorNode Sum(CuTensorNode a, HashSet<int> axis, float scale = 1f)
+    {
+        var shape = a.Shape.Reduce(axis);
+        var output = new CuTensor(shape);
+        return new(
+            output,
+            children: [a],
+            forward: () => CuBackend.Sum(a.Tensor, axis, output, scale),
+            backward: grad => [Broadcast(grad, a.Shape)]); // TODO: Verify!
+    }
+    
+    public static CuTensorNode Broadcast(CuTensorNode a, Shape shape)
+    {
+        if (!a.Shape.CanBroadcastTo(shape))
+            throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
+
+        var output = new CuTensor(shape);
+        var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
+        return new(
+            output,
+            children: [a],
+            forward: () => CuBackend.Broadcast(a.Tensor, output),
+            backward: grad => [Sum(grad, axis)]); // TODO: Verify!
     }
 
-    private static CuTensor PadLeft(CuTensor tensor) =>
-        tensor.IsVector
-            ? tensor.PadLeft()
-            : tensor;
+    public static CuTensorNode Transpose(CuTensorNode a)
+    {
+        var axis = a.Shape.GetTransposeAxis();
+        return Transpose(a, axis);
+    }
     
-    private static CuTensor PadRight(CuTensor tensor) =>
-        tensor.IsVector
-            ? tensor.PadRight()
-            : tensor;
+    public static CuTensorNode Transpose(CuTensorNode a, int[] axis)
+    {
+        if (axis.Length != a.Tensor.Dimensions)
+            throw new InvalidOperationException($"Axis {axis.ToText()} is not valid argument for {a.Shape} shape tensor");
+
+        if (!axis.AllElementsAreUnique())
+            throw new InvalidOperationException($"Axis {axis.ToText()} does not contain all axes for {a.Shape} shape tensor");
+
+        var shape = a.Shape.Transpose(axis);
+        var output = new CuTensor(shape);
+        return new(
+            output,
+            children: [a],
+            forward: () => CuBackend.Transpose(a.Tensor, axis, output),
+            backward: grad => [Transpose(grad, axis)]); // TODO: Verify!
+    }
+
+    public CuTensorNode Reshape(Shape shape)
+    {
+        if (shape.ArraySize != Tensor.Size)
+            throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
+
+        return new(
+            Tensor.Reshape(shape), // no allocation
+            children: [this],
+            forward: () => {},
+            backward: grad => [grad.Reshape(Tensor.Shape)]);
+    }
+    
+    public CuTensorNode PadLeft() => Reshape([1, ..Shape]);
+
+    public CuTensorNode PadRight() => Reshape([..Shape, 1]);
+
+    private static CuTensorNode PadLeft(CuTensorNode node) =>
+        node.Tensor.IsVector
+            ? node.PadLeft()
+            : node;
+    
+    private static CuTensorNode PadRight(CuTensorNode node) =>
+        node.Tensor.IsVector
+            ? node.PadRight()
+            : node;
 }

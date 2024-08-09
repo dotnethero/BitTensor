@@ -6,7 +6,7 @@ namespace BitTensor.CUDA.Graph;
 public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
 {
     public delegate void ForwardFunction();
-    public delegate CuTensor[] BackwardFunction(CuTensor grad);
+    public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad);
 
     public readonly CuTensor Tensor;
     public readonly Shape Shape;
@@ -61,6 +61,8 @@ public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
     [MethodImpl(MethodImplOptions.NoInlining)]
     public void Invalidate()
     {
+        if (Outdated) return;
+
         foreach (var child in Dependents)
         {
             child.Invalidate();

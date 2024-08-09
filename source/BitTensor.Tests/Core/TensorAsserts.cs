@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Graph;
 using NUnit.Framework;
 
 // ReSharper disable once CheckNamespace
@@ -14,6 +15,9 @@ static class TensorAsserts
 
     public static void ShapesAreEqual(AbstractTensor expected, AbstractTensor actual) =>
         ShapesAreEqual(expected.Shape, actual.Shape);
+    
+    public static void ShapesAreEqual(AbstractTensor expected, CuTensorNode actual) =>
+        ShapesAreEqual(expected.Shape, actual.Shape);
 
     public static void ValuesAreEqual(IDeviceArray expected, IDeviceArray actual) =>
         CollectionAssert.AreEqual(
@@ -26,4 +30,10 @@ static class TensorAsserts
             expected.CopyToHost(), 
             actual.CopyToHost(),
             new ValuesComparer(tolerance));
+
+    public static void ValuesAreEqual(IDeviceArray expected, CuTensorNode actual)
+    {
+        actual.EnsureHasUpdatedValues();
+        ValuesAreEqual(expected, actual.Tensor);
+    }
 }

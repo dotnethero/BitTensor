@@ -31,5 +31,9 @@ internal class Program
         var sw = Stopwatch.StartNew();
         model.Fit(compilation, lr: 0.0001f, epochs: 1000, trace: true);
         Console.WriteLine(sw.Elapsed);
+
+        // test
+
+        CuDebug.WriteLine(compilation.Output.Tensor - d.Tensor);
     }
 }

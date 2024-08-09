@@ -9,21 +9,27 @@ public static class CuDebug
 {
     public static void WriteLine(CuTensorNode node, [CallerArgumentExpression("node")] string tensorName = "")
     {
-        node.EnsureHasUpdatedValues();
-
-        var values = node.Tensor.CopyToHost();
-        var shape = node.Tensor.Shape;
-        var text = View(values, shape);
-
+        var text = View(node);
         Console.WriteLine($"{tensorName} =\n{text}");
     }
 
     public static void WriteLine(CuTensor tensor, [CallerArgumentExpression("tensor")] string tensorName = "")
     {
+        var text = View(tensor);
+        Console.WriteLine($"{tensorName} =\n{text}");
+    }
+    
+    public static string View(CuTensorNode node, int dimensionsPerLine = 1)
+    {
+        node.EnsureHasUpdatedValues();
+        return View(node.Tensor);
+    }
+
+    public static string View(CuTensor tensor, int dimensionsPerLine = 1)
+    {
         var values = tensor.CopyToHost();
         var shape = tensor.Shape;
-        var text = View(values, shape);
-        Console.WriteLine($"{tensorName} =\n{text}");
+        return View(values, shape, dimensionsPerLine);
     }
 
     public static string View(float[] values, Shape shape, int dimensionsPerLine = 1)

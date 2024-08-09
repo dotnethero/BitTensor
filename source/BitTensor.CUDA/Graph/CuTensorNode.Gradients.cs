@@ -10,10 +10,10 @@ public partial class CuTensorNode
 
         var nodes = new Stack<CuTensorNode>(16);
         var grads = new CuTensorGradients();
-        var ones = new CuTensor(Tensor.Shape, Enumerable.Repeat(1f, Tensor.Size).ToArray());
+        var one = new CuTensor([], [1]);
 
         nodes.Push(this);
-        grads.Push(this, ones);
+        grads.Push(this, one.ToNode());
 
         while (nodes.Count > 0)
         {
@@ -31,7 +31,7 @@ public partial class CuTensorNode
                 Shapes.EnsureAreEqual(child.Shape, grad.Shape);
                 if (grads.ContainsKey(child))
                 {
-                    CuBackend.AddInplace(grad, grads[child]);
+                    CuBackend.AddInplace(grad.Tensor, grads[child].Tensor);
                 }
                 else
                 {
