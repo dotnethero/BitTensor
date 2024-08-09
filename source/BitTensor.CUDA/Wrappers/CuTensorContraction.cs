@@ -4,7 +4,7 @@ namespace BitTensor.CUDA.Wrappers;
 
 using static cuTENSOR;
 
-internal unsafe class CuTensorContraction : ICuTensorOperation
+public unsafe class CuTensorContraction : ICuTensorOperation
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }

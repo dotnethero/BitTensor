@@ -13,7 +13,7 @@ public partial class CuTensorNode
         var one = new CuTensor([], [1]);
 
         nodes.Push(this);
-        grads.Push(this, one.ToNode());
+        grads.Push(this, one.CreateNode(Context));
 
         while (nodes.Count > 0)
         {

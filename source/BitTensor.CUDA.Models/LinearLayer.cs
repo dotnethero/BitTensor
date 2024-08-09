@@ -1,6 +1,7 @@
 ﻿// ReSharper disable ConvertToPrimaryConstructor
 
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Models;
 
@@ -12,11 +13,11 @@ public class LinearLayer : ILayer, IDisposable
 
     public CuTensorNode[] Parameters => [Weights, Bias];
 
-    public LinearLayer(int inputs, int outputs, Func<CuTensorNode, CuTensorNode> activation)
+    public LinearLayer(CuTensorContext context, int inputs, int outputs, Func<CuTensorNode, CuTensorNode> activation)
     {
         Activation = activation;
-        Bias = CuTensor.Random.Uniform([outputs]).ToNode();
-        Weights = CuTensor.Random.Uniform([inputs, outputs]).ToNode();
+        Bias = CuTensor.Random.Uniform([outputs]).CreateNode(context);
+        Weights = CuTensor.Random.Uniform([inputs, outputs]).CreateNode(context);
     }
 
     public CuTensorNode Compute(CuTensorNode input)

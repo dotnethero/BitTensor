@@ -1,6 +1,6 @@
 ﻿namespace BitTensor.CUDA.Wrappers;
 
-internal unsafe class CuTensorWorkspace : IDisposable
+public unsafe class CuTensorWorkspace : IDisposable
 {
     internal readonly void* Pointer;
     internal readonly ulong Bytes;

@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Wrappers;
 
-internal unsafe class CuTensorContext : IDisposable
+public unsafe class CuTensorContext : IDisposable
 {
     internal readonly cutensorHandle* Handle;
 

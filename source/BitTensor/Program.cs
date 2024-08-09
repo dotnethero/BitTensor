@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Models;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor;
 
@@ -18,13 +19,14 @@ internal class Program
         const int outputCount = 20;
         const int batchSize = 50;
 
-        using var x = CuTensor.Random.Uniform([batchSize, inputCount]).ToNode();
-        using var d = CuTensor.Random.Uniform([batchSize, outputCount]).ToNode();
+        using var context = new CuTensorContext();
+        using var x = CuTensor.Random.Uniform([batchSize, inputCount]).CreateNode(context);
+        using var d = CuTensor.Random.Uniform([batchSize, outputCount]).CreateNode(context);
 
         var model = Model.Sequential(
         [
-            new LinearLayer(inputCount, hiddenCount, a => a),
-            new LinearLayer(hiddenCount, outputCount, a => a)
+            new LinearLayer(context, inputCount, hiddenCount, a => a),
+            new LinearLayer(context, hiddenCount, outputCount, a => a)
         ]);
 
         var compilation = model.Compile(x, d);

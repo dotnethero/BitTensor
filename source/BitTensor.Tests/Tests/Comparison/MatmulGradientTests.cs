@@ -1,6 +1,7 @@
 ﻿using BitTensor.Core.Tests;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Wrappers;
 using NUnit.Framework;
 using Python.Runtime;
 
@@ -36,8 +37,9 @@ class MatmulGradientTests
             yg = jax.grad(func, argnums=1)(x, y)
             """);
 
-        using var x = scope.Get2D("x").ToNode();
-        using var y = scope.Get2D("y").ToNode();
+        using var context = new CuTensorContext();
+        using var x = scope.Get2D("x").CreateNode(context);
+        using var y = scope.Get2D("y").CreateNode(context);
 
         using var xg_true = scope.Get2D("xg");
         using var yg_true = scope.Get2D("yg");
@@ -95,9 +97,10 @@ class MatmulGradientTests
         using var ca_dc_true = scope.Get2D("ca_dc");
         using var ca_da_true = scope.Get1D("ca_da");
 
-        using var a = scope.Get1D("a").ToNode();
-        using var b = scope.Get2D("b").ToNode();
-        using var c = scope.Get2D("c").ToNode();
+        using var context = new CuTensorContext();
+        using var a = scope.Get1D("a").CreateNode(context);
+        using var b = scope.Get2D("b").CreateNode(context);
+        using var c = scope.Get2D("c").CreateNode(context);
         
         using var ab_grads = CuTensorNode.Sum(a * b).GetGradients();
         var ab_da = ab_grads[a];
@@ -165,9 +168,10 @@ class MatmulGradientTests
         using var cb_dc_true = scope.Get2D("cb_dc");
         using var cb_db_true = scope.Get1D("cb_db");
 
-        using var a = scope.Get1D("a").ToNode();
-        using var b = scope.Get1D("b").ToNode();
-        using var c = scope.Get2D("c").ToNode();
+        using var context = new CuTensorContext();
+        using var a = scope.Get1D("a").CreateNode(context);
+        using var b = scope.Get1D("b").CreateNode(context);
+        using var c = scope.Get2D("c").CreateNode(context);
 
         using var aс_grads = CuTensorNode.Sum(a * c).GetGradients();
         var aс_da = aс_grads[a];
@@ -270,8 +274,9 @@ class MatmulGradientTests
              xy_dy = jax.grad(func, argnums=1)(x, y)
              """);
 
-        using var x = scope.GetTensor("x").ToNode();
-        using var y = scope.GetTensor("y").ToNode();
+        using var context = new CuTensorContext();
+        using var x = scope.GetTensor("x").CreateNode(context);
+        using var y = scope.GetTensor("y").CreateNode(context);
         using var z = x * y;
 
         using var xy_dx_true = scope.GetTensor("xy_dx");

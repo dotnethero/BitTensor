@@ -27,10 +27,11 @@ public partial class CuTensorNode
     public static CuTensorNode ElementwiseSum(CuTensorNode a, CuTensorNode b, float beta = 1f)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
+        var context = GetContext(a, b);
         var output = new CuTensor(shape);
-        var context = new CuTensorContext();
         var plan = new CuTensorAddPlan(context, a.Tensor, b.Tensor, output);
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a.Tensor, b.Tensor, output, beta),
@@ -49,10 +50,11 @@ public partial class CuTensorNode
     public static CuTensorNode ElementwiseProduct(CuTensorNode a, CuTensorNode b)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
+        var context = GetContext(a, b);
         var output = new CuTensor(shape);
-        var context = new CuTensorContext();
         var plan = new CuTensorMultiplyPlan(context, a.Tensor, b.Tensor, output);
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a.Tensor, b.Tensor, output),
@@ -73,10 +75,11 @@ public partial class CuTensorNode
     public static CuTensorNode DotProduct(CuTensorNode a, CuTensorNode b, float scale = 1f)
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
+        var context = GetContext(a, b);
         var output = new CuTensor([]);
-        var context = new CuTensorContext();
         var plan = new CuTensorContractionPlan(context, a.Tensor, b.Tensor, output);
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a.Tensor, b.Tensor, output, alpha: scale),
@@ -86,17 +89,17 @@ public partial class CuTensorNode
     public static CuTensorNode MatrixProduct(CuTensorNode a, CuTensorNode b)
     {
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape); // desired shape
+        var context = GetContext(a, b);
         var output = new CuTensor(shape); // true output
 
         var modA = PadLeft(a);
         var modB = PadRight(b);
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
-
-        var context = new CuTensorContext();
         var plan = new CuTensorMatrixProductPlan(context, modA.Tensor, modB.Tensor, modOutput);
 
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(modA.Tensor, modB.Tensor, modOutput),
@@ -116,10 +119,11 @@ public partial class CuTensorNode
 
     public static CuTensorNode Sum(CuTensorNode a)
     {
+        var context = GetContext(a);
         var output = new CuTensor([]);
-        var context = new CuTensorContext();
         var plan = new CuTensorSumPlan(context, a.Tensor, output, []);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output),
@@ -128,11 +132,12 @@ public partial class CuTensorNode
     
     public static CuTensorNode Sum(CuTensorNode a, HashSet<int> axis, float scale = 1f)
     {
+        var context = GetContext(a);
         var shape = a.Shape.Reduce(axis);
         var output = new CuTensor(shape);
-        var context = new CuTensorContext();
         var plan = new CuTensorSumPlan(context, a.Tensor, output, axis);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, scale),
@@ -144,11 +149,12 @@ public partial class CuTensorNode
         if (!a.Shape.CanBroadcastTo(shape))
             throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
 
+        var context = GetContext(a);
         var output = new CuTensor(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
-        var context = new CuTensorContext();
         var plan = new CuTensorOffsetPlan(context, a.Tensor, output);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, gamma: 0),
@@ -157,11 +163,12 @@ public partial class CuTensorNode
 
     public static CuTensorNode Sigmoid(CuTensorNode a)
     {
-        var one = new CuTensor([], [1]).ToNode();
+        var context = GetContext(a);
         var output = new CuTensor(a.Shape);
-        var context = new CuTensorContext();
+        var one = new CuTensor([], [1]).CreateNode(context);
         var plan = new CuTensorUnaryPlusPlan(context, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, gamma: 0),
@@ -183,10 +190,11 @@ public partial class CuTensorNode
             throw new InvalidOperationException($"Axis {axis.ToText()} does not contain all axes for {a.Shape} shape tensor");
 
         var shape = a.Shape.Transpose(axis);
+        var context = GetContext(a);
         var output = new CuTensor(shape);
-        var context = new CuTensorContext();
         var plan = new CuTensorPermutationPlan(context, a.Tensor, output, axis);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output),
@@ -199,6 +207,7 @@ public partial class CuTensorNode
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
 
         return new(
+            Context,
             Tensor.Reshape(shape), // no allocation
             children: [this],
             forward: () => {},
@@ -218,4 +227,14 @@ public partial class CuTensorNode
         node.Tensor.IsVector
             ? node.PadRight()
             : node;
+
+    private static CuTensorContext GetContext(CuTensorNode a) => a.Context;
+
+    private static CuTensorContext GetContext(CuTensorNode a, CuTensorNode b)
+    {
+        if (a.Context != b.Context)
+            throw new InvalidOperationException("Operation does not support operands from different contexts");
+
+        return a.Context;
+    }
 }
