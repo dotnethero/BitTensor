@@ -29,7 +29,7 @@ public partial class CuTensorNode
             output,
             children: [a, b],
             forward: () => CuBackend.ElementwiseSum(a.Tensor, b.Tensor, output, beta),
-            backward: grad =>
+            backward: (grad, _) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, grad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, grad.Shape);
@@ -49,7 +49,7 @@ public partial class CuTensorNode
             output,
             children: [a, b],
             forward: () => CuBackend.ElementwiseProduct(a.Tensor, b.Tensor, output),
-            backward: grad =>
+            backward: (grad, _) =>
             {
                 var agrad = ElementwiseProduct(grad, b);
                 var bgrad = ElementwiseProduct(grad, a);
@@ -71,7 +71,7 @@ public partial class CuTensorNode
             output,
             children: [a, b],
             forward: () => CuBackend.DotProduct(a.Tensor, b.Tensor, output, scale),
-            backward: grad => [grad * b, a * grad]); // TODO: scale!
+            backward: (grad, _) => [grad * b, a * grad]); // TODO: scale!
     }
 
     public static CuTensorNode MatrixProduct(CuTensorNode a, CuTensorNode b)
@@ -88,9 +88,9 @@ public partial class CuTensorNode
             output,
             children: [a, b],
             forward: () => CuBackend.MatrixProduct(modA.Tensor, modB.Tensor, modOutput),
-            backward: g =>
+            backward: (grad, _) =>
             {
-                var gpad = g.Reshape(modShape);
+                var gpad = grad.Reshape(modShape);
                 var da = gpad * Transpose(modB);
                 var db = Transpose(modA) * gpad;
                 
@@ -109,7 +109,7 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuBackend.Sum(a.Tensor, output),
-            backward: grad => [Broadcast(grad, a.Shape)]);
+            backward: (grad, _) => [Broadcast(grad, a.Shape)]);
     }
     
     public static CuTensorNode Sum(CuTensorNode a, HashSet<int> axis, float scale = 1f)
@@ -120,7 +120,7 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuBackend.Sum(a.Tensor, axis, output, scale),
-            backward: grad => [Broadcast(grad, a.Shape)]); // TODO: Verify!
+            backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
     }
     
     public static CuTensorNode Broadcast(CuTensorNode a, Shape shape)
@@ -134,7 +134,18 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuBackend.Broadcast(a.Tensor, output),
-            backward: grad => [Sum(grad, axis)]); // TODO: Verify!
+            backward: (grad, _) => [Sum(grad, axis)]); // TODO: Verify!
+    }
+
+    public static CuTensorNode Sigmoid(CuTensorNode a)
+    {
+        var one = new CuTensor([], [1]).ToNode();
+        var output = new CuTensor(a.Shape);
+        return new(
+            output,
+            children: [a],
+            forward: () => CuBackend.Sigmoid(a.Tensor, output),
+            backward: (grad, self) => [grad * self * (one - self)]);
     }
 
     public static CuTensorNode Transpose(CuTensorNode a)
@@ -157,7 +168,7 @@ public partial class CuTensorNode
             output,
             children: [a],
             forward: () => CuBackend.Transpose(a.Tensor, axis, output),
-            backward: grad => [Transpose(grad, axis)]); // TODO: Verify!
+            backward: (grad, _) => [Transpose(grad, axis)]); // TODO: Verify!
     }
 
     public CuTensorNode Reshape(Shape shape)
@@ -169,7 +180,7 @@ public partial class CuTensorNode
             Tensor.Reshape(shape), // no allocation
             children: [this],
             forward: () => {},
-            backward: grad => [grad.Reshape(Tensor.Shape)]);
+            backward: (grad, _) => [grad.Reshape(Tensor.Shape)]);
     }
     
     public CuTensorNode PadLeft() => Reshape([1, ..Shape]);

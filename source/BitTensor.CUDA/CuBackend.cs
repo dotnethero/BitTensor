@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Plans;
+﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Plans;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA;
@@ -8,7 +9,7 @@ public static class CuBackend
     public static void AddInplace(CuTensor a, CuTensor z, float scale = 1f)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorAddInplacePlan(context, a, z);
+        using var plan = new CuTensorOffsetPlan(context, a, z);
         plan.Execute(a, z, alpha: scale);
     }
 
@@ -74,11 +75,18 @@ public static class CuBackend
         using var plan = new CuTensorProductPlan(context, a, z, axis);
         plan.Execute(a, z);
     }
+    
+    public static void Sigmoid(CuTensor a, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorUnaryPlusPlan(context, a, z, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
+        plan.Execute(a, z, gamma: 0); // replace: z = Sigmoid(a)
+    }
 
     public static void Broadcast(CuTensor a, CuTensor z)
     {
         using var context = new CuTensorContext();
-        using var plan = new CuTensorAddInplacePlan(context, a, z);
+        using var plan = new CuTensorOffsetPlan(context, a, z);
         plan.Execute(a, z, gamma: 0);
     }
 

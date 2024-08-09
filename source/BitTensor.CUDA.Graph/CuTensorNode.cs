@@ -6,7 +6,7 @@ namespace BitTensor.CUDA.Graph;
 public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
 {
     public delegate void ForwardFunction();
-    public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad);
+    public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad, CuTensorNode self);
 
     public readonly CuTensor Tensor;
     public readonly Shape Shape;

@@ -3,17 +3,26 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorAddInplacePlan(
-    CuTensorContext context,
-    CuTensor left,
-    CuTensor right) : 
-    CuTensorBinaryPlan(context, left, right, cutensorOperator_t.CUTENSOR_OP_ADD);
+using Ops = cutensorOperator_t;
 
-internal sealed class CuTensorMultiplyInplacePlan(
+internal sealed class CuTensorUnaryPlusPlan(
+    CuTensorContext context,
+    CuTensor left,
+    CuTensor right,
+    Ops operation) : 
+    CuTensorBinaryPlan(context, left, right, operation, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
+
+internal sealed class CuTensorOffsetPlan(
     CuTensorContext context,
     CuTensor left,
     CuTensor right) : 
-    CuTensorBinaryPlan(context, left, right, cutensorOperator_t.CUTENSOR_OP_MUL);
+    CuTensorBinaryPlan(context, left, right, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
+
+internal sealed class CuTensorScalePlan(
+    CuTensorContext context,
+    CuTensor left,
+    CuTensor right) : 
+    CuTensorBinaryPlan(context, left, right, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_MUL);
 
 internal abstract class CuTensorBinaryPlan : IDisposable
 {
@@ -23,17 +32,24 @@ internal abstract class CuTensorBinaryPlan : IDisposable
     internal readonly CuTensorBinaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
 
-    protected CuTensorBinaryPlan(CuTensorContext context, CuTensor left, CuTensor right, cutensorOperator_t op)
+    protected CuTensorBinaryPlan(CuTensorContext context,
+        CuTensor a,
+        CuTensor b,
+        Ops opA,
+        Ops opB,
+        Ops opAB)
     {
-        LeftDescriptor = context.CreateDescriptor(left);
-        RightDescriptor = context.CreateDescriptor(right);
+        LeftDescriptor = context.CreateDescriptor(a);
+        RightDescriptor = context.CreateDescriptor(b);
 
         Operation = new CuTensorBinaryOperation(
             context,
             LeftDescriptor,
             RightDescriptor,
             RightDescriptor,
-            op);
+            opA,
+            opB,
+            opAB);
 
         OperationPlan = Operation.CreatePlan();
     }

@@ -9,16 +9,22 @@ internal unsafe class CuTensorBinaryOperation : ICuTensorOperation
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
-    public CuTensorBinaryOperation(CuTensorContext context, CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c, cutensorOperator_t operation)
+    public CuTensorBinaryOperation(CuTensorContext context,
+        CuTensorDescriptor a,
+        CuTensorDescriptor b,
+        CuTensorDescriptor c,
+        cutensorOperator_t opA,
+        cutensorOperator_t opB,
+        cutensorOperator_t opAB)
     {
         cutensorOperationDescriptor* descriptor;
 
         var status = cutensorCreateElementwiseBinary(
             context.Handle, 
             &descriptor,
-            a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            c.Descriptor, c.Modes, operation,
+            a.Descriptor, a.Modes, opA,
+            b.Descriptor, b.Modes, opB,
+            c.Descriptor, c.Modes, opAB,
             CUTENSOR_COMPUTE_DESC_32F);
 
         if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)

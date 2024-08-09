@@ -22,7 +22,7 @@ public partial class CuTensorNode
                 continue;
 
             var children = node.Children;
-            var childrenGrads = node.Backward(grads[node]);
+            var childrenGrads = node.Backward(grads[node], node);
             for (var i = 0; i < children.Length; ++i)
             {
                 var child = children[i];
