@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 using BitTensor.CUDA.Wrappers;
 
@@ -27,10 +28,12 @@ public partial class CuTensorNode
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
+        var context = new CuTensorContext();
+        var plan = new CuTensorAddPlan(context, a.Tensor, b.Tensor, output);
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.ElementwiseSum(a.Tensor, b.Tensor, output, beta),
+            forward: () => plan.Execute(a.Tensor, b.Tensor, output, beta),
             backward: (grad, _) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, grad.Shape);
@@ -47,10 +50,12 @@ public partial class CuTensorNode
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var output = new CuTensor(shape);
+        var context = new CuTensorContext();
+        var plan = new CuTensorMultiplyPlan(context, a.Tensor, b.Tensor, output);
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.ElementwiseProduct(a.Tensor, b.Tensor, output),
+            forward: () => plan.Execute(a.Tensor, b.Tensor, output),
             backward: (grad, _) =>
             {
                 var agrad = ElementwiseProduct(grad, b);
@@ -69,10 +74,12 @@ public partial class CuTensorNode
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var output = new CuTensor([]);
+        var context = new CuTensorContext();
+        var plan = new CuTensorContractionPlan(context, a.Tensor, b.Tensor, output);
         return new(
             output,
             children: [a, b],
-            forward: () => CuBackend.DotProduct(a.Tensor, b.Tensor, output, scale),
+            forward: () => plan.Execute(a.Tensor, b.Tensor, output, alpha: scale),
             backward: (grad, _) => [grad * b, a * grad]); // TODO: scale!
     }
 
@@ -110,10 +117,12 @@ public partial class CuTensorNode
     public static CuTensorNode Sum(CuTensorNode a)
     {
         var output = new CuTensor([]);
+        var context = new CuTensorContext();
+        var plan = new CuTensorSumPlan(context, a.Tensor, output, []);
         return new(
             output,
             children: [a],
-            forward: () => CuBackend.Sum(a.Tensor, output),
+            forward: () => plan.Execute(a.Tensor, output),
             backward: (grad, _) => [Broadcast(grad, a.Shape)]);
     }
     
@@ -121,10 +130,12 @@ public partial class CuTensorNode
     {
         var shape = a.Shape.Reduce(axis);
         var output = new CuTensor(shape);
+        var context = new CuTensorContext();
+        var plan = new CuTensorSumPlan(context, a.Tensor, output, axis);
         return new(
             output,
             children: [a],
-            forward: () => CuBackend.Sum(a.Tensor, axis, output, scale),
+            forward: () => plan.Execute(a.Tensor, output, scale),
             backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
     }
     
@@ -135,10 +146,12 @@ public partial class CuTensorNode
 
         var output = new CuTensor(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
+        var context = new CuTensorContext();
+        var plan = new CuTensorOffsetPlan(context, a.Tensor, output);
         return new(
             output,
             children: [a],
-            forward: () => CuBackend.Broadcast(a.Tensor, output),
+            forward: () => plan.Execute(a.Tensor, output, gamma: 0),
             backward: (grad, _) => [Sum(grad, axis)]); // TODO: Verify!
     }
 
@@ -146,10 +159,12 @@ public partial class CuTensorNode
     {
         var one = new CuTensor([], [1]).ToNode();
         var output = new CuTensor(a.Shape);
+        var context = new CuTensorContext();
+        var plan = new CuTensorUnaryPlusPlan(context, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
         return new(
             output,
             children: [a],
-            forward: () => CuBackend.Sigmoid(a.Tensor, output),
+            forward: () => plan.Execute(a.Tensor, output, gamma: 0),
             backward: (grad, self) => [grad * self * (one - self)]);
     }
 
@@ -169,10 +184,12 @@ public partial class CuTensorNode
 
         var shape = a.Shape.Transpose(axis);
         var output = new CuTensor(shape);
+        var context = new CuTensorContext();
+        var plan = new CuTensorPermutationPlan(context, a.Tensor, output, axis);
         return new(
             output,
             children: [a],
-            forward: () => CuBackend.Transpose(a.Tensor, axis, output),
+            forward: () => plan.Execute(a.Tensor, output),
             backward: (grad, _) => [Transpose(grad, axis)]); // TODO: Verify!
     }
 
