@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Wrappers;
+﻿using BitTensor.CUDA.Operations;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
@@ -26,7 +27,7 @@ internal sealed class CuTensorMatrixProductPlan : IDisposable
     }
 
     public void Execute(CuTensor left, CuTensor right, CuTensor result) =>
-        Contraction.ExecuteByPlan(
+        Contraction.Execute(
             ContractionPlan,
             Workspace,
             left,

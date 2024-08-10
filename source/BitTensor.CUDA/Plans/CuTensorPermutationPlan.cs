@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Wrappers;
+﻿using BitTensor.CUDA.Operations;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
@@ -29,7 +30,7 @@ internal sealed class CuTensorPermutationPlan : IDisposable
     }
     
     public void Execute(CuTensor input, CuTensor output, float alpha = 1f) =>
-        Permutation.ExecuteByPlan(
+        Permutation.Execute(
             PermutationPlan,
             input,
             output,

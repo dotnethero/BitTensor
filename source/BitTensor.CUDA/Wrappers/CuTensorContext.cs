@@ -1,4 +1,5 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Operations;
 
 namespace BitTensor.CUDA.Wrappers;
 
@@ -11,8 +12,7 @@ public unsafe class CuTensorContext : IDisposable
         cutensorHandle* handle;
 
         var status = cuTENSOR.cutensorCreate(&handle);
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(status);
+        CuTensorStatus.EnsureIsSuccess(status);
 
         Handle = handle;
     }

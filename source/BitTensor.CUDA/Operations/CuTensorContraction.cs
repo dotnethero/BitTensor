@@ -1,6 +1,7 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
-namespace BitTensor.CUDA.Wrappers;
+namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
@@ -9,7 +10,12 @@ public unsafe class CuTensorContraction : ICuTensorOperation
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
-    public CuTensorContraction(CuTensorContext context, CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c, CuTensorDescriptor d)
+    public CuTensorContraction(
+        CuTensorContext context,
+        CuTensorDescriptor a,
+        CuTensorDescriptor b,
+        CuTensorDescriptor c,
+        CuTensorDescriptor d)
     {
         cutensorOperationDescriptor* descriptor;
 
@@ -21,22 +27,17 @@ public unsafe class CuTensorContraction : ICuTensorOperation
             c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY, 
             d.Descriptor, d.Modes, CUTENSOR_COMPUTE_DESC_32F);
 
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(status);
+        CuTensorStatus.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
     }
-    
-    public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
-    {
-        using var plan = CreatePlan();
-        using var ws = CreateWorkspace(plan);
 
-        ExecuteByPlan(plan, ws, a, b, c, d, alpha, beta);
-    }
+    public CuTensorPlan CreatePlan() => new(this);
 
-    public void ExecuteByPlan(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
+    public CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
+
+    public void Execute(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
     {
         var status = cutensorContract(
             Context.Handle, 
@@ -46,15 +47,10 @@ public unsafe class CuTensorContraction : ICuTensorOperation
             ws.Pointer, 
             ws.Bytes,
             CuStream.Default);
-
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(status);
+        
+        CuTensorStatus.EnsureIsSuccess(status);
     }
-
-    internal CuTensorPlan CreatePlan() => new(this);
-
-    internal CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
-
+    
     public void Dispose()
     {
         cutensorDestroyOperationDescriptor(Descriptor);

@@ -1,6 +1,7 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
-namespace BitTensor.CUDA.Wrappers;
+namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
@@ -9,7 +10,14 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
-    public CuTensorTernaryOperation(CuTensorContext context, CuTensorDescriptor a, CuTensorDescriptor b, CuTensorDescriptor c, CuTensorDescriptor d, cutensorOperator_t opAB, cutensorOperator_t opABC)
+    public CuTensorTernaryOperation(
+        CuTensorContext context,
+        CuTensorDescriptor a,
+        CuTensorDescriptor b,
+        CuTensorDescriptor c,
+        CuTensorDescriptor d,
+        cutensorOperator_t opAB,
+        cutensorOperator_t opABC)
     {
         cutensorOperationDescriptor* descriptor;
 
@@ -22,21 +30,15 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
             d.Descriptor, d.Modes, opAB, opABC,
             CUTENSOR_COMPUTE_DESC_32F);
 
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(status);
+        CuTensorStatus.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
     }
-    
-    public void Execute(CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f, float gamma = 0f)
-    {
-        using var plan = CreatePlan();
 
-        ExecuteByPlan(plan, a, b, c, d, alpha, beta, gamma);
-    }
+    public CuTensorPlan CreatePlan() => new(this);
 
-    public void ExecuteByPlan(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f, float gamma = 0f)
+    public void Execute(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f, float gamma = 0f)
     {
         var status = cutensorElementwiseTrinaryExecute(
             Context.Handle,
@@ -47,12 +49,9 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
             d.Pointer, 
             CuStream.Default);
 
-        if (status != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(status);
+        CuTensorStatus.EnsureIsSuccess(status);
     }
-
-    internal CuTensorPlan CreatePlan() => new(this);
-
+    
     public void Dispose()
     {
         cutensorDestroyOperationDescriptor(Descriptor);

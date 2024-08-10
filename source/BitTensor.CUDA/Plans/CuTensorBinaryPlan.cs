@@ -1,4 +1,5 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
@@ -55,7 +56,7 @@ internal abstract class CuTensorBinaryPlan : IDisposable
     }
     
     public void Execute(CuTensor left, CuTensor right, float alpha = 1f, float gamma = 1f) =>
-        Operation.ExecuteByPlan(
+        Operation.Execute(
             OperationPlan,
             left,
             right,

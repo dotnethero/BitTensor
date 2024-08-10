@@ -1,4 +1,5 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Operations;
 
 namespace BitTensor.CUDA.Wrappers;
 
@@ -15,6 +16,8 @@ public unsafe class CuTensorPlan : IDisposable
 
     public CuTensorPlan(ICuTensorOperation operation, bool jit = true)
     {
+        ArgumentNullException.ThrowIfNull(operation.Descriptor);
+
         cutensorPlan* plan;
         cutensorPlanPreference* planPreference;
 
@@ -30,8 +33,7 @@ public unsafe class CuTensorPlan : IDisposable
             cutensorAlgo_t.CUTENSOR_ALGO_DEFAULT,
             jitMode);
         
-        if (preferenceStatus != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(preferenceStatus);
+        CuTensorStatus.EnsureIsSuccess(preferenceStatus);
 
         var estimationStatus = cutensorEstimateWorkspaceSize(
             operation.Context.Handle, 
@@ -40,12 +42,11 @@ public unsafe class CuTensorPlan : IDisposable
             cutensorWorksizePreference_t.CUTENSOR_WORKSPACE_DEFAULT, 
             &workspaceSizeEstimate);
 
-        if (estimationStatus != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(estimationStatus);
+        CuTensorStatus.EnsureIsSuccess(estimationStatus);
 
         var planStatus = cutensorCreatePlan(operation.Context.Handle, &plan, operation.Descriptor, planPreference, workspaceSizeEstimate);
-        if (planStatus != cutensorStatus_t.CUTENSOR_STATUS_SUCCESS)
-            throw new CuTensorException(planStatus);
+        
+        CuTensorStatus.EnsureIsSuccess(planStatus);
 
         Context = operation.Context;
         Operation = operation;

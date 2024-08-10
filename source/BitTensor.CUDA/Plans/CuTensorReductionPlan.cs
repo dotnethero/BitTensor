@@ -1,4 +1,5 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
@@ -39,7 +40,7 @@ internal abstract class CuTensorReductionPlan : IDisposable
     }
     
     public void Execute(CuTensor input, CuTensor output, float alpha = 1f, float beta = 0f) =>
-        Reduction.ExecuteByPlan(
+        Reduction.Execute(
             ReductionPlan,
             Workspace,
             input,
