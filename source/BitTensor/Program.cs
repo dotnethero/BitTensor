@@ -20,9 +20,10 @@ internal class Program
         const int outputCount = 20;
         const int batchSize = 50;
 
-        using var context = new CuTensorContext();
-        using var x = CuTensor.Random.Normal([batchSize, inputCount]).CreateNode(context);
-        using var d = CuTensor.Random.Normal([batchSize, outputCount]).CreateNode(context);
+        using var context = new CuContext();
+
+        var x = context.cuRAND.Normal([batchSize, inputCount]).CreateNode();
+        var d = context.cuRAND.Normal([batchSize, outputCount]).CreateNode();
 
         var model = Model.Sequential(
         [

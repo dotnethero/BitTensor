@@ -1,16 +1,15 @@
 ﻿using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Plans;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Models;
 
-public class CuTensorWeight : CuTensorNode
+public class CuTensorWeights : CuTensorNode
 {
     private readonly CuTensorOffsetPlan _plan;
 
-    public CuTensorWeight(CuTensorContext context, CuTensor tensor) : base(context, tensor, true)
+    public CuTensorWeights(CuTensor tensor) : base(tensor)
     {
-        _plan = new CuTensorOffsetPlan(context, tensor, tensor);
+        _plan = new CuTensorOffsetPlan(Context.cuTENSOR, tensor, tensor);
     }
 
     public void AdjustWeights(CuTensor gradient, float lr)

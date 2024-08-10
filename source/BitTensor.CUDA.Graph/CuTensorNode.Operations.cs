@@ -1,7 +1,6 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -28,10 +27,9 @@ public partial class CuTensorNode
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
-        var output = new CuTensor(shape);
-        var plan = new CuTensorAddPlan(context, a.Tensor, b.Tensor, output);
+        var output = context.Allocate(shape);
+        var plan = new CuTensorAddPlan(context.cuTENSOR, a.Tensor, b.Tensor, output);
         return new(
-            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a.Tensor, b.Tensor, output, beta),
@@ -51,10 +49,9 @@ public partial class CuTensorNode
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
-        var output = new CuTensor(shape);
-        var plan = new CuTensorMultiplyPlan(context, a.Tensor, b.Tensor, output);
+        var output = context.Allocate(shape);
+        var plan = new CuTensorMultiplyPlan(context.cuTENSOR, a.Tensor, b.Tensor, output);
         return new(
-            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a.Tensor, b.Tensor, output, alpha: scale),
@@ -76,10 +73,9 @@ public partial class CuTensorNode
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var context = GetContext(a, b);
-        var output = new CuTensor([]);
-        var plan = new CuTensorContractionPlan(context, a.Tensor, b.Tensor, output);
+        var output = context.Allocate([]);
+        var plan = new CuTensorContractionPlan(context.cuTENSOR, a.Tensor, b.Tensor, output);
         return new(
-            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a.Tensor, b.Tensor, output, alpha: scale),
@@ -90,16 +86,15 @@ public partial class CuTensorNode
     {
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape); // desired shape
         var context = GetContext(a, b);
-        var output = new CuTensor(shape); // true output
+        var output = context.Allocate(shape); // true output
 
         var modA = PadLeft(a);
         var modB = PadRight(b);
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
-        var plan = new CuTensorMatrixProductPlan(context, modA.Tensor, modB.Tensor, modOutput);
+        var plan = new CuTensorMatrixProductPlan(context.cuTENSOR, modA.Tensor, modB.Tensor, modOutput);
 
         return new(
-            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(modA.Tensor, modB.Tensor, modOutput),
@@ -120,10 +115,9 @@ public partial class CuTensorNode
     public static CuTensorNode Sum(CuTensorNode a)
     {
         var context = GetContext(a);
-        var output = new CuTensor([]);
-        var plan = new CuTensorSumPlan(context, a.Tensor, output, []);
+        var output = context.Allocate([]);
+        var plan = new CuTensorSumPlan(context.cuTENSOR, a.Tensor, output, []);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output),
@@ -134,10 +128,9 @@ public partial class CuTensorNode
     {
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis);
-        var output = new CuTensor(shape);
-        var plan = new CuTensorSumPlan(context, a.Tensor, output, axis);
+        var output = context.Allocate(shape);
+        var plan = new CuTensorSumPlan(context.cuTENSOR, a.Tensor, output, axis);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, scale),
@@ -150,11 +143,10 @@ public partial class CuTensorNode
             throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
 
         var context = GetContext(a);
-        var output = new CuTensor(shape);
+        var output = context.Allocate(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
-        var plan = new CuTensorOffsetPlan(context, a.Tensor, output);
+        var plan = new CuTensorOffsetPlan(context.cuTENSOR, a.Tensor, output);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, gamma: 0),
@@ -164,11 +156,10 @@ public partial class CuTensorNode
     public static CuTensorNode Sigmoid(CuTensorNode a, float scale = 1f)
     {
         var context = GetContext(a);
-        var output = new CuTensor(a.Shape);
-        var one = new CuTensor([], [1]).CreateNode(context);
-        var plan = new CuTensorUnaryPlusPlan(context, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
+        var output = context.Allocate(a.Shape);
+        var one = context.AllocateOne().CreateNode();
+        var plan = new CuTensorUnaryPlusPlan(context.cuTENSOR, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, alpha: scale, gamma: 0),
@@ -178,11 +169,10 @@ public partial class CuTensorNode
     public static CuTensorNode Tanh(CuTensorNode a, float scale = 1f)
     {
         var context = GetContext(a);
-        var output = new CuTensor(a.Shape);
-        var one = new CuTensor([], [1]).CreateNode(context);
-        var plan = new CuTensorUnaryPlusPlan(context, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_TANH);
+        var output = context.Allocate(a.Shape);
+        var one = context.AllocateOne().CreateNode();
+        var plan = new CuTensorUnaryPlusPlan(context.cuTENSOR, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_TANH);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output, alpha: scale, gamma: 0),
@@ -192,10 +182,9 @@ public partial class CuTensorNode
     public static CuTensorNode Square(CuTensorNode a)
     {
         var context = GetContext(a);
-        var output = new CuTensor(a.Shape);
-        var plan = new CuTensorMultiplyPlan(context, a.Tensor, a.Tensor, output);
+        var output = context.Allocate(a.Shape);
+        var plan = new CuTensorMultiplyPlan(context.cuTENSOR, a.Tensor, a.Tensor, output);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, a.Tensor, output),
@@ -218,10 +207,9 @@ public partial class CuTensorNode
 
         var shape = a.Shape.Transpose(axis);
         var context = GetContext(a);
-        var output = new CuTensor(shape);
-        var plan = new CuTensorPermutationPlan(context, a.Tensor, output, axis);
+        var output = context.Allocate(shape);
+        var plan = new CuTensorPermutationPlan(context.cuTENSOR, a.Tensor, output, axis);
         return new(
-            context,
             output,
             children: [a],
             forward: () => plan.Execute(a.Tensor, output),
@@ -234,7 +222,6 @@ public partial class CuTensorNode
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
 
         return new(
-            Context,
             Tensor.Reshape(shape), // no allocation
             children: [this],
             forward: () => {},
@@ -255,9 +242,9 @@ public partial class CuTensorNode
             ? node.PadRight()
             : node;
 
-    private static CuTensorContext GetContext(CuTensorNode a) => a.Context;
+    private static CuContext GetContext(CuTensorNode a) => a.Context;
 
-    private static CuTensorContext GetContext(CuTensorNode a, CuTensorNode b)
+    private static CuContext GetContext(CuTensorNode a, CuTensorNode b)
     {
         if (a.Context != b.Context)
             throw new InvalidOperationException("Operation does not support operands from different contexts");

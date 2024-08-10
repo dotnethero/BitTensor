@@ -24,7 +24,8 @@ public partial class CuTensor
     public static CuTensor ElementwiseSum(CuTensor a, CuTensor b, float beta = 1f)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
-        var output = new CuTensor(shape);
+        var context = GetContext(a, b);
+        var output = context.Allocate(shape);
         CuBackend.ElementwiseSum(a, b, output, beta);
         return output;
     }
@@ -32,7 +33,8 @@ public partial class CuTensor
     public static CuTensor ElementwiseProduct(CuTensor a, CuTensor b)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
-        var output = new CuTensor(shape);
+        var context = GetContext(a, b);
+        var output = context.Allocate(shape);
         CuBackend.ElementwiseProduct(a, b, output);
         return output;
     }
@@ -40,7 +42,8 @@ public partial class CuTensor
     public static CuTensor MatrixProduct(CuTensor a, CuTensor b)
     {
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
-        var output = new CuTensor(shape);
+        var context = GetContext(a, b);
+        var output = context.Allocate(shape);
         CuBackend.MatrixProduct(a, b, output);
         return output;
     }
@@ -48,7 +51,8 @@ public partial class CuTensor
     public static CuTensor DotProduct(CuTensor a, CuTensor b)
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
-        var output = new CuTensor([]);
+        var context = GetContext(a, b);
+        var output = context.Allocate([]);
         CuBackend.DotProduct(a, b, output);
         return output;
     }
@@ -56,14 +60,16 @@ public partial class CuTensor
     public static CuTensor OuterProduct(CuTensor a, CuTensor b)
     {
         var shape = Shapes.BroadcastOuterProduct(a.Shape, b.Shape);
-        var output = new CuTensor(shape);
+        var context = GetContext(a, b);
+        var output = context.Allocate(shape);
         CuBackend.OuterProduct(a, b, output);
         return output;
     }
 
     public static CuTensor Sum(CuTensor a)
     {
-        var output = new CuTensor([]);
+        var context = GetContext(a);
+        var output = context.Allocate([]);
         CuBackend.Sum(a, output);
         return output;
     }
@@ -71,14 +77,16 @@ public partial class CuTensor
     public static CuTensor Sum(CuTensor a, HashSet<int> axis, float scale = 1f)
     {
         var shape = a.Shape.Reduce(axis);
-        var output = new CuTensor(shape);
+        var context = GetContext(a);
+        var output = context.Allocate(shape);
         CuBackend.Sum(a, axis, output, scale);
         return output;
     }
     
     public static CuTensor Product(CuTensor a)
     {
-        var output = new CuTensor([]);
+        var context = GetContext(a);
+        var output = context.Allocate([]);
         CuBackend.Product(a, output);
         return output;
     }
@@ -86,7 +94,8 @@ public partial class CuTensor
     public static CuTensor Product(CuTensor a, HashSet<int> axis)
     {
         var shape = a.Shape.Reduce(axis);
-        var output = new CuTensor(shape);
+        var context = GetContext(a);
+        var output = context.Allocate(shape);
         CuBackend.Product(a, axis, output);
         return output;
     }
@@ -96,7 +105,8 @@ public partial class CuTensor
         if (!a.Shape.CanBroadcastTo(shape))
             throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
 
-        var output = new CuTensor(shape);
+        var context = GetContext(a);
+        var output = context.Allocate(shape);
         CuBackend.Broadcast(a, output);
         return output;
     }
@@ -105,7 +115,8 @@ public partial class CuTensor
     {
         var axis = a.Shape.GetTransposeAxis();
         var shape = a.Shape.Transpose(axis);
-        var output = new CuTensor(shape);
+        var context = GetContext(a);
+        var output = context.Allocate(shape);
         CuBackend.Transpose(a, axis, output);
         return output;
     }
@@ -119,8 +130,19 @@ public partial class CuTensor
             throw new InvalidOperationException($"Axis {axis.ToText()} does not contain all axes for {a.Shape} shape tensor");
 
         var shape = a.Shape.Transpose(axis);
-        var output = new CuTensor(shape);
+        var context = GetContext(a);
+        var output = context.Allocate(shape);
         CuBackend.Transpose(a, axis, output);
         return output;
+    }
+
+    private static CuContext GetContext(CuTensor a) => a.Context;
+
+    private static CuContext GetContext(CuTensor a, CuTensor b)
+    {
+        if (a.Context != b.Context)
+            throw new InvalidOperationException("Operation does not support operands from different contexts");
+
+        return a.Context;
     }
 }

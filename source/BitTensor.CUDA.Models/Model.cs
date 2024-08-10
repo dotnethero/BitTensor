@@ -8,7 +8,7 @@ public abstract class Model : ILayer
 {
     public static Model Sequential(ILayer[] layers) => new SequentialModel(layers);
 
-    public abstract CuTensorWeight[] Parameters { get; }
+    public abstract CuTensorWeights[] Parameters { get; }
 
     public abstract CuTensorNode Compute(CuTensorNode input);
     
@@ -39,7 +39,7 @@ public abstract class Model : ILayer
         }
     }
 
-    public static void ApplyGradients(CuTensorWeight[] variables, CuTensorNode[] gradients, float lr)
+    public static void ApplyGradients(CuTensorWeights[] variables, CuTensorNode[] gradients, float lr)
     {
         for (var i = 0; i < variables.Length; ++i)
         {

@@ -1,38 +1,35 @@
 ﻿using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
+public partial class CuTensorNode
 {
     public delegate void ForwardFunction();
     public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad, CuTensorNode self);
 
-    public readonly CuTensorContext Context;
+    public readonly CuContext Context;
     public readonly CuTensor Tensor;
     public readonly Shape Shape;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
     public readonly CuTensorNode[] Children;
     public readonly List<CuTensorNode> Dependents;
-    public readonly bool Owned;
     public bool Outdated;
 
-    public CuTensorNode(CuTensorContext context, CuTensor tensor, bool owned = false)
+    public CuTensorNode(CuTensor tensor)
     {
-        Context = context;
+        Context = tensor.Context;
         Tensor = tensor;
         Shape = tensor.Shape;
         Children = [];
         Dependents = new(3);
         Outdated = false;
-        Owned = owned;
     }
     
-    public CuTensorNode(CuTensorContext context, CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
+    public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
     {
-        Context = context;
+        Context = tensor.Context;
         Tensor = tensor;
         Shape = tensor.Shape;
         Forward = forward;
@@ -40,7 +37,6 @@ public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
         Children = children;
         Dependents = new(3);
         Outdated = true;
-        Owned = true;
 
         foreach (var child in Children)
         {
@@ -78,12 +74,4 @@ public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
     public override int GetHashCode() => unchecked((int)Tensor.Id); // TODO: count nodes, not tensors
 
     public override string ToString() => $"Tensor #{Tensor.Id}, shape={Shape}";
-
-    public void Dispose()
-    {
-        if (Owned)
-        {
-            Tensor.Dispose();
-        }
-    }
 }

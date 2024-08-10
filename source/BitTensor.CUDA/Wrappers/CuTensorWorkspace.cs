@@ -7,7 +7,7 @@ public unsafe class CuTensorWorkspace : IDisposable
 
     public CuTensorWorkspace(ulong bytes)
     {
-        Pointer = CuArray.AllocateBytes((uint)bytes);
+        Pointer = CuArray.AllocateRaw((uint)bytes);
         Bytes = bytes;
     }
 

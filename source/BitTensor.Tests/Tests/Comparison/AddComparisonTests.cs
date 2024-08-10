@@ -1,4 +1,5 @@
 ﻿using BitTensor.Core.Tests;
+using BitTensor.CUDA;
 using NUnit.Framework;
 using Python.Runtime;
 
@@ -44,12 +45,14 @@ class AddComparisonTests
              d = jnp.add(x, y)
              """);
 
-        using var x = scope.GetTensor("x");
-        using var y = scope.GetTensor("y");
-        using var d = scope.GetTensor("d");
+        using var context = new CuContext();
 
-        using var z1 = x + y;
-        using var z2 = y + x;
+        var x = scope.GetTensor("x").CreateTensor(context);
+        var y = scope.GetTensor("y").CreateTensor(context);
+        var d = scope.GetTensor("d").CreateTensor(context);
+
+        var z1 = x + y;
+        var z2 = y + x;
 
         Assert.Multiple(() =>
         {

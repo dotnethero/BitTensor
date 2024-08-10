@@ -1,6 +1,6 @@
 ﻿namespace BitTensor.CUDA.Graph;
 
-public class CuTensorGradients : IDisposable
+public class CuTensorGradients
 {
     private readonly Dictionary<CuTensorNode, CuTensorNode> _gradients = new(16);
     
@@ -18,12 +18,4 @@ public class CuTensorGradients : IDisposable
     public bool ContainsKey(CuTensorNode node) => _gradients.ContainsKey(node);
     
     public void Push(CuTensorNode node, CuTensorNode gradient) => _gradients[node] = gradient;
-
-    public void Dispose()
-    {
-        foreach (var gradient in _gradients.Values)
-        {
-            gradient.Dispose();
-        }
-    }
 }

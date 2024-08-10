@@ -10,10 +10,10 @@ public partial class CuTensorNode
 
         var nodes = new Stack<CuTensorNode>(16);
         var grads = new CuTensorGradients();
-        var one = new CuTensor([], [1]);
+        var one = Context.Allocate([], [1]);
 
         nodes.Push(this);
-        grads.Push(this, one.CreateNode(Context));
+        grads.Push(this, one.CreateNode());
 
         while (nodes.Count > 0)
         {
