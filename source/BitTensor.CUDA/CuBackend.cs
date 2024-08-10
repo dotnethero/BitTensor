@@ -82,6 +82,13 @@ public static class CuBackend
         using var plan = new CuTensorUnaryPlusPlan(context, a, z, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
         plan.Execute(a, z, gamma: 0); // replace: z = Sigmoid(a)
     }
+    
+    public static void Tanh(CuTensor a, CuTensor z)
+    {
+        using var context = new CuTensorContext();
+        using var plan = new CuTensorUnaryPlusPlan(context, a, z, cutensorOperator_t.CUTENSOR_OP_TANH);
+        plan.Execute(a, z, gamma: 0);
+    }
 
     public static void Broadcast(CuTensor a, CuTensor z)
     {

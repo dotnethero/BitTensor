@@ -47,7 +47,7 @@ public partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode ElementwiseProduct(CuTensorNode a, CuTensorNode b)
+    public static CuTensorNode ElementwiseProduct(CuTensorNode a, CuTensorNode b, float scale = 1f)
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
@@ -57,11 +57,11 @@ public partial class CuTensorNode
             context,
             output,
             children: [a, b],
-            forward: () => plan.Execute(a.Tensor, b.Tensor, output),
+            forward: () => plan.Execute(a.Tensor, b.Tensor, output, alpha: scale),
             backward: (grad, _) =>
             {
-                var agrad = ElementwiseProduct(grad, b);
-                var bgrad = ElementwiseProduct(grad, a);
+                var agrad = ElementwiseProduct(grad, b, scale);
+                var bgrad = ElementwiseProduct(grad, a, scale);
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, agrad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, bgrad.Shape);
                 return
@@ -161,7 +161,7 @@ public partial class CuTensorNode
             backward: (grad, _) => [Sum(grad, axis)]); // TODO: Verify!
     }
 
-    public static CuTensorNode Sigmoid(CuTensorNode a)
+    public static CuTensorNode Sigmoid(CuTensorNode a, float scale = 1f)
     {
         var context = GetContext(a);
         var output = new CuTensor(a.Shape);
@@ -171,8 +171,35 @@ public partial class CuTensorNode
             context,
             output,
             children: [a],
-            forward: () => plan.Execute(a.Tensor, output, gamma: 0),
-            backward: (grad, self) => [ElementwiseProduct(grad, ElementwiseProduct(self, one - self))]);
+            forward: () => plan.Execute(a.Tensor, output, alpha: scale, gamma: 0),
+            backward: (grad, self) => [ElementwiseProduct(grad, ElementwiseProduct(self, one - self), scale)]);
+    }
+
+    public static CuTensorNode Tanh(CuTensorNode a, float scale = 1f)
+    {
+        var context = GetContext(a);
+        var output = new CuTensor(a.Shape);
+        var one = new CuTensor([], [1]).CreateNode(context);
+        var plan = new CuTensorUnaryPlusPlan(context, a.Tensor, output, cutensorOperator_t.CUTENSOR_OP_TANH);
+        return new(
+            context,
+            output,
+            children: [a],
+            forward: () => plan.Execute(a.Tensor, output, alpha: scale, gamma: 0),
+            backward: (grad, self) => [ElementwiseProduct(grad, one - Square(self), scale)]);
+    }
+
+    public static CuTensorNode Square(CuTensorNode a)
+    {
+        var context = GetContext(a);
+        var output = new CuTensor(a.Shape);
+        var plan = new CuTensorMultiplyPlan(context, a.Tensor, a.Tensor, output);
+        return new(
+            context,
+            output,
+            children: [a],
+            forward: () => plan.Execute(a.Tensor, a.Tensor, output),
+            backward: (g, _) => [ElementwiseProduct(g, a, scale: 2)]);
     }
 
     public static CuTensorNode Transpose(CuTensorNode a)
