@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA;
+using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Models;
 using BitTensor.CUDA.Wrappers;
 
@@ -29,9 +30,15 @@ internal class Program
             new LinearLayer(context, hiddenCount, outputCount, a => a)
         ]);
 
+        // train
         var compilation = model.Compile(x, d);
         var sw = Stopwatch.StartNew();
         model.Fit(compilation, lr: 1e-5f, epochs: 1000, trace: true);
         Console.WriteLine(sw.Elapsed); // cached plans: 00:00:00.410
+
+        // evaluate
+        var output = model.Compute(x);
+        var diff = CuTensorNode.Sum(output - d, [1]);
+        CuGraphDebug.WriteLine(diff);
     }
 }

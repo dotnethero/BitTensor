@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Models;
 
-public sealed record Compilation(CuTensorNode Loss, CuTensorNode[] Gradients, CuTensorNode Input, CuTensorNode Output, CuTensorNode Desired);
+public sealed record Compilation(CuTensorNode Loss, CuTensorNode[] Gradients, CuTensorNode Input, CuTensorNode Desired);
 
 public abstract class Model : ILayer
 {
@@ -19,7 +19,7 @@ public abstract class Model : ILayer
         var loss = CuTensorNode.DotProduct(diff, diff, scale: 1f);
         var grads = loss.GetGradients();
         var gradients = grads.By(Parameters);
-        return new(loss, gradients, input, output, desired);
+        return new(loss, gradients, input, desired);
     }
 
     public void Fit(Compilation compilation, float lr, int epochs, bool trace = false)

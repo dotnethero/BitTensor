@@ -7,7 +7,7 @@ public static class CuGraphDebug
     public static void WriteLine(CuTensorNode node, [CallerArgumentExpression("node")] string tensorName = "")
     {
         var text = View(node);
-        Console.WriteLine($"{tensorName} =\n{text}");
+        Console.WriteLine($"{tensorName}{node.Shape} =\n{text}");
     }
 
     public static string View(CuTensorNode node, int dimensionsPerLine = 1)

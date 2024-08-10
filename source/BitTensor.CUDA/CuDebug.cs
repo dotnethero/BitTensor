@@ -11,7 +11,7 @@ public static class CuDebug
     public static void WriteLine(CuTensor tensor, [CallerArgumentExpression("tensor")] string tensorName = "")
     {
         var text = View(tensor);
-        Console.WriteLine($"{tensorName} =\n{text}");
+        Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
     
     public static string View(CuTensor tensor, int dimensionsPerLine = 1)
