@@ -13,9 +13,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA.Interop", "B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor", "BitTensor\BitTensor.csproj", "{66EDC9DB-DFE0-4AEC-B732-4CAF87242248}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.CUDA.Graph", "BitTensor.CUDA.Graph\BitTensor.CUDA.Graph.csproj", "{369D9660-0260-4A80-A185-05CBF6CB2369}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA.Graph", "BitTensor.CUDA.Graph\BitTensor.CUDA.Graph.csproj", "{369D9660-0260-4A80-A185-05CBF6CB2369}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.CUDA.Models", "BitTensor.CUDA.Models\BitTensor.CUDA.Models.csproj", "{D311890B-2ADD-431A-AF5A-87A73D68D772}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA.Models", "BitTensor.CUDA.Models\BitTensor.CUDA.Models.csproj", "{D311890B-2ADD-431A-AF5A-87A73D68D772}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTensor.CUDA.Kernels", "BitTensor.CUDA.Kernels\BitTensor.CUDA.Kernels.csproj", "{FFC9D9FE-864F-407A-AF92-9C12DA4C3A80}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{D311890B-2ADD-431A-AF5A-87A73D68D772}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D311890B-2ADD-431A-AF5A-87A73D68D772}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D311890B-2ADD-431A-AF5A-87A73D68D772}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFC9D9FE-864F-407A-AF92-9C12DA4C3A80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFC9D9FE-864F-407A-AF92-9C12DA4C3A80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFC9D9FE-864F-407A-AF92-9C12DA4C3A80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFC9D9FE-864F-407A-AF92-9C12DA4C3A80}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
