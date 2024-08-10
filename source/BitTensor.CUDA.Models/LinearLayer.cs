@@ -16,8 +16,8 @@ public class LinearLayer : ILayer, IDisposable
     public LinearLayer(CuTensorContext context, int inputs, int outputs, Func<CuTensorNode, CuTensorNode> activation)
     {
         Activation = activation;
-        Bias = new CuTensorWeight(context, CuTensor.Random.Uniform([outputs]));
-        Weights = new CuTensorWeight(context, CuTensor.Random.Uniform([inputs, outputs]));
+        Bias = new CuTensorWeight(context, CuTensor.Random.Normal([outputs]));
+        Weights = new CuTensorWeight(context, CuTensor.Random.Normal([inputs, outputs]));
     }
 
     public CuTensorNode Compute(CuTensorNode input)

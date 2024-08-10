@@ -21,8 +21,8 @@ internal class Program
         const int batchSize = 50;
 
         using var context = new CuTensorContext();
-        using var x = CuTensor.Random.Uniform([batchSize, inputCount]).CreateNode(context);
-        using var d = CuTensor.Random.Uniform([batchSize, outputCount]).CreateNode(context);
+        using var x = CuTensor.Random.Normal([batchSize, inputCount]).CreateNode(context);
+        using var d = CuTensor.Random.Normal([batchSize, outputCount]).CreateNode(context);
 
         var model = Model.Sequential(
         [
@@ -31,10 +31,10 @@ internal class Program
         ]);
 
         // train
-        var compilation = model.Compile(x, d);
         var sw = Stopwatch.StartNew();
-        model.Fit(compilation, lr: 1e-5f, epochs: 1000, trace: true);
-        Console.WriteLine(sw.Elapsed); // cached plans: 00:00:00.410
+        var compilation = model.Compile(x, d);
+        model.Fit(compilation, lr: 1e-6f, epochs: 1000, trace: true);
+        Console.WriteLine(sw.Elapsed); // 00:00:00.500
 
         // evaluate
         var output = model.Compute(x);

@@ -13,7 +13,7 @@ public unsafe class CuTensorContext : IDisposable
         cutensorHandle* handle;
 
         var status = cuTENSOR.cutensorCreate(&handle);
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Handle = handle;
     }

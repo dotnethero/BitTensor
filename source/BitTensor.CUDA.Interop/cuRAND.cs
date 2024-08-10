@@ -53,7 +53,7 @@ public static unsafe partial class cuRAND
     public static extern curandStatus curandGenerateLongLong(curandGenerator_st* generator, ulong* outputPtr, nuint num);
 
     [DllImport(__DllName, EntryPoint = "curandGenerateUniform", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern curandStatus curandGenerateUniform(curandGenerator_st* generator, float* outputPtr, nuint num);
+    public static extern curandStatus curandGenerateUniform(curandGenerator_st* generator, float* outputPtr, uint num);
 
     [DllImport(__DllName, EntryPoint = "curandGenerateUniformDouble", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern curandStatus curandGenerateUniformDouble(curandGenerator_st* generator, double* outputPtr, nuint num);

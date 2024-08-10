@@ -29,7 +29,7 @@ internal sealed unsafe class CuTensorBinaryOperation : ICuTensorOperation
             c.Descriptor, c.Modes, opAB,
             CUTENSOR_COMPUTE_DESC_32F);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
@@ -40,7 +40,7 @@ internal sealed unsafe class CuTensorBinaryOperation : ICuTensorOperation
     public void Execute(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
     {
         var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
     }
     
     public void Dispose()

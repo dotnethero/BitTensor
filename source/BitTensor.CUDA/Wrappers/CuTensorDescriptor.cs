@@ -42,7 +42,7 @@ public unsafe class CuTensorDescriptor : IDisposable
             dataType: cutensorDataType_t.CUTENSOR_R_32F,
             alignmentRequirement: 128u);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Descriptor = descriptor;
     }

@@ -33,7 +33,7 @@ public unsafe class CuTensorPlan : IDisposable
             cutensorAlgo_t.CUTENSOR_ALGO_DEFAULT,
             jitMode);
         
-        CuTensorStatus.EnsureIsSuccess(preferenceStatus);
+        Status.EnsureIsSuccess(preferenceStatus);
 
         var estimationStatus = cutensorEstimateWorkspaceSize(
             operation.Context.Handle, 
@@ -42,11 +42,11 @@ public unsafe class CuTensorPlan : IDisposable
             cutensorWorksizePreference_t.CUTENSOR_WORKSPACE_DEFAULT, 
             &workspaceSizeEstimate);
 
-        CuTensorStatus.EnsureIsSuccess(estimationStatus);
+        Status.EnsureIsSuccess(estimationStatus);
 
         var planStatus = cutensorCreatePlan(operation.Context.Handle, &plan, operation.Descriptor, planPreference, workspaceSizeEstimate);
         
-        CuTensorStatus.EnsureIsSuccess(planStatus);
+        Status.EnsureIsSuccess(planStatus);
 
         Context = operation.Context;
         Operation = operation;

@@ -30,7 +30,7 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
             d.Descriptor, d.Modes, opAB, opABC,
             CUTENSOR_COMPUTE_DESC_32F);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
@@ -49,7 +49,7 @@ internal unsafe class CuTensorTernaryOperation : ICuTensorOperation
             d.Pointer, 
             CuStream.Default);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
     }
     
     public void Dispose()

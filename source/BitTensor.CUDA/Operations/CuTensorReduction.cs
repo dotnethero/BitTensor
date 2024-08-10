@@ -27,7 +27,7 @@ internal unsafe class CuTensorReduction : ICuTensorOperation
             c.Descriptor, c.Modes, opReduce,
             CUTENSOR_COMPUTE_DESC_32F);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
@@ -40,7 +40,7 @@ internal unsafe class CuTensorReduction : ICuTensorOperation
     public void Execute(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, float alpha, float beta)
     {
         var status = cutensorReduce(Context.Handle, plan.Plan, &alpha, a.Pointer, &beta, b.Pointer, c.Pointer, ws.Pointer, ws.Bytes, CuStream.Default);
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
     }
     
     public void Dispose()

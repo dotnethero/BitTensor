@@ -24,7 +24,7 @@ internal unsafe class CuTensorPermutation : ICuTensorOperation
             b.Descriptor, b.Modes,
             CUTENSOR_COMPUTE_DESC_32F);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
@@ -35,7 +35,7 @@ internal unsafe class CuTensorPermutation : ICuTensorOperation
     public void Execute(CuTensorPlan plan, CuTensor a, CuTensor b, float alpha = 1f)
     {
         var status = cutensorPermute(Context.Handle, plan.Plan, &alpha, a.Pointer, b.Pointer, CuStream.Default);
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
     }
     
     public void Dispose()

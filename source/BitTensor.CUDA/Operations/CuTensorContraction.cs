@@ -27,7 +27,7 @@ public unsafe class CuTensorContraction : ICuTensorOperation
             c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY, 
             d.Descriptor, d.Modes, CUTENSOR_COMPUTE_DESC_32F);
 
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
@@ -48,7 +48,7 @@ public unsafe class CuTensorContraction : ICuTensorOperation
             ws.Bytes,
             CuStream.Default);
         
-        CuTensorStatus.EnsureIsSuccess(status);
+        Status.EnsureIsSuccess(status);
     }
     
     public void Dispose()
