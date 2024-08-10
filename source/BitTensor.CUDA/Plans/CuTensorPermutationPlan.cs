@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Operations;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
@@ -11,7 +12,7 @@ internal sealed class CuTensorPermutationPlan : IDisposable
     internal readonly CuTensorPermutation Permutation;
     internal readonly CuTensorPlan PermutationPlan;
 
-    public CuTensorPermutationPlan(CuTensorContext context, CuTensor input, CuTensor output, int[] axis)
+    public CuTensorPermutationPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, int[] axis)
     {
         var inputModes = new int[input.Dimensions];
         var outputModes = new int[output.Dimensions];

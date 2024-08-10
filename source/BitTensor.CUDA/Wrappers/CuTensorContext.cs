@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 
 namespace BitTensor.CUDA.Wrappers;
@@ -17,19 +18,12 @@ public unsafe class CuTensorContext : IDisposable
         Handle = handle;
     }
 
-    public CuTensorDescriptor CreateDescriptor(CuTensor a) => 
+    public CuTensorDescriptor CreateDescriptor(AbstractTensor a) => 
         new(this, a);
     
-    public CuTensorDescriptor CreateDescriptor(CuTensor a, int[] modes) => 
+    public CuTensorDescriptor CreateDescriptor(AbstractTensor a, int[] modes) => 
         new(this, a, modes);
-    
-    public CuTensorContraction CreateContraction(
-        CuTensorDescriptor a,
-        CuTensorDescriptor b,
-        CuTensorDescriptor c,
-        CuTensorDescriptor d) => 
-        new(this, a, b, c, d);
-    
+
     public void Dispose()
     {
         cuTENSOR.cutensorDestroy(Handle);

@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
@@ -6,26 +7,26 @@ namespace BitTensor.CUDA.Plans;
 
 using Ops = cutensorOperator_t;
 
-internal sealed class CuTensorUnaryPlusPlan(
+public sealed class CuTensorUnaryPlusPlan(
     CuTensorContext context,
-    CuTensor left,
-    CuTensor right,
+    AbstractTensor left,
+    AbstractTensor right,
     Ops operation) : 
     CuTensorBinaryPlan(context, left, right, operation, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
 
-internal sealed class CuTensorOffsetPlan(
+public sealed class CuTensorOffsetPlan(
     CuTensorContext context,
-    CuTensor left,
-    CuTensor right) : 
+    AbstractTensor left,
+    AbstractTensor right) : 
     CuTensorBinaryPlan(context, left, right, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
 
-internal sealed class CuTensorScalePlan(
+public sealed class CuTensorScalePlan(
     CuTensorContext context,
-    CuTensor left,
-    CuTensor right) : 
+    AbstractTensor left,
+    AbstractTensor right) : 
     CuTensorBinaryPlan(context, left, right, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_MUL);
 
-internal abstract class CuTensorBinaryPlan : IDisposable
+public abstract class CuTensorBinaryPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -34,8 +35,8 @@ internal abstract class CuTensorBinaryPlan : IDisposable
     internal readonly CuTensorPlan OperationPlan;
 
     protected CuTensorBinaryPlan(CuTensorContext context,
-        CuTensor a,
-        CuTensor b,
+        AbstractTensor a,
+        AbstractTensor b,
         Ops opA,
         Ops opB,
         Ops opAB)

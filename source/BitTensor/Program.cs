@@ -32,6 +32,6 @@ internal class Program
         var compilation = model.Compile(x, d);
         var sw = Stopwatch.StartNew();
         model.Fit(compilation, lr: 1e-5f, epochs: 1000, trace: true);
-        Console.WriteLine(sw.Elapsed); // cached plans: 00:00:00.699
+        Console.WriteLine(sw.Elapsed); // cached plans: 00:00:00.410
     }
 }

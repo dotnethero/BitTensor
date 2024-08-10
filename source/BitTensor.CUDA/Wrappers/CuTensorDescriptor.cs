@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 
@@ -11,13 +12,12 @@ public unsafe class CuTensorDescriptor : IDisposable
     internal readonly int* Modes;
     internal readonly long* Extents;
     internal readonly long* Strides;
-    internal readonly float* Data;
 
-    public CuTensorDescriptor(CuTensorContext context, CuTensor a) : this(context, a, a.Shape.GetOrdinaryModes())
+    public CuTensorDescriptor(CuTensorContext context, AbstractTensor a) : this(context, a, a.Shape.GetOrdinaryModes())
     {
     }
 
-    public CuTensorDescriptor(CuTensorContext context, CuTensor a, int[] modes)
+    public CuTensorDescriptor(CuTensorContext context, AbstractTensor a, int[] modes)
     {
         cutensorTensorDescriptor* descriptor;
 
@@ -25,7 +25,6 @@ public unsafe class CuTensorDescriptor : IDisposable
         Modes = Allocate<int>(a.Dimensions);
         Extents = Allocate<long>(a.Dimensions);
         Strides = Allocate<long>(a.Dimensions);
-        Data = a.Pointer;
 
         for (var i = 0; i < a.Dimensions; ++i)
         {

@@ -4,7 +4,7 @@ namespace BitTensor.CUDA.Models;
 
 public sealed class SequentialModel(ILayer[] layers) : Model
 {
-    public override CuTensorNode[] Parameters =>  
+    public override CuTensorWeight[] Parameters =>  
         layers.SelectMany(x => x.Parameters).ToArray();
 
     public override CuTensorNode Compute(CuTensorNode input) => 

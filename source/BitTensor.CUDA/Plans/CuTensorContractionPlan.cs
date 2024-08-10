@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Operations;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
@@ -13,13 +14,13 @@ internal sealed class CuTensorContractionPlan : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
     
-    public CuTensorContractionPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
+    public CuTensorContractionPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
     {
         LeftDescriptor = context.CreateDescriptor(left);
         RightDescriptor = context.CreateDescriptor(right);
         ResultDescriptor = context.CreateDescriptor(result);
         
-        Contraction = context.CreateContraction(LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
+        Contraction = new(context, LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
         ContractionPlan = Contraction.CreatePlan();
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
     }

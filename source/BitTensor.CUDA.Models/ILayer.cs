@@ -4,7 +4,7 @@ namespace BitTensor.CUDA.Models;
 
 public interface ILayer
 {
-    CuTensorNode[] Parameters { get; }
+    CuTensorWeight[] Parameters { get; }
     CuTensorNode Compute(CuTensorNode input);
 }
 

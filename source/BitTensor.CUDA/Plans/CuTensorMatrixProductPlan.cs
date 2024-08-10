@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Operations;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
@@ -13,7 +14,7 @@ internal sealed class CuTensorMatrixProductPlan : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    public CuTensorMatrixProductPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result)
+    public CuTensorMatrixProductPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
     {
         var (leftModes, rightModes, resultModes) = Modes.GetMultiplicationModes(left.Shape, right.Shape, result.Shape);
 
@@ -21,7 +22,7 @@ internal sealed class CuTensorMatrixProductPlan : IDisposable
         RightDescriptor = context.CreateDescriptor(right, rightModes);
         ResultDescriptor = context.CreateDescriptor(result, resultModes);
 
-        Contraction = context.CreateContraction(LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
+        Contraction = new(context, LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
         ContractionPlan = Contraction.CreatePlan();
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
     }

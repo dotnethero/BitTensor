@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
@@ -6,16 +7,16 @@ namespace BitTensor.CUDA.Plans;
 
 internal sealed class CuTensorAddPlan(
     CuTensorContext context,
-    CuTensor left,
-    CuTensor right,
-    CuTensor result) : 
+    AbstractTensor left,
+    AbstractTensor right,
+    AbstractTensor result) : 
     CuTensorTernaryPlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_ADD);
 
 internal sealed class CuTensorMultiplyPlan(
     CuTensorContext context,
-    CuTensor left,
-    CuTensor right,
-    CuTensor result) : 
+    AbstractTensor left,
+    AbstractTensor right,
+    AbstractTensor result) : 
     CuTensorTernaryPlan(context, left, right, result, cutensorOperator_t.CUTENSOR_OP_MUL);
 
 internal abstract class CuTensorTernaryPlan : IDisposable
@@ -27,7 +28,7 @@ internal abstract class CuTensorTernaryPlan : IDisposable
     internal readonly CuTensorTernaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
 
-    protected CuTensorTernaryPlan(CuTensorContext context, CuTensor left, CuTensor right, CuTensor result, cutensorOperator_t op)
+    protected CuTensorTernaryPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result, cutensorOperator_t op)
     {
         LeftDescriptor = context.CreateDescriptor(left);
         RightDescriptor = context.CreateDescriptor(right);
