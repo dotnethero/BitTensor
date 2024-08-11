@@ -38,11 +38,11 @@ class MatmulGradientTests
             """);
 
         using var context = new CuContext();
-        var x = scope.Get2D("x").CreateNode(context);
-        var y = scope.Get2D("y").CreateNode(context);
+        var x = scope.Get2D("x").AsNode(context);
+        var y = scope.Get2D("y").AsNode(context);
 
-        var xg_true = scope.Get2D("xg").CreateTensor(context);
-        var yg_true = scope.Get2D("yg").CreateTensor(context);
+        var xg_true = scope.Get2D("xg").AsTensor(context);
+        var yg_true = scope.Get2D("yg").AsTensor(context);
 
         var grads = CuTensorNode.Sum(x * y).GetGradients();
         var xg = grads[x];
@@ -94,14 +94,14 @@ class MatmulGradientTests
         
         using var context = new CuContext();
 
-        var ab_da_true = scope.Get1D("ab_da").CreateTensor(context);
-        var ab_db_true = scope.Get2D("ab_db").CreateTensor(context);
-        var ca_dc_true = scope.Get2D("ca_dc").CreateTensor(context);
-        var ca_da_true = scope.Get1D("ca_da").CreateTensor(context);
+        var ab_da_true = scope.Get1D("ab_da").AsTensor(context);
+        var ab_db_true = scope.Get2D("ab_db").AsTensor(context);
+        var ca_dc_true = scope.Get2D("ca_dc").AsTensor(context);
+        var ca_da_true = scope.Get1D("ca_da").AsTensor(context);
 
-        var a = scope.Get1D("a").CreateNode(context);
-        var b = scope.Get2D("b").CreateNode(context);
-        var c = scope.Get2D("c").CreateNode(context);
+        var a = scope.Get1D("a").AsNode(context);
+        var b = scope.Get2D("b").AsNode(context);
+        var c = scope.Get2D("c").AsNode(context);
         
         var ab_grads = CuTensorNode.Sum(a * b).GetGradients();
         var ab_da = ab_grads[a];
@@ -166,14 +166,14 @@ class MatmulGradientTests
 
         using var context = new CuContext();
 
-        var aс_da_true = scope.Get1D("aс_da").CreateTensor(context);
-        var aс_dс_true = scope.Get2D("aс_dс").CreateTensor(context);
-        var cb_dc_true = scope.Get2D("cb_dc").CreateTensor(context);
-        var cb_db_true = scope.Get1D("cb_db").CreateTensor(context);
+        var aс_da_true = scope.Get1D("aс_da").AsTensor(context);
+        var aс_dс_true = scope.Get2D("aс_dс").AsTensor(context);
+        var cb_dc_true = scope.Get2D("cb_dc").AsTensor(context);
+        var cb_db_true = scope.Get1D("cb_db").AsTensor(context);
 
-        var a = scope.Get1D("a").CreateNode(context);
-        var b = scope.Get1D("b").CreateNode(context);
-        var c = scope.Get2D("c").CreateNode(context);
+        var a = scope.Get1D("a").AsNode(context);
+        var b = scope.Get1D("b").AsNode(context);
+        var c = scope.Get2D("c").AsNode(context);
 
         var aс_grads = CuTensorNode.Sum(a * c).GetGradients();
         var aс_da = aс_grads[a];
@@ -277,12 +277,12 @@ class MatmulGradientTests
              """);
 
         using var context = new CuContext();
-        var x = scope.GetTensor("x").CreateNode(context);
-        var y = scope.GetTensor("y").CreateNode(context);
+        var x = scope.GetTensor("x").AsNode(context);
+        var y = scope.GetTensor("y").AsNode(context);
         var z = x * y;
 
-        var xy_dx_true = scope.GetTensor("xy_dx").CreateTensor(context);
-        var xy_dy_true = scope.GetTensor("xy_dy").CreateTensor(context);
+        var xy_dx_true = scope.GetTensor("xy_dx").AsTensor(context);
+        var xy_dy_true = scope.GetTensor("xy_dy").AsTensor(context);
         
         var xy_grads = CuTensorNode.Sum(z).GetGradients();
         var xy_dx = xy_grads[x];

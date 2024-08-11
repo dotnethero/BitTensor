@@ -32,9 +32,9 @@ class MatmulComparisonTests
 
         using var context = new CuContext();
 
-        var x = scope.Get2D("x").CreateTensor(context);
-        var y = scope.Get2D("y").CreateTensor(context);
-        var z_true = scope.Get2D("z").CreateTensor(context);
+        var x = scope.Get2D("x").AsNode(context);
+        var y = scope.Get2D("y").AsNode(context);
+        var z_true = scope.Get2D("z").AsTensor(context);
         var z = x * y;
 
         TensorAsserts.ShapesAreEqual(z_true, z);
@@ -69,11 +69,11 @@ class MatmulComparisonTests
 
         using var context = new CuContext();
 
-        var a = scope.Get1D("a").CreateTensor(context);
-        var b = scope.Get2D("b").CreateTensor(context);
-        var c = scope.Get2D("c").CreateTensor(context);
-        var ab_true = scope.Get1D("ab").CreateTensor(context);
-        var ca_true = scope.Get1D("ca").CreateTensor(context);
+        var a = scope.Get1D("a").AsNode(context);
+        var b = scope.Get2D("b").AsNode(context);
+        var c = scope.Get2D("c").AsNode(context);
+        var ab_true = scope.Get1D("ab").AsTensor(context);
+        var ca_true = scope.Get1D("ca").AsTensor(context);
 
         var ab = a * b;
         var ca = c * a;
@@ -115,11 +115,11 @@ class MatmulComparisonTests
 
         using var context = new CuContext();
 
-        var a = scope.Get1D("a").CreateTensor(context);
-        var b = scope.Get1D("b").CreateTensor(context);
-        var c = scope.Get2D("c").CreateTensor(context);
-        var ac_true = scope.Get1D("ac").CreateTensor(context);
-        var cb_true = scope.Get1D("cb").CreateTensor(context);
+        var a = scope.Get1D("a").AsNode(context);
+        var b = scope.Get1D("b").AsNode(context);
+        var c = scope.Get2D("c").AsNode(context);
+        var ac_true = scope.Get1D("ac").AsTensor(context);
+        var cb_true = scope.Get1D("cb").AsTensor(context);
 
         var ac = a * c;
         var cb = c * b;
@@ -207,9 +207,9 @@ class MatmulComparisonTests
 
         using var context = new CuContext();
 
-        var x = scope.GetTensor("x").CreateTensor(context);
-        var y = scope.GetTensor("y").CreateTensor(context);
-        var d = scope.GetTensor("d").CreateTensor(context);
+        var x = scope.GetTensor("x").AsNode(context);
+        var y = scope.GetTensor("y").AsNode(context);
+        var d = scope.GetTensor("d").AsTensor(context);
 
         var z = x * y;
 

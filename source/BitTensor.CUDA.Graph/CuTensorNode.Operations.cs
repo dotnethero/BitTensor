@@ -220,26 +220,22 @@ public partial class CuTensorNode
     {
         if (shape.ArraySize != Size)
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
-
+        
         return new(
             Tensor.Reshape(shape), // no allocation
             children: [this],
             forward: () => {},
             backward: (grad, _) => [grad.Reshape(Shape)]);
     }
-    
-    public CuTensorNode PadLeft() => Reshape([1, ..Shape]);
-
-    public CuTensorNode PadRight() => Reshape([..Shape, 1]);
 
     private static CuTensorNode PadLeft(CuTensorNode node) =>
         node.IsVector
-            ? node.PadLeft()
+            ? node.Reshape([1, ..node.Shape])
             : node;
     
     private static CuTensorNode PadRight(CuTensorNode node) =>
         node.IsVector
-            ? node.PadRight()
+            ? node.Reshape([..node.Shape, 1])
             : node;
 
     private static CuContext GetContext(CuTensorNode a) => a.Context;

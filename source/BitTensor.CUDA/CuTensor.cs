@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor : AbstractTensor, IDeviceArray
+public unsafe class CuTensor : AbstractTensor, IDeviceArray
 {
     internal readonly CuContext Context;
     internal readonly CuArray<float> Array;
@@ -31,6 +31,7 @@ public unsafe partial class CuTensor : AbstractTensor, IDeviceArray
     }
     
     public void CopyToHost(Span<float> destination) => Array.CopyToHost(destination);
+
     public void CopyToDevice(ReadOnlySpan<float> source) => Array.CopyToDevice(source);
 
     public override string ToString() => $"Tensor #{Id}, shape={Shape}";

@@ -52,11 +52,11 @@ class AddGradientTests
              """);
 
         using var context = new CuContext();
-        var x = scope.GetTensor("x").CreateNode(context);
-        var y = scope.GetTensor("y").CreateNode(context);
+        var x = scope.GetTensor("x").AsNode(context);
+        var y = scope.GetTensor("y").AsNode(context);
         
-        var xy_dx_true = scope.GetTensor("xy_dx").CreateTensor(context);
-        var xy_dy_true = scope.GetTensor("xy_dy").CreateTensor(context);
+        var xy_dx_true = scope.GetTensor("xy_dx").AsTensor(context);
+        var xy_dy_true = scope.GetTensor("xy_dy").AsTensor(context);
         
         var xy_grads = CuTensorNode.Sum(x + y).GetGradients();
         var xy_dx = xy_grads[x];

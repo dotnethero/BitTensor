@@ -61,7 +61,7 @@ static class PythonModuleExtensions
         return new([array.Length, array[0].Length, array[0][0].Length], array.Collect3D());
     }
 
-    public static CuTensor CreateTensor(this TensorData tensor, CuContext context) => context.Allocate(tensor.Shape, tensor.Values);
+    public static CuTensor AsTensor(this TensorData tensor, CuContext context) => context.Allocate(tensor.Shape, tensor.Values);
 
-    public static CuTensorNode CreateNode(this TensorData tensor, CuContext context) => CreateTensor(tensor, context).CreateNode();
+    public static CuTensorNode AsNode(this TensorData tensor, CuContext context) => AsTensor(tensor, context).CreateNode();
 }

@@ -1,5 +1,6 @@
 ﻿using BitTensor.Core.Tests;
 using BitTensor.CUDA;
+using BitTensor.CUDA.Graph;
 using NUnit.Framework;
 using Python.Runtime;
 
@@ -39,10 +40,10 @@ class SumComparisonTests
 
         using var context = new CuContext();
 
-        var x = scope.GetTensor("x").CreateTensor(context);
-        var d = scope.GetTensor("d").CreateTensor(context);
+        var x = scope.GetTensor("x").AsNode(context);
+        var d = scope.GetTensor("d").AsTensor(context);
 
-        var z = CuTensor.Sum(x, axis: ax.ToHashSet());
+        var z = CuTensorNode.Sum(x, axis: ax.ToHashSet());
         
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);

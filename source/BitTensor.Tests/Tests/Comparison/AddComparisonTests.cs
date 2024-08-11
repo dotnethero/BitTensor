@@ -47,9 +47,9 @@ class AddComparisonTests
 
         using var context = new CuContext();
 
-        var x = scope.GetTensor("x").CreateTensor(context);
-        var y = scope.GetTensor("y").CreateTensor(context);
-        var d = scope.GetTensor("d").CreateTensor(context);
+        var x = scope.GetTensor("x").AsNode(context);
+        var y = scope.GetTensor("y").AsNode(context);
+        var d = scope.GetTensor("d").AsNode(context);
 
         var z1 = x + y;
         var z2 = y + x;
