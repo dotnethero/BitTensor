@@ -2,7 +2,6 @@
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Models;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor;
 
@@ -22,8 +21,8 @@ internal class Program
 
         using var context = new CuContext();
 
-        var x = context.cuRAND.Normal([batchSize, inputCount]).AsNode();
-        var d = context.cuRAND.Normal([batchSize, outputCount]).AsNode();
+        var x = context.Random.Normal([batchSize, inputCount]).AsNode();
+        var d = context.Random.Normal([batchSize, outputCount]).AsNode();
 
         var model = Model.Sequential(
         [

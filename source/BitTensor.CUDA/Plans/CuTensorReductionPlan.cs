@@ -5,21 +5,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorProductPlan(
-    CuTensorContext context,
-    AbstractTensor input,
-    AbstractTensor output,
-    HashSet<int> axis) : 
-    CuTensorReductionPlan(context, input, output, axis, cutensorOperator_t.CUTENSOR_OP_MUL);
-
-internal sealed class CuTensorSumPlan(
-    CuTensorContext context,
-    AbstractTensor input,
-    AbstractTensor output,
-    HashSet<int> axis) : 
-    CuTensorReductionPlan(context, input, output, axis, cutensorOperator_t.CUTENSOR_OP_ADD);
-
-internal abstract class CuTensorReductionPlan : IDisposable
+public sealed class CuTensorReductionPlan : IDisposable
 {
     internal readonly CuTensorDescriptor InputDescriptor;
     internal readonly CuTensorDescriptor OutputDescriptor;
@@ -28,7 +14,7 @@ internal abstract class CuTensorReductionPlan : IDisposable
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    protected CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<int> axis, cutensorOperator_t op)
+    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<int> axis, cutensorOperator_t op)
     {
         var modes = input.Shape.GetReductionModes(axis);
 

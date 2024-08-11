@@ -4,7 +4,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorMatrixProductPlan : IDisposable
+public sealed class CuTensorMatMulPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -14,9 +14,19 @@ internal sealed class CuTensorMatrixProductPlan : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    public CuTensorMatrixProductPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
+    internal CuTensorMatMulPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
     {
-        var (leftModes, rightModes, resultModes) = Modes.GetMultiplicationModes(left.Shape, right.Shape, result.Shape);
+        if (left.Shape.Dimensions < 2 ||
+            right.Shape.Dimensions < 2)
+            throw new InvalidOperationException("Can't execute matrix multiplication on vectors and scalars - use dimension padding");
+
+        var leftModes = left.Shape.GetOrdinaryModes();
+        var rightModes = right.Shape.GetOrdinaryModes();
+        var resultModes = result.Shape.GetOrdinaryModes();
+
+        // contraction
+        leftModes[^1] = -1;
+        rightModes[^2] = -1;
 
         LeftDescriptor = context.CreateDescriptor(left, leftModes);
         RightDescriptor = context.CreateDescriptor(right, rightModes);

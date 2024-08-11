@@ -15,8 +15,8 @@ public class LinearLayer : ILayer
     public LinearLayer(CuContext context, int inputs, int outputs, Func<CuTensorNode, CuTensorNode> activation)
     {
         Activation = activation;
-        Bias = new CuTensorWeights(context.cuRAND.Normal([outputs]));
-        Weights = new CuTensorWeights(context.cuRAND.Normal([inputs, outputs]));
+        Bias = new CuTensorWeights(context.Random.Normal([outputs]));
+        Weights = new CuTensorWeights(context.Random.Normal([inputs, outputs]));
     }
 
     public CuTensorNode Compute(CuTensorNode input)

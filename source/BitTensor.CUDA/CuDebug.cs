@@ -2,8 +2,6 @@
 using System.Text;
 using BitTensor.Abstractions;
 
-[assembly: InternalsVisibleTo("BitTensor.CUDA.Graph")]
-
 namespace BitTensor.CUDA;
 
 public static class CuDebug

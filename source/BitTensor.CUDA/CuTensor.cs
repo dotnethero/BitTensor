@@ -4,8 +4,8 @@ namespace BitTensor.CUDA;
 
 public unsafe class CuTensor : AbstractTensor, IDeviceArray
 {
-    internal readonly CuContext Context;
-    internal readonly CuArray<float> Array;
+    public readonly CuContext Context;
+    public readonly CuArray<float> Array;
 
     internal float* Pointer => Array.Pointer;
 

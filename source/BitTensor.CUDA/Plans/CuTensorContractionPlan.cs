@@ -4,7 +4,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorContractionPlan : IDisposable
+public sealed class CuTensorContractionPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -14,7 +14,7 @@ internal sealed class CuTensorContractionPlan : IDisposable
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
     
-    public CuTensorContractionPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
+    internal CuTensorContractionPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
     {
         LeftDescriptor = context.CreateDescriptor(left);
         RightDescriptor = context.CreateDescriptor(right);

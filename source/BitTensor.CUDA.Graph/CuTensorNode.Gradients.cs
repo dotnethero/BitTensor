@@ -1,6 +1,4 @@
 ﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Plans;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -33,9 +31,8 @@ public partial class CuTensorNode
                 Shapes.EnsureAreEqual(child.Shape, grad.Shape);
                 if (grads.ContainsKey(child))
                 {
-                    using var context = new CuTensorContext();
-                    using var plan = new CuTensorOffsetPlan(context, grad, grad);
-                    plan.Execute(grad.Tensor, grads[child].Tensor, alpha: 1);
+                    using var plan = Context.CreateAggregationPlan(grad);
+                    plan.Execute(grad.Tensor, grads[child].Tensor);
                 }
                 else
                 {

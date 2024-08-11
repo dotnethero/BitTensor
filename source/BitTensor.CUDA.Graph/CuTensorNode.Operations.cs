@@ -28,7 +28,7 @@ public partial class CuTensorNode
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate(shape);
-        var plan = new CuTensorAddPlan(context.cuTENSOR, a, b, output);
+        var plan = context.CreateAddPlan(a, b, output);
         return new(
             output,
             children: [a, b],
@@ -50,7 +50,7 @@ public partial class CuTensorNode
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate(shape);
-        var plan = new CuTensorMultiplyPlan(context.cuTENSOR, a, b, output);
+        var plan = context.CreateMultiplyPlan(a, b, output);
         return new(
             output,
             children: [a, b],
@@ -74,7 +74,7 @@ public partial class CuTensorNode
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate([]);
-        var plan = new CuTensorContractionPlan(context.cuTENSOR, a, b, output);
+        var plan = context.CreateContractionPlan(a, b, output);
         return new(
             output,
             children: [a, b],
@@ -92,7 +92,7 @@ public partial class CuTensorNode
         var modB = PadRight(b);
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
-        var plan = new CuTensorMatrixProductPlan(context.cuTENSOR, modA, modB, modOutput);
+        var plan = context.CreateMatMulPlan(modA, modB, modOutput);
 
         return new(
             output,
@@ -116,7 +116,7 @@ public partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate([]);
-        var plan = new CuTensorSumPlan(context.cuTENSOR, a, output, []);
+        var plan = context.CreateSumPlan(a, output);
         return new(
             output,
             children: [a],
@@ -129,7 +129,7 @@ public partial class CuTensorNode
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis);
         var output = context.Allocate(shape);
-        var plan = new CuTensorSumPlan(context.cuTENSOR, a, output, axis);
+        var plan = context.CreateSumPlan(a, output, axis);
         return new(
             output,
             children: [a],
@@ -145,7 +145,7 @@ public partial class CuTensorNode
         var context = GetContext(a);
         var output = context.Allocate(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
-        var plan = new CuTensorOffsetPlan(context.cuTENSOR, a, output);
+        var plan = context.CreateBroadcastPlan(a, output, axis);
         return new(
             output,
             children: [a],
@@ -158,7 +158,7 @@ public partial class CuTensorNode
         var context = GetContext(a);
         var output = context.Allocate(a.Shape);
         var one = context.AllocateOne().AsNode();
-        var plan = new CuTensorUnaryPlusPlan(context.cuTENSOR, a, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
+        var plan = context.CreateUnaryPlan(a, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
         return new(
             output,
             children: [a],
@@ -171,7 +171,7 @@ public partial class CuTensorNode
         var context = GetContext(a);
         var output = context.Allocate(a.Shape);
         var one = context.AllocateOne().AsNode();
-        var plan = new CuTensorUnaryPlusPlan(context.cuTENSOR, a, output, cutensorOperator_t.CUTENSOR_OP_TANH);
+        var plan = context.CreateUnaryPlan(a, output, cutensorOperator_t.CUTENSOR_OP_TANH);
         return new(
             output,
             children: [a],
@@ -183,7 +183,7 @@ public partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate(a.Shape);
-        var plan = new CuTensorMultiplyPlan(context.cuTENSOR, a, a, output);
+        var plan = context.CreateMultiplyPlan(a, a, output);
         return new(
             output,
             children: [a],
@@ -208,7 +208,7 @@ public partial class CuTensorNode
         var shape = a.Shape.Transpose(axis);
         var context = GetContext(a);
         var output = context.Allocate(shape);
-        var plan = new CuTensorPermutationPlan(context.cuTENSOR, a, output, axis);
+        var plan = context.CreatePermutationPlan(a, output, axis);
         return new(
             output,
             children: [a],

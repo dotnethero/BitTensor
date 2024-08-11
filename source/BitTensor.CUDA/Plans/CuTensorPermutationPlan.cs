@@ -4,7 +4,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorPermutationPlan : IDisposable
+public sealed class CuTensorPermutationPlan : IDisposable
 {
     internal readonly CuTensorDescriptor InputDescriptor;
     internal readonly CuTensorDescriptor OutputDescriptor;
@@ -12,7 +12,7 @@ internal sealed class CuTensorPermutationPlan : IDisposable
     internal readonly CuTensorPermutation Permutation;
     internal readonly CuTensorPlan PermutationPlan;
 
-    public CuTensorPermutationPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, int[] axis)
+    internal CuTensorPermutationPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, ReadOnlySpan<int> axis)
     {
         var inputModes = new int[input.Dimensions];
         var outputModes = new int[output.Dimensions];

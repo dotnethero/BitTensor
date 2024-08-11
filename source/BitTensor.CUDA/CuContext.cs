@@ -5,10 +5,12 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA;
 
-public class CuContext : IDisposable
+public partial class CuContext : IDisposable
 {
-    public readonly CuRandContext cuRAND;
-    public readonly CuTensorContext cuTENSOR;
+    internal readonly CuRandContext cuRAND;
+    internal readonly CuTensorContext cuTENSOR;
+
+    public CuRandContext Random => cuRAND;
 
     public CuContext()
     {

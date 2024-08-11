@@ -7,26 +7,7 @@ namespace BitTensor.CUDA.Plans;
 
 using Ops = cutensorOperator_t;
 
-public sealed class CuTensorUnaryPlusPlan(
-    CuTensorContext context,
-    AbstractTensor left,
-    AbstractTensor right,
-    Ops operation) : 
-    CuTensorBinaryPlan(context, left, right, operation, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
-
-public sealed class CuTensorOffsetPlan(
-    CuTensorContext context,
-    AbstractTensor left,
-    AbstractTensor right) : 
-    CuTensorBinaryPlan(context, left, right, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
-
-public sealed class CuTensorScalePlan(
-    CuTensorContext context,
-    AbstractTensor left,
-    AbstractTensor right) : 
-    CuTensorBinaryPlan(context, left, right, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_MUL);
-
-public abstract class CuTensorBinaryPlan : IDisposable
+public sealed class CuTensorBinaryPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
@@ -34,7 +15,7 @@ public abstract class CuTensorBinaryPlan : IDisposable
     internal readonly CuTensorBinaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
 
-    protected CuTensorBinaryPlan(CuTensorContext context,
+    internal CuTensorBinaryPlan(CuTensorContext context,
         AbstractTensor a,
         AbstractTensor b,
         Ops opA,
