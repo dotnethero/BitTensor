@@ -15,15 +15,15 @@ public static class CuTensorNode
         return new(
             output,
             children: [a, b],
-            forward: () => plan.Execute(a, b, output, beta),
+            forward: () => plan.Execute(a, b, output, beta: beta),
             backward: (grad, _) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, grad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, grad.Shape);
                 return
                 [
-                    Sum(grad, axis: adims, scale: beta).Reshape(a.Shape),
-                    Sum(grad, axis: bdims, scale: 1f).Reshape(b.Shape)
+                    Sum(grad, axis: adims, scale: 1f).Reshape(a.Shape),
+                    Sum(grad, axis: bdims, scale: beta).Reshape(b.Shape)
                 ];
             });
     }

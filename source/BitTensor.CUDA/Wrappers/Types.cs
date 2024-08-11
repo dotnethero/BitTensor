@@ -21,7 +21,7 @@ internal static unsafe class Types
         where T : INumberBase<T> =>
         T.Zero switch
         {
-            Half => CUTENSOR_COMPUTE_DESC_16F,
+            Half => CUTENSOR_COMPUTE_DESC_32F,
             float => CUTENSOR_COMPUTE_DESC_32F,
             double => CUTENSOR_COMPUTE_DESC_64F,
             _ => throw new NotSupportedException($"Unsupported operation element type: {typeof(T).FullName}")

@@ -22,9 +22,9 @@ public static unsafe partial class cuTENSOR
     {
         var lib = NativeLibrary.Load(__DllName);
 
-        CUTENSOR_COMPUTE_DESC_16F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, "CUTENSOR_COMPUTE_DESC_16F");
-        CUTENSOR_COMPUTE_DESC_32F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, "CUTENSOR_COMPUTE_DESC_32F");
-        CUTENSOR_COMPUTE_DESC_64F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, "CUTENSOR_COMPUTE_DESC_64F");
+        CUTENSOR_COMPUTE_DESC_16F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, nameof(CUTENSOR_COMPUTE_DESC_16F));
+        CUTENSOR_COMPUTE_DESC_32F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, nameof(CUTENSOR_COMPUTE_DESC_32F));
+        CUTENSOR_COMPUTE_DESC_64F = (cutensorComputeDescriptor*) Helpers.ReadConstant(lib, nameof(CUTENSOR_COMPUTE_DESC_64F));
 
         NativeLibrary.Free(lib);
     }
