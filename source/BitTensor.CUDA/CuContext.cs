@@ -28,8 +28,6 @@ public class CuContext : IDisposable
         return new CuTensor(this, array, shape);
     }
 
-    public CuTensor AllocateZero() => Allocate([], [0]);
-
     public CuTensor AllocateOne() => Allocate([], [1]);
 
     public void Dispose()

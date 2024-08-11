@@ -1,7 +1,6 @@
 ﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Wrappers;
 
-namespace BitTensor.CUDA;
+namespace BitTensor.CUDA.Wrappers;
 
 public class CuRandContext(CuContext context)
 {
