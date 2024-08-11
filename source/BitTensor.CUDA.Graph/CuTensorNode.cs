@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode : AbstractTensor, IDeviceArray
+public partial class CuTensorNode : AbstractTensor, IDeviceArray<float>
 {
     public delegate void ForwardFunction();
     public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad, CuTensorNode self);
@@ -15,6 +15,11 @@ public partial class CuTensorNode : AbstractTensor, IDeviceArray
     public readonly CuTensorNode[] Children;
     public readonly List<CuTensorNode> Dependents;
     public bool Outdated;
+    
+    public unsafe float* Pointer => Tensor.Pointer;
+
+    int IDeviceArray<float>.ElementSize => Tensor.Array.ElementSize;
+    int IDeviceArray<float>.Size => Tensor.Array.Size;
 
     public CuTensorNode(CuTensor tensor) : base(tensor.Shape)
     {
@@ -68,10 +73,7 @@ public partial class CuTensorNode : AbstractTensor, IDeviceArray
         Outdated = true;
     }
 
-    public float[] CopyToHost() => Tensor.CopyToHost();
-
     public void CopyToHost(Span<float> destination) => Tensor.CopyToHost(destination);
-
     public void CopyToDevice(ReadOnlySpan<float> source) => Tensor.CopyToDevice(source);
 
     public override int GetHashCode() => unchecked((int)Id);

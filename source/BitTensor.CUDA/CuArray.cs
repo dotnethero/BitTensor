@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA;
 
@@ -34,11 +35,11 @@ public static unsafe class CuArray
     }
 }
 
-public unsafe class CuArray<T> : IDisposable where T : unmanaged
+public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
 {
-    internal readonly int ElementSize;
-    internal readonly int Size;
-    internal readonly T* Pointer;
+    public int ElementSize { get; }
+    public int Size { get; }
+    public T* Pointer { get; }
 
     internal CuArray(T* pointer, int size)
     {
@@ -46,7 +47,7 @@ public unsafe class CuArray<T> : IDisposable where T : unmanaged
         Size = size;
         Pointer = pointer;
     }
-    
+
     public void CopyToHost(Span<T> destination)
     {
         if (destination.Length != Size)

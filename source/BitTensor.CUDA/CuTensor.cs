@@ -2,12 +2,15 @@
 
 namespace BitTensor.CUDA;
 
-public unsafe class CuTensor : AbstractTensor, IDeviceArray
+public unsafe class CuTensor : AbstractTensor, IDeviceArray<float>
 {
     public readonly CuContext Context;
     public readonly CuArray<float> Array;
 
-    internal float* Pointer => Array.Pointer;
+    public float* Pointer => Array.Pointer;
+
+    int IDeviceArray<float>.ElementSize => Array.ElementSize;
+    int IDeviceArray<float>.Size => Array.Size;
 
     public CuTensor(CuContext context, CuArray<float> array, Shape shape) : base(shape)
     {
@@ -22,16 +25,8 @@ public unsafe class CuTensor : AbstractTensor, IDeviceArray
 
         return new CuTensor(Context, Array, shape);
     }
-
-    public float[] CopyToHost()
-    {
-        var destination = new float[Size];
-        CopyToHost(destination);
-        return destination;
-    }
     
     public void CopyToHost(Span<float> destination) => Array.CopyToHost(destination);
-
     public void CopyToDevice(ReadOnlySpan<float> source) => Array.CopyToDevice(source);
 
     public override string ToString() => $"Tensor #{Id}, shape={Shape}";

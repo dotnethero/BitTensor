@@ -6,13 +6,13 @@ namespace BitTensor.CUDA;
 
 public static class CuDebug
 {
-    public static void WriteLine<T>(T tensor, [CallerArgumentExpression("tensor")] string tensorName = "") where T : AbstractTensor, IDeviceArray
+    public static void WriteLine<T>(T tensor, [CallerArgumentExpression("tensor")] string tensorName = "") where T : AbstractTensor, IDeviceArray<float>
     {
         var text = View(tensor);
         Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
     
-    public static string View<T>(T tensor, int dimensionsPerLine = 1) where T : AbstractTensor, IDeviceArray
+    public static string View<T>(T tensor, int dimensionsPerLine = 1) where T : AbstractTensor, IDeviceArray<float>
     {
         var values = tensor.CopyToHost();
         var shape = tensor.Shape;
