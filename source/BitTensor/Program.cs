@@ -3,6 +3,9 @@ using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Kernels;
 using BitTensor.CUDA.Models;
+using ILGPU;
+using ILGPU.Runtime;
+using Half = System.Half;
 
 namespace BitTensor;
 
@@ -49,8 +52,11 @@ internal class Program
         using var context = CuContext.CreateDefault();
 
         var a = context.Allocate<float>([100]);
-        
-        context.Accelerator.Set(a.Array.Buffer.View, 42);
+        var setKernel = context.Accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<float>, float>(CuKernels.Set);
+        var sigmoidKernel = context.Accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<float>>(CuKernels.Sigmoid);
+
+        setKernel(a.Size, a.Array.Buffer.View, .8f);
+        sigmoidKernel(a.Size, a.Array.Buffer.View);
 
         CuDebug.WriteLine(a);
     }

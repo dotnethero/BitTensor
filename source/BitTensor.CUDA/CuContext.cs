@@ -26,7 +26,7 @@ public partial class CuContext : IDisposable
 
     public static CuContext CreateDefault()
     {
-        var ctx = Context.CreateDefault();
+        var ctx = Context.Create(c => c.Cuda().EnableAlgorithms());
         var acc = ctx.CreateCudaAccelerator(0);
         return new CuContext(ctx, acc);
     }
