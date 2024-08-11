@@ -41,13 +41,6 @@ public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
     public int ElementSize { get; }
     public T* Pointer { get; }
 
-    internal CuArray(T* pointer, int size)
-    {
-        Size = size;
-        ElementSize = sizeof(T);
-        Pointer = pointer;
-    }
-
     public CuArray(MemoryBuffer1D<T, Stride1D.Dense> buffer)
     {
         Buffer = buffer;

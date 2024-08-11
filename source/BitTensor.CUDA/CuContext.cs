@@ -21,6 +21,7 @@ public partial class CuContext : IDisposable
     private readonly CuRandContext cuRAND;
     private readonly CuTensorContext cuTENSOR;
 
+    public CudaAccelerator Accelerator => cuAccelerator;
     public CuRandContext Random => cuRAND;
 
     public static CuContext CreateDefault()

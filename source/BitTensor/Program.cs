@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Kernels;
 using BitTensor.CUDA.Models;
 
 namespace BitTensor;
@@ -9,7 +10,7 @@ internal class Program
 {
     public static void Main()
     {
-        Test_linear_module();
+        Test_kernel();
     }
 
     private static void Test_linear_module()
@@ -41,6 +42,17 @@ internal class Program
         var diff = CuTensorNode.Sum(output - d, [1]);
         diff.EnsureHasUpdatedValues();
         CuDebug.WriteLine(diff.Tensor);
+    }
+
+    private static void Test_kernel()
+    {
+        using var context = CuContext.CreateDefault();
+
+        var a = context.Allocate<float>([100]);
+        
+        context.Accelerator.Set(a.Array.Buffer.View, 42);
+
+        CuDebug.WriteLine(a);
     }
 
     private static void Test_half()
