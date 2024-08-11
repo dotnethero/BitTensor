@@ -9,7 +9,6 @@ public sealed class CuTensorMatMulPlan : IDisposable
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
     internal readonly CuTensorDescriptor ResultDescriptor;
-
     internal readonly CuTensorContraction Contraction;
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;

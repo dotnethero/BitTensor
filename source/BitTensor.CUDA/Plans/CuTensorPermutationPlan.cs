@@ -8,7 +8,6 @@ public sealed class CuTensorPermutationPlan : IDisposable
 {
     internal readonly CuTensorDescriptor InputDescriptor;
     internal readonly CuTensorDescriptor OutputDescriptor;
-    
     internal readonly CuTensorPermutation Permutation;
     internal readonly CuTensorPlan PermutationPlan;
 

@@ -9,7 +9,6 @@ public sealed class CuTensorReductionPlan : IDisposable
 {
     internal readonly CuTensorDescriptor InputDescriptor;
     internal readonly CuTensorDescriptor OutputDescriptor;
-    
     internal readonly CuTensorReduction Reduction;
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;

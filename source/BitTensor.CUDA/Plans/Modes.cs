@@ -26,25 +26,7 @@ internal static class Modes
     {
         return shape
             .GetOrdinaryModes()
-            .Where((s, i) => !axis.Contains(i))
+            .Where((_, i) => !axis.Contains(i))
             .ToArray();
-    }
-
-    public static (int[] leftModes, int[] rightModes, int[] resultModes) GetMultiplicationModes(Shape left, Shape right, Shape result)
-    {
-        if (left.Dimensions < 2 ||
-            right.Dimensions < 2)
-            throw new InvalidOperationException("Can't execute matrix multiplication on vectors and scalars - use dimension padding");
-
-        var leftModes = left.GetOrdinaryModes();
-        var rightModes = right.GetOrdinaryModes();
-        var resultModes = result.GetOrdinaryModes();
-
-        var contractionMode = Math.Max(left.Dimensions, right.Dimensions) + 1;
-
-        leftModes[^1] = contractionMode;
-        rightModes[^2] = contractionMode;
-
-        return (leftModes, rightModes, resultModes);
     }
 }

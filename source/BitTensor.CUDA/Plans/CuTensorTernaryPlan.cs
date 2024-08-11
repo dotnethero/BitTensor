@@ -10,7 +10,6 @@ public sealed class CuTensorTernaryPlan : IDisposable
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
     internal readonly CuTensorDescriptor ResultDescriptor;
-
     internal readonly CuTensorTernaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
 

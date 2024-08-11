@@ -1,6 +1,5 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
-using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -145,7 +144,7 @@ public partial class CuTensorNode
         var context = GetContext(a);
         var output = context.Allocate(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
-        var plan = context.CreateBroadcastPlan(a, output, axis);
+        var plan = context.CreateBroadcastPlan(a, output);
         return new(
             output,
             children: [a],

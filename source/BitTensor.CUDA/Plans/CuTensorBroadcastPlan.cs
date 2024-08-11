@@ -7,20 +7,17 @@ namespace BitTensor.CUDA.Plans;
 
 using Ops = cutensorOperator_t;
 
-public sealed class CuTensorBinaryPlan : IDisposable
+public sealed class CuTensorBroadcastPlan : IDisposable
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
     internal readonly CuTensorBinaryOperation Operation;
     internal readonly CuTensorPlan OperationPlan;
 
-    internal CuTensorBinaryPlan(
+    internal CuTensorBroadcastPlan(
         CuTensorContext context,
         AbstractTensor a,
-        AbstractTensor b,
-        Ops opA,
-        Ops opB,
-        Ops opAB)
+        AbstractTensor b)
     {
         LeftDescriptor = context.CreateDescriptor(a);
         RightDescriptor = context.CreateDescriptor(b);
@@ -30,9 +27,9 @@ public sealed class CuTensorBinaryPlan : IDisposable
             LeftDescriptor,
             RightDescriptor,
             RightDescriptor,
-            opA,
-            opB,
-            opAB);
+            Ops.CUTENSOR_OP_IDENTITY,
+            Ops.CUTENSOR_OP_IDENTITY,
+            Ops.CUTENSOR_OP_ADD);
 
         OperationPlan = Operation.CreatePlan();
     }
