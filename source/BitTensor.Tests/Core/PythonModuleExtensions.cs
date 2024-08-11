@@ -63,5 +63,5 @@ static class PythonModuleExtensions
 
     public static CuTensor AsTensor(this TensorData tensor, CuContext context) => context.Allocate(tensor.Shape, tensor.Values);
 
-    public static CuTensorNode AsNode(this TensorData tensor, CuContext context) => AsTensor(tensor, context).CreateNode();
+    public static CuTensorNode AsNode(this TensorData tensor, CuContext context) => AsTensor(tensor, context).AsNode();
 }

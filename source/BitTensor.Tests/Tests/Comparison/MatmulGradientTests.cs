@@ -48,8 +48,8 @@ class MatmulGradientTests
         var xg = grads[x];
         var yg = grads[y];
 
-        CuGraphDebug.WriteLine(xg);
-        CuGraphDebug.WriteLine(yg);
+        CuDebug.WriteLine(xg);
+        CuDebug.WriteLine(yg);
 
         TensorAsserts.ShapesAreEqual(xg_true, xg);
         TensorAsserts.ValuesAreEqual(yg_true, yg);
@@ -288,9 +288,9 @@ class MatmulGradientTests
         var xy_dx = xy_grads[x];
         var xy_dy = xy_grads[y];
 
-        CuGraphDebug.WriteLine(x);
-        CuGraphDebug.WriteLine(y);
-        CuGraphDebug.WriteLine(z);
+        CuDebug.WriteLine(x);
+        CuDebug.WriteLine(y);
+        CuDebug.WriteLine(z);
         
         Assert.Multiple(() =>
         {

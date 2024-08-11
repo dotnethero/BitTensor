@@ -22,8 +22,8 @@ internal class Program
 
         using var context = new CuContext();
 
-        var x = context.cuRAND.Normal([batchSize, inputCount]).CreateNode();
-        var d = context.cuRAND.Normal([batchSize, outputCount]).CreateNode();
+        var x = context.cuRAND.Normal([batchSize, inputCount]).AsNode();
+        var d = context.cuRAND.Normal([batchSize, outputCount]).AsNode();
 
         var model = Model.Sequential(
         [
@@ -40,6 +40,7 @@ internal class Program
         // evaluate
         var output = model.Compute(x);
         var diff = CuTensorNode.Sum(output - d, [1]);
-        CuGraphDebug.WriteLine(diff);
+        diff.EnsureHasUpdatedValues();
+        CuDebug.WriteLine(diff);
     }
 }

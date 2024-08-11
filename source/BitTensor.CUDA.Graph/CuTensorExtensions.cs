@@ -6,5 +6,5 @@ namespace BitTensor.CUDA;
 
 public static class CuTensorExtensions
 {
-    public static CuTensorNode CreateNode(this CuTensor tensor) => new(tensor);
+    public static CuTensorNode AsNode(this CuTensor tensor) => new(tensor);
 }

@@ -157,7 +157,7 @@ public partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate(a.Shape);
-        var one = context.AllocateOne().CreateNode();
+        var one = context.AllocateOne().AsNode();
         var plan = new CuTensorUnaryPlusPlan(context.cuTENSOR, a, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
         return new(
             output,
@@ -170,7 +170,7 @@ public partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate(a.Shape);
-        var one = context.AllocateOne().CreateNode();
+        var one = context.AllocateOne().AsNode();
         var plan = new CuTensorUnaryPlusPlan(context.cuTENSOR, a, output, cutensorOperator_t.CUTENSOR_OP_TANH);
         return new(
             output,

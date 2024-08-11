@@ -1,4 +1,6 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Plans;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -10,10 +12,10 @@ public partial class CuTensorNode
 
         var nodes = new Stack<CuTensorNode>(16);
         var grads = new CuTensorGradients();
-        var one = Context.Allocate([], [1]);
+        var one = Context.AllocateOne().AsNode();
 
         nodes.Push(this);
-        grads.Push(this, one.CreateNode());
+        grads.Push(this, one);
 
         while (nodes.Count > 0)
         {
@@ -31,7 +33,9 @@ public partial class CuTensorNode
                 Shapes.EnsureAreEqual(child.Shape, grad.Shape);
                 if (grads.ContainsKey(child))
                 {
-                    CuBackend.AddInplace(grad.Tensor, grads[child].Tensor);
+                    using var context = new CuTensorContext();
+                    using var plan = new CuTensorOffsetPlan(context, grad, grad);
+                    plan.Execute(grad.Tensor, grads[child].Tensor, alpha: 1);
                 }
                 else
                 {

@@ -28,10 +28,11 @@ public abstract class Model : ILayer
         {
             compilation.Input.Invalidate();
             compilation.Desired.Invalidate();
+            compilation.Loss.EnsureHasUpdatedValues();
            
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
-                var loss = CuGraphDebug.View(compilation.Loss);
+                var loss = CuDebug.View(compilation.Loss);
                 Console.WriteLine($"Loss={loss}");
             }
 
