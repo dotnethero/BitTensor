@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -59,6 +60,7 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
             child.EnsureHasUpdatedValues();
         }
 
+        cudaRT.cudaDeviceSynchronize();
         Forward?.Invoke();
         Outdated = false;
     }

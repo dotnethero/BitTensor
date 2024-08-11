@@ -13,7 +13,7 @@ internal class Program
 {
     public static void Main()
     {
-        Test_kernel();
+        Test_linear_module();
     }
 
     private static void Test_linear_module()
@@ -51,14 +51,22 @@ internal class Program
     {
         using var context = CuContext.CreateDefault();
 
-        var a = context.Allocate<float>([100]);
+        var a = context.Allocate<float>([2_000_000_000]).AsNode();
+        var b = CuTensorNode.Sigmoid(a);
+
         var setKernel = context.Accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<float>, float>(CuKernels.Set);
-        var sigmoidKernel = context.Accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<float>>(CuKernels.Sigmoid);
+        setKernel(a.Size, a.Tensor.Array.Buffer.View, .8f);
 
-        setKernel(a.Size, a.Array.Buffer.View, .8f);
-        sigmoidKernel(a.Size, a.Array.Buffer.View);
+        var sigmoidKernel = context.Accelerator.LoadAutoGroupedStreamKernel<Index1D, ArrayView<float>, ArrayView<float>>(CuKernels.Sigmoid);
+        
+        var sw2 = Stopwatch.StartNew();
+        b.EnsureHasUpdatedValues();
+        Console.WriteLine(sw2.Elapsed); // 00:00:00.500
 
-        CuDebug.WriteLine(a);
+        var sw1 = Stopwatch.StartNew();
+        sigmoidKernel(a.Size, a.Tensor.Array.Buffer.View, b.Tensor.Array.Buffer.View);
+        context.Accelerator.Synchronize();
+        Console.WriteLine(sw1.Elapsed); // 00:00:00.500
     }
 
     private static void Test_half()

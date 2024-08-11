@@ -10,8 +10,8 @@ public static class CuKernels
         a[i] = value;
     }
     
-    public static void Sigmoid(Index1D i, ArrayView<float> a)
+    public static void Sigmoid(Index1D i, ArrayView<float> a, ArrayView<float> output)
     {
-        a[i] = 1f / (1f + XMath.Exp(-a[i]));
+        output[i] = 1f / (1f + XMath.Exp(-a[i]));
     }
 }
