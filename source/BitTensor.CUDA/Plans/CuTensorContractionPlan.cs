@@ -4,12 +4,12 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorContractionPlan : IDisposable
+public sealed class CuTensorContractionPlan<T> : IDisposable where T : unmanaged
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
     internal readonly CuTensorDescriptor ResultDescriptor;
-    internal readonly CuTensorContraction Contraction;
+    internal readonly CuTensorContraction<T> Contraction;
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
     
@@ -24,7 +24,12 @@ public sealed class CuTensorContractionPlan : IDisposable
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
     }
     
-    public void Execute(CuTensor left, CuTensor right, CuTensor result, float alpha = 1f, float beta = 0f) =>
+    public void Execute(
+        IDeviceArray<T> left,
+        IDeviceArray<T> right,
+        IDeviceArray<T> result,
+        float alpha = 1f,
+        float beta = 0f) =>
         Contraction.Execute(
             ContractionPlan,
             Workspace,

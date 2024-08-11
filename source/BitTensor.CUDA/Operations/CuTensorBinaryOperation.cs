@@ -1,11 +1,12 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-internal sealed unsafe class CuTensorBinaryOperation : ICuTensorOperation
+internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation where T : unmanaged
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
@@ -37,7 +38,13 @@ internal sealed unsafe class CuTensorBinaryOperation : ICuTensorOperation
 
     public CuTensorPlan CreatePlan() => new(this);
 
-    public void Execute(CuTensorPlan plan, CuTensor a, CuTensor b, CuTensor c, float alpha = 1f, float gamma = 1f)
+    public void Execute(
+        CuTensorPlan plan,
+        IDeviceArray<T> a,
+        IDeviceArray<T> b,
+        IDeviceArray<T> c,
+        float alpha = 1f,
+        float gamma = 1f)
     {
         var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
         Status.EnsureIsSuccess(status);

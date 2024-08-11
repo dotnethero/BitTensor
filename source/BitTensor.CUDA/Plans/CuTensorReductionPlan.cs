@@ -5,11 +5,11 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorReductionPlan : IDisposable
+public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged
 {
     internal readonly CuTensorDescriptor InputDescriptor;
     internal readonly CuTensorDescriptor OutputDescriptor;
-    internal readonly CuTensorReduction Reduction;
+    internal readonly CuTensorReduction<T> Reduction;
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
@@ -20,12 +20,12 @@ public sealed class CuTensorReductionPlan : IDisposable
         InputDescriptor = context.CreateDescriptor(input);
         OutputDescriptor = context.CreateDescriptor(output, modes);
 
-        Reduction = new CuTensorReduction(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
+        Reduction = new(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
         ReductionPlan = Reduction.CreatePlan();
         Workspace = Reduction.CreateWorkspace(ReductionPlan);
     }
     
-    public void Execute(CuTensor input, CuTensor output, float alpha = 1f, float beta = 0f) =>
+    public void Execute(IDeviceArray<T> input, IDeviceArray<T> output, float alpha = 1f, float beta = 0f) =>
         Reduction.Execute(
             ReductionPlan,
             Workspace,

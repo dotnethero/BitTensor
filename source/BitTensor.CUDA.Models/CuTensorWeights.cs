@@ -5,11 +5,11 @@ namespace BitTensor.CUDA.Models;
 
 public class CuTensorWeights : CuTensorNode
 {
-    private readonly CuTensorBinaryPlan _plan;
+    private readonly CuTensorBinaryPlan<float> _plan;
 
     public CuTensorWeights(CuTensor tensor) : base(tensor)
     {
-        _plan = Context.CreateAggregationPlan(tensor);
+        _plan = Context.CreateAggregationPlan<float>(tensor);
     }
 
     public void AdjustWeights(CuTensor gradient, float lr)

@@ -1,11 +1,12 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-public unsafe class CuTensorContraction : ICuTensorOperation
+internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T : unmanaged
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
@@ -37,7 +38,15 @@ public unsafe class CuTensorContraction : ICuTensorOperation
 
     public CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
 
-    public void Execute(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
+    public void Execute(
+        CuTensorPlan plan,
+        CuTensorWorkspace ws,
+        IDeviceArray<T> a,
+        IDeviceArray<T> b,
+        IDeviceArray<T> c,
+        IDeviceArray<T> d,
+        float alpha = 1f,
+        float beta = 1f)
     {
         var status = cutensorContract(
             Context.Handle, 

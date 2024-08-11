@@ -1,4 +1,5 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Xml.Linq;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 
@@ -8,59 +9,69 @@ using Ops = cutensorOperator_t;
 
 public partial class CuContext
 {
-    public CuTensorBinaryPlan CreateUnaryPlan(
+    public CuTensorBinaryPlan<T> CreateUnaryPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        Ops unary) => 
+        Ops unary) 
+        where T : unmanaged => 
         new(cuTENSOR, a, output, unary, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
 
-    public CuTensorBinaryPlan CreateAggregationPlan(
-        AbstractTensor output) => 
+    public CuTensorBinaryPlan<T> CreateAggregationPlan<T>(
+        AbstractTensor output) 
+        where T : unmanaged => 
         new(cuTENSOR, output, output, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
 
-    public CuTensorTernaryPlan CreateAddPlan(
+    public CuTensorTernaryPlan<T> CreateAddPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
-        AbstractTensor output) => 
+        AbstractTensor output) 
+        where T : unmanaged => 
         new(cuTENSOR, a, b, output, Ops.CUTENSOR_OP_ADD, Ops.CUTENSOR_OP_ADD);
 
-    public CuTensorTernaryPlan CreateMultiplyPlan(
+    public CuTensorTernaryPlan<T> CreateMultiplyPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
-        AbstractTensor output) => 
+        AbstractTensor output) 
+        where T : unmanaged => 
         new(cuTENSOR, a, b, output, Ops.CUTENSOR_OP_MUL, Ops.CUTENSOR_OP_ADD);
     
-    public CuTensorMatMulPlan CreateMatMulPlan(
+    public CuTensorMatMulPlan<T> CreateMatMulPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
-        AbstractTensor output) => 
+        AbstractTensor output) 
+        where T : unmanaged => 
         new(cuTENSOR, a, b, output);
 
-    public CuTensorContractionPlan CreateContractionPlan(
+    public CuTensorContractionPlan<T> CreateContractionPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
-        AbstractTensor output) => 
+        AbstractTensor output)
+        where T : unmanaged => 
         new(cuTENSOR, a, b, output);
     
-    public CuTensorPermutationPlan CreatePermutationPlan(
+    public CuTensorPermutationPlan<T> CreatePermutationPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        ReadOnlySpan<int> axis) => 
+        ReadOnlySpan<int> axis) 
+        where T : unmanaged => 
         new(cuTENSOR, a, output, axis);
 
-    public CuTensorReductionPlan CreateSumPlan(
+    public CuTensorReductionPlan<T> CreateSumPlan<T>(
         AbstractTensor a,
-        AbstractTensor output) => 
+        AbstractTensor output) 
+        where T : unmanaged => 
         new(cuTENSOR, a, output, [], Ops.CUTENSOR_OP_ADD);
 
-    public CuTensorReductionPlan CreateSumPlan(
+    public CuTensorReductionPlan<T> CreateSumPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        HashSet<int> axis) => 
+        HashSet<int> axis) 
+        where T : unmanaged => 
         new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_ADD);
     
-    public CuTensorBroadcastPlan CreateBroadcastPlan(
+    public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
         AbstractTensor a,
-        AbstractTensor output) => 
+        AbstractTensor output) 
+        where T : unmanaged => 
         new(cuTENSOR, a, output);
 }

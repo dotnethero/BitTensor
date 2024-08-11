@@ -31,7 +31,7 @@ public partial class CuTensorNode
                 Shapes.EnsureAreEqual(child.Shape, grad.Shape);
                 if (grads.ContainsKey(child))
                 {
-                    using var plan = Context.CreateAggregationPlan(grad);
+                    using var plan = Context.CreateAggregationPlan<float>(grad);
                     plan.Execute(grad.Tensor, grads[child].Tensor);
                 }
                 else

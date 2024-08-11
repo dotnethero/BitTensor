@@ -3,7 +3,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Operations;
 
-public unsafe interface ICuTensorOperation : IDisposable
+internal unsafe interface ICuTensorOperation : IDisposable
 {
     internal CuTensorContext Context { get; }
     internal cutensorOperationDescriptor* Descriptor { get; }

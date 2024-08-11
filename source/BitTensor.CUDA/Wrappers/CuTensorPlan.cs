@@ -5,7 +5,7 @@ namespace BitTensor.CUDA.Wrappers;
 
 using static cuTENSOR;
 
-public unsafe class CuTensorPlan : IDisposable
+internal sealed unsafe class CuTensorPlan : IDisposable
 {
     internal readonly CuTensorContext Context;
     internal readonly ICuTensorOperation Operation;

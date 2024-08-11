@@ -3,11 +3,11 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
-internal unsafe class CublasContext : IDisposable
+public sealed unsafe class CublasContext : IDisposable
 {
     internal readonly cublasContext* Handle;
 
-    public CublasContext()
+    internal CublasContext()
     {
         cublasContext* handle;
 

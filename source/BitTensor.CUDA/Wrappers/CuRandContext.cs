@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Wrappers;
 
-public class CuRandContext(CuContext context)
+public sealed class CuRandContext(CuContext context)
 {
     public CuTensor Uniform(Shape shape)
     {

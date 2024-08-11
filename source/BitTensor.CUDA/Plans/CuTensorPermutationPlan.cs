@@ -4,11 +4,11 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorPermutationPlan : IDisposable
+public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged
 {
     internal readonly CuTensorDescriptor InputDescriptor;
     internal readonly CuTensorDescriptor OutputDescriptor;
-    internal readonly CuTensorPermutation Permutation;
+    internal readonly CuTensorPermutation<T> Permutation;
     internal readonly CuTensorPlan PermutationPlan;
 
     internal CuTensorPermutationPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, ReadOnlySpan<int> axis)
@@ -25,11 +25,11 @@ public sealed class CuTensorPermutationPlan : IDisposable
         InputDescriptor = context.CreateDescriptor(input, inputModes);
         OutputDescriptor = context.CreateDescriptor(output, outputModes);
 
-        Permutation = new CuTensorPermutation(context, InputDescriptor, OutputDescriptor);
+        Permutation = new(context, InputDescriptor, OutputDescriptor);
         PermutationPlan = Permutation.CreatePlan();
     }
     
-    public void Execute(CuTensor input, CuTensor output, float alpha = 1f) =>
+    public void Execute(IDeviceArray<T> input, IDeviceArray<T> output, float alpha = 1f) =>
         Permutation.Execute(
             PermutationPlan,
             input,

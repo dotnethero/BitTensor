@@ -4,7 +4,7 @@ namespace BitTensor.CUDA.Wrappers;
 
 using static cuRAND;
 
-public unsafe class CuRandGenerator : IDisposable
+internal sealed unsafe class CuRandGenerator : IDisposable
 {
     internal readonly curandGenerator_st* Generator;
 

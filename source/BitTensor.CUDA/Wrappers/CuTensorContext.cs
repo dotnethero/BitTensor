@@ -3,11 +3,11 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
-public unsafe class CuTensorContext : IDisposable
+public sealed unsafe class CuTensorContext : IDisposable
 {
     internal readonly cutensorHandle* Handle;
 
-    public CuTensorContext()
+    internal CuTensorContext()
     {
         cutensorHandle* handle;
 
@@ -17,10 +17,10 @@ public unsafe class CuTensorContext : IDisposable
         Handle = handle;
     }
 
-    public CuTensorDescriptor CreateDescriptor(AbstractTensor a) => 
+    internal CuTensorDescriptor CreateDescriptor(AbstractTensor a) => 
         new(this, a);
     
-    public CuTensorDescriptor CreateDescriptor(AbstractTensor a, int[] modes) => 
+    internal CuTensorDescriptor CreateDescriptor(AbstractTensor a, int[] modes) => 
         new(this, a, modes);
 
     public void Dispose()

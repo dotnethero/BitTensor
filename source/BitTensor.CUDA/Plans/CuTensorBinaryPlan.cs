@@ -7,11 +7,11 @@ namespace BitTensor.CUDA.Plans;
 
 using Ops = cutensorOperator_t;
 
-public sealed class CuTensorBinaryPlan : IDisposable
+public sealed class CuTensorBinaryPlan<T> : IDisposable where T : unmanaged
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
-    internal readonly CuTensorBinaryOperation Operation;
+    internal readonly CuTensorBinaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
 
     internal CuTensorBinaryPlan(
@@ -25,7 +25,7 @@ public sealed class CuTensorBinaryPlan : IDisposable
         LeftDescriptor = context.CreateDescriptor(a);
         RightDescriptor = context.CreateDescriptor(b);
 
-        Operation = new CuTensorBinaryOperation(
+        Operation = new(
             context,
             LeftDescriptor,
             RightDescriptor,
@@ -37,7 +37,7 @@ public sealed class CuTensorBinaryPlan : IDisposable
         OperationPlan = Operation.CreatePlan();
     }
     
-    public void Execute(CuTensor left, CuTensor right, float alpha = 1f, float gamma = 1f) =>
+    public void Execute(IDeviceArray<T> left, IDeviceArray<T> right, float alpha = 1f, float gamma = 1f) =>
         Operation.Execute(
             OperationPlan,
             left,

@@ -5,12 +5,12 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorTernaryPlan : IDisposable
+public sealed class CuTensorTernaryPlan<T> : IDisposable where T : unmanaged
 {
     internal readonly CuTensorDescriptor LeftDescriptor;
     internal readonly CuTensorDescriptor RightDescriptor;
     internal readonly CuTensorDescriptor ResultDescriptor;
-    internal readonly CuTensorTernaryOperation Operation;
+    internal readonly CuTensorTernaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
 
     internal CuTensorTernaryPlan(
@@ -25,7 +25,7 @@ public sealed class CuTensorTernaryPlan : IDisposable
         RightDescriptor = context.CreateDescriptor(right);
         ResultDescriptor = context.CreateDescriptor(result);
 
-        Operation = new CuTensorTernaryOperation(
+        Operation = new(
             context,
             LeftDescriptor,
             RightDescriptor,
@@ -37,7 +37,13 @@ public sealed class CuTensorTernaryPlan : IDisposable
         OperationPlan = Operation.CreatePlan();
     }
     
-    public void Execute(CuTensor left, CuTensor right, CuTensor result, float alpha = 1f, float beta = 1f, float gamma = 0f) =>
+    public void Execute(
+        IDeviceArray<T> left,
+        IDeviceArray<T> right,
+        IDeviceArray<T> result,
+        float alpha = 1f,
+        float beta = 1f,
+        float gamma = 0f) =>
         Operation.Execute(
             OperationPlan,
             left,
