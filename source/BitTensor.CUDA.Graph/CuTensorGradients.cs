@@ -1,21 +1,23 @@
-﻿namespace BitTensor.CUDA.Graph;
+﻿using System.Numerics;
 
-public class CuTensorGradients
+namespace BitTensor.CUDA.Graph;
+
+public class CuTensorGradients<T> where T : unmanaged, INumberBase<T>
 {
-    private readonly Dictionary<CuTensorNode, CuTensorNode> _gradients = new(16);
+    private readonly Dictionary<CuTensorNode<T>, CuTensorNode<T>> _gradients = new(16);
     
-    public CuTensorNode this[CuTensorNode node]
+    public CuTensorNode<T> this[CuTensorNode<T> node]
     {
         get => _gradients[node];
         set => _gradients[node] = value;
     }
     
-    public CuTensorNode[] By(IEnumerable<CuTensorNode> variables) =>
+    public CuTensorNode<T>[] By(IEnumerable<CuTensorNode<T>> variables) =>
         variables
             .Select(node => _gradients[node])
             .ToArray();
 
-    public bool ContainsKey(CuTensorNode node) => _gradients.ContainsKey(node);
+    public bool ContainsKey(CuTensorNode<T> node) => _gradients.ContainsKey(node);
     
-    public void Push(CuTensorNode node, CuTensorNode gradient) => _gradients[node] = gradient;
+    public void Push(CuTensorNode<T> node, CuTensorNode<T> gradient) => _gradients[node] = gradient;
 }

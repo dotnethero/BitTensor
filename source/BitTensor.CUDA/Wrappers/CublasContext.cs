@@ -18,7 +18,7 @@ public sealed unsafe class CublasContext : IDisposable
         Handle = handle;
     }
     
-    public void Axpy(CuTensor a, float alpha, CuTensor r)
+    public void Axpy(CuTensor<float> a, float alpha, CuTensor<float> r)
     {
         cudaRT.cudaMemset(r.Pointer, 0, (uint)r.Size);
 
@@ -35,7 +35,7 @@ public sealed unsafe class CublasContext : IDisposable
             throw new CublasException(status);
     }
     
-    public void Geam(CuTensor a, CuTensor b, CuTensor r, float alpha = 1f, float beta = 1f)
+    public void Geam(CuTensor<float> a, CuTensor<float> b, CuTensor<float> r, float alpha = 1f, float beta = 1f)
     {
         var enumerator = Batching.GetBatchEnumerator(a, b, ..^2);
 
@@ -65,7 +65,7 @@ public sealed unsafe class CublasContext : IDisposable
         }
     }
 
-    public void Gemm(CuTensor a, CuTensor b, CuTensor r, float alpha = 1f, float beta = 0f)
+    public void Gemm(CuTensor<float> a, CuTensor<float> b, CuTensor<float> r, float alpha = 1f, float beta = 0f)
     {
         var enumerator = Batching.GetBatchEnumerator(a, b, ..^2);
 

@@ -17,3 +17,4 @@ public interface IDeviceArray<T> where T : unmanaged
         return destination;
     }
 }
+

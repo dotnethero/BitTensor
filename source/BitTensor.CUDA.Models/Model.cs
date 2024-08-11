@@ -1,18 +1,28 @@
-﻿using BitTensor.CUDA.Graph;
+﻿using System.Numerics;
+using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA.Models;
 
-public sealed record Compilation(CuTensorNode Loss, CuTensorNode[] Gradients, CuTensorNode Input, CuTensorNode Desired);
+public sealed record Compilation<T>(
+    CuTensorNode<T> Loss,
+    CuTensorNode<T>[] Gradients,
+    CuTensorNode<T> Input,
+    CuTensorNode<T> Desired)
+    where T : unmanaged, INumberBase<T>;
 
-public abstract class Model : ILayer
+public static class Model
 {
-    public static Model Sequential(ILayer[] layers) => new SequentialModel(layers);
+    public static Model<T> Sequential<T>(ILayer<T>[] layers)
+        where T : unmanaged, INumberBase<T> => 
+        new SequentialModel<T>(layers);
+}
 
-    public abstract CuTensorWeights[] Parameters { get; }
-
-    public abstract CuTensorNode Compute(CuTensorNode input);
+public abstract class Model<T> : ILayer<T> where T : unmanaged, INumberBase<T>
+{
+    public abstract CuTensorWeights<T>[] Parameters { get; }
+    public abstract CuTensorNode<T> Compute(CuTensorNode<T> input);
     
-    public Compilation Compile(CuTensorNode input, CuTensorNode desired)
+    public Compilation<T> Compile(CuTensorNode<T> input, CuTensorNode<T> desired)
     {
         var output = Compute(input);
         var diff = output - desired;
@@ -22,7 +32,7 @@ public abstract class Model : ILayer
         return new(loss, gradients, input, desired);
     }
 
-    public void Fit(Compilation compilation, float lr, int epochs, bool trace = false)
+    public void Fit(Compilation<T> compilation, float lr, int epochs, bool trace = false)
     {
         for (var i = 0; i < epochs; i++)
         {
@@ -32,7 +42,7 @@ public abstract class Model : ILayer
            
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
-                var loss = CuDebug.View(compilation.Loss);
+                var loss = CuDebug.View(compilation.Loss.Tensor);
                 Console.WriteLine($"Loss={loss}");
             }
 
@@ -40,7 +50,7 @@ public abstract class Model : ILayer
         }
     }
 
-    public static void ApplyGradients(CuTensorWeights[] variables, CuTensorNode[] gradients, float lr)
+    public static void ApplyGradients(CuTensorWeights<T>[] variables, CuTensorNode<T>[] gradients, float lr)
     {
         for (var i = 0; i < variables.Length; ++i)
         {

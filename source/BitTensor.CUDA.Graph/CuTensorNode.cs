@@ -1,27 +1,30 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode : AbstractTensor, IDeviceArray<float>
+public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasContext where T : unmanaged, INumberBase<T>
 {
     public delegate void ForwardFunction();
-    public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad, CuTensorNode self);
+    public delegate CuTensorNode<T>[] BackwardFunction(CuTensorNode<T> grad, CuTensorNode<T> self);
 
     public readonly CuContext Context;
-    public readonly CuTensor Tensor;
+    public readonly CuTensor<T> Tensor;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
-    public readonly CuTensorNode[] Children;
-    public readonly List<CuTensorNode> Dependents;
+    public readonly CuTensorNode<T>[] Children;
+    public readonly List<CuTensorNode<T>> Dependents;
     public bool Outdated;
     
-    public unsafe float* Pointer => Tensor.Pointer;
+    public unsafe T* Pointer => Tensor.Pointer;
 
-    int IDeviceArray<float>.ElementSize => Tensor.Array.ElementSize;
-    int IDeviceArray<float>.Size => Tensor.Array.Size;
+    int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
+    int IDeviceArray<T>.Size => Tensor.Array.Size;
 
-    public CuTensorNode(CuTensor tensor) : base(tensor.Shape)
+    CuContext IHasContext.GetContext() => Context;
+
+    public CuTensorNode(CuTensor<T> tensor) : base(tensor.Shape)
     {
         Context = tensor.Context;
         Tensor = tensor;
@@ -30,7 +33,7 @@ public partial class CuTensorNode : AbstractTensor, IDeviceArray<float>
         Outdated = false;
     }
     
-    public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
+    public CuTensorNode(CuTensor<T> tensor, CuTensorNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
     {
         Context = tensor.Context;
         Tensor = tensor;
@@ -73,8 +76,16 @@ public partial class CuTensorNode : AbstractTensor, IDeviceArray<float>
         Outdated = true;
     }
 
-    public void CopyToHost(Span<float> destination) => Tensor.CopyToHost(destination);
-    public void CopyToDevice(ReadOnlySpan<float> source) => Tensor.CopyToDevice(source);
+    public T[] CopyToHost()
+    {
+        EnsureHasUpdatedValues();
+        IDeviceArray<T> tensor = Tensor;
+        return tensor.CopyToHost();
+    }
+
+    public void CopyToHost(Span<T> destination) => Tensor.CopyToHost(destination);
+
+    public void CopyToDevice(ReadOnlySpan<T> source) => Tensor.CopyToDevice(source);
 
     public override int GetHashCode() => unchecked((int)Id);
 

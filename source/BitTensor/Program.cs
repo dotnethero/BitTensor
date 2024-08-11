@@ -40,6 +40,6 @@ internal class Program
         var output = model.Compute(x);
         var diff = CuTensorNode.Sum(output - d, [1]);
         diff.EnsureHasUpdatedValues();
-        CuDebug.WriteLine(diff);
+        CuDebug.WriteLine(diff.Tensor);
     }
 }

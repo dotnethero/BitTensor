@@ -4,22 +4,24 @@ using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA.Models;
 
-public class LinearLayer : ILayer
+public class LinearLayer : ILayer<float>
 {
-    public CuTensorWeights Weights { get; set; }
-    public CuTensorWeights Bias { get; set; }
-    public Func<CuTensorNode, CuTensorNode> Activation { get; }
+    public delegate CuTensorNode<float> ActivationFunction(CuTensorNode<float> node);
 
-    public CuTensorWeights[] Parameters => [Weights, Bias];
+    public CuTensorWeights<float> Weights { get; set; }
+    public CuTensorWeights<float> Bias { get; set; }
+    public ActivationFunction Activation { get; }
 
-    public LinearLayer(CuContext context, int inputs, int outputs, Func<CuTensorNode, CuTensorNode> activation)
+    public CuTensorWeights<float>[] Parameters => [Weights, Bias];
+
+    public LinearLayer(CuContext context, int inputs, int outputs, ActivationFunction activation)
     {
         Activation = activation;
-        Bias = new CuTensorWeights(context.Random.Normal([outputs]));
-        Weights = new CuTensorWeights(context.Random.Normal([inputs, outputs]));
+        Bias = new CuTensorWeights<float>(context.Random.Normal([outputs]));
+        Weights = new CuTensorWeights<float>(context.Random.Normal([inputs, outputs]));
     }
 
-    public CuTensorNode Compute(CuTensorNode input)
+    public CuTensorNode<float> Compute(CuTensorNode<float> input)
     {
         var z = input * Weights + Bias;
         var y = Activation(z);

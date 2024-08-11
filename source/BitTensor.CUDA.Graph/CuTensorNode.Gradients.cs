@@ -1,16 +1,17 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode
+public partial class CuTensorNode<T> where T : unmanaged, INumberBase<T>
 {
-    public CuTensorGradients GetGradients()
+    public CuTensorGradients<T> GetGradients()
     {
         EnsureHasUpdatedValues();
 
-        var nodes = new Stack<CuTensorNode>(16);
-        var grads = new CuTensorGradients();
-        var one = Context.AllocateOne().AsNode();
+        var nodes = new Stack<CuTensorNode<T>>(16);
+        var grads = new CuTensorGradients<T>();
+        var one = Context.AllocateOne<T>().AsNode();
 
         nodes.Push(this);
         grads.Push(this, one);
@@ -31,8 +32,8 @@ public partial class CuTensorNode
                 Shapes.EnsureAreEqual(child.Shape, grad.Shape);
                 if (grads.ContainsKey(child))
                 {
-                    using var plan = Context.CreateAggregationPlan<float>(grad);
-                    plan.Execute(grad.Tensor, grads[child].Tensor);
+                    using var plan = Context.CreateAggregationPlan<T>(grad);
+                    plan.Execute(grad, grads[child]);
                 }
                 else
                 {

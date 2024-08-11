@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Globalization;
+using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using BitTensor.Abstractions;
 
@@ -6,20 +8,21 @@ namespace BitTensor.CUDA;
 
 public static class CuDebug
 {
-    public static void WriteLine<T>(T tensor, [CallerArgumentExpression("tensor")] string tensorName = "") where T : AbstractTensor, IDeviceArray<float>
+    public static void WriteLine<T>(CuTensor<T> tensor, [CallerArgumentExpression("tensor")] string tensorName = "") where T : unmanaged, INumberBase<T>
     {
         var text = View(tensor);
         Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
     
-    public static string View<T>(T tensor, int dimensionsPerLine = 1) where T : AbstractTensor, IDeviceArray<float>
+    public static string View<T>(CuTensor<T> tensor, int dimensionsPerLine = 1) where T : unmanaged, INumberBase<T>
     {
-        var values = tensor.CopyToHost();
+        IDeviceArray<T> array = tensor;
+        var values = array.CopyToHost();
         var shape = tensor.Shape;
         return View(values, shape, dimensionsPerLine);
     }
 
-    public static string View(float[] values, Shape shape, int dimensionsPerLine = 1)
+    public static string View<T>(T[] values, Shape shape, int dimensionsPerLine = 1) where T : INumberBase<T>
     {
         if (values.Length == 0)
         {
@@ -29,7 +32,7 @@ public static class CuDebug
         var dimensions = shape.Dimensions;
         if (dimensions == 0)
         {
-            return values[0].ToString("0.00#");
+            return values[0].ToString("0.00#", CultureInfo.InvariantCulture);
         }
 
         var sb = new StringBuilder();
@@ -45,7 +48,7 @@ public static class CuDebug
         {
             var opens = products.Count(p => (i) % p == 0);
             var closes = products.Count(p => (i + 1) % p == 0);
-            var value = values[i].ToString("0.00#").PadLeft(dimensions > 1 ? 6 : 0);
+            var value = values[i].ToString("0.00#", CultureInfo.InvariantCulture).PadLeft(dimensions > 1 ? 6 : 0);
 
             if (opens > 0)
                 sb.Append(new string(' ', dimensions - opens));

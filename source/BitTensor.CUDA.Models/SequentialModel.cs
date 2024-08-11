@@ -1,12 +1,13 @@
-﻿using BitTensor.CUDA.Graph;
+﻿using System.Numerics;
+using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA.Models;
 
-public sealed class SequentialModel(ILayer[] layers) : Model
+public sealed class SequentialModel<T>(ILayer<T>[] layers) : Model<T> where T : unmanaged, INumberBase<T>
 {
-    public override CuTensorWeights[] Parameters =>  
+    public override CuTensorWeights<T>[] Parameters =>  
         layers.SelectMany(x => x.Parameters).ToArray();
 
-    public override CuTensorNode Compute(CuTensorNode input) => 
+    public override CuTensorNode<T> Compute(CuTensorNode<T> input) => 
         layers.Aggregate(input, (activation, layer) => layer.Compute(activation));
 }

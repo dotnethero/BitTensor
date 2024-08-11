@@ -2,32 +2,34 @@
 
 namespace BitTensor.CUDA;
 
-public unsafe class CuTensor : AbstractTensor, IDeviceArray<float>
+public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IHasContext where T : unmanaged
 {
     public readonly CuContext Context;
-    public readonly CuArray<float> Array;
+    public readonly CuArray<T> Array;
 
-    public float* Pointer => Array.Pointer;
+    public T* Pointer => Array.Pointer;
 
-    int IDeviceArray<float>.ElementSize => Array.ElementSize;
-    int IDeviceArray<float>.Size => Array.Size;
+    int IDeviceArray<T>.ElementSize => Array.ElementSize;
+    int IDeviceArray<T>.Size => Array.Size;
 
-    public CuTensor(CuContext context, CuArray<float> array, Shape shape) : base(shape)
+    CuContext IHasContext.GetContext() => Context;
+
+    public CuTensor(CuContext context, CuArray<T> array, Shape shape) : base(shape)
     {
         Context = context;
         Array = array;
     }
 
-    public CuTensor Reshape(Shape shape) // no allocation
+    public CuTensor<T> Reshape(Shape shape) // no allocation
     {
         if (shape.ArraySize != Size)
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
 
-        return new CuTensor(Context, Array, shape);
+        return new(Context, Array, shape);
     }
     
-    public void CopyToHost(Span<float> destination) => Array.CopyToHost(destination);
-    public void CopyToDevice(ReadOnlySpan<float> source) => Array.CopyToDevice(source);
+    public void CopyToHost(Span<T> destination) => Array.CopyToHost(destination);
+    public void CopyToDevice(ReadOnlySpan<T> source) => Array.CopyToDevice(source);
 
     public override string ToString() => $"Tensor #{Id}, shape={Shape}";
 }
