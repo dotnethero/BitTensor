@@ -3,35 +3,32 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode
+public partial class CuTensorNode : AbstractTensor
 {
     public delegate void ForwardFunction();
     public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad, CuTensorNode self);
 
     public readonly CuContext Context;
     public readonly CuTensor Tensor;
-    public readonly Shape Shape;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
     public readonly CuTensorNode[] Children;
     public readonly List<CuTensorNode> Dependents;
     public bool Outdated;
 
-    public CuTensorNode(CuTensor tensor)
+    public CuTensorNode(CuTensor tensor) : base(tensor.Shape)
     {
         Context = tensor.Context;
         Tensor = tensor;
-        Shape = tensor.Shape;
         Children = [];
         Dependents = new(3);
         Outdated = false;
     }
     
-    public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
+    public CuTensorNode(CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
     {
         Context = tensor.Context;
         Tensor = tensor;
-        Shape = tensor.Shape;
         Forward = forward;
         Backward = backward;
         Children = children;
@@ -71,7 +68,7 @@ public partial class CuTensorNode
         Outdated = true;
     }
 
-    public override int GetHashCode() => unchecked((int)Tensor.Id); // TODO: count nodes, not tensors
+    public override int GetHashCode() => unchecked((int)Id);
 
-    public override string ToString() => $"Tensor #{Tensor.Id}, shape={Shape}";
+    public override string ToString() => $"Tensor #{Id}, shape={Shape}";
 }
