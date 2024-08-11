@@ -1,14 +1,15 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorMatMulPlan<T> : IDisposable where T : unmanaged
+public sealed class CuTensorMatMulPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
-    internal readonly CuTensorDescriptor LeftDescriptor;
-    internal readonly CuTensorDescriptor RightDescriptor;
-    internal readonly CuTensorDescriptor ResultDescriptor;
+    internal readonly CuTensorDescriptor<T> LeftDescriptor;
+    internal readonly CuTensorDescriptor<T> RightDescriptor;
+    internal readonly CuTensorDescriptor<T> ResultDescriptor;
     internal readonly CuTensorContraction<T> Contraction;
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
@@ -27,9 +28,9 @@ public sealed class CuTensorMatMulPlan<T> : IDisposable where T : unmanaged
         leftModes[^1] = -1;
         rightModes[^2] = -1;
 
-        LeftDescriptor = context.CreateDescriptor(left, leftModes);
-        RightDescriptor = context.CreateDescriptor(right, rightModes);
-        ResultDescriptor = context.CreateDescriptor(result, resultModes);
+        LeftDescriptor = new(context, left, leftModes);
+        RightDescriptor = new(context, right, rightModes);
+        ResultDescriptor = new(context, result, resultModes);
 
         Contraction = new(context, LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
         ContractionPlan = Contraction.CreatePlan();

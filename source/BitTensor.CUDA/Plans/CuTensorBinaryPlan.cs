@@ -1,4 +1,5 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
@@ -7,10 +8,10 @@ namespace BitTensor.CUDA.Plans;
 
 using Ops = cutensorOperator_t;
 
-public sealed class CuTensorBinaryPlan<T> : IDisposable where T : unmanaged
+public sealed class CuTensorBinaryPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
-    internal readonly CuTensorDescriptor LeftDescriptor;
-    internal readonly CuTensorDescriptor RightDescriptor;
+    internal readonly CuTensorDescriptor<T> LeftDescriptor;
+    internal readonly CuTensorDescriptor<T> RightDescriptor;
     internal readonly CuTensorBinaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
 
@@ -22,9 +23,8 @@ public sealed class CuTensorBinaryPlan<T> : IDisposable where T : unmanaged
         Ops opB,
         Ops opAB)
     {
-        LeftDescriptor = context.CreateDescriptor(a);
-        RightDescriptor = context.CreateDescriptor(b);
-
+        LeftDescriptor = new(context, a);
+        RightDescriptor = new(context, b);
         Operation = new(
             context,
             LeftDescriptor,

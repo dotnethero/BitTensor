@@ -1,11 +1,12 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Numerics;
+using System.Runtime.InteropServices;
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Wrappers;
 
-internal sealed unsafe class CuTensorDescriptor : IDisposable
+internal sealed unsafe class CuTensorDescriptor<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
     internal readonly cutensorTensorDescriptor* Descriptor;
     internal readonly uint ModesNumber;
@@ -39,7 +40,7 @@ internal sealed unsafe class CuTensorDescriptor : IDisposable
             ModesNumber,
             Extents,
             Strides,
-            dataType: cutensorDataType_t.CUTENSOR_R_32F,
+            Types.GetDataType<T>(),
             alignmentRequirement: 128u);
 
         Status.EnsureIsSuccess(status);
@@ -47,10 +48,9 @@ internal sealed unsafe class CuTensorDescriptor : IDisposable
         Descriptor = descriptor;
     }
 
-    private static T* Allocate<T>(int count) where T : unmanaged
-    {
-        return (T*) Marshal.AllocHGlobal(count * sizeof(T));
-    }
+    private static TAny* Allocate<TAny>(int count)
+        where TAny : unmanaged =>
+        (TAny*) Marshal.AllocHGlobal(count * sizeof(TAny));
 
     public void Dispose()
     {

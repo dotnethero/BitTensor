@@ -1,15 +1,16 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorTernaryPlan<T> : IDisposable where T : unmanaged
+public sealed class CuTensorTernaryPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
-    internal readonly CuTensorDescriptor LeftDescriptor;
-    internal readonly CuTensorDescriptor RightDescriptor;
-    internal readonly CuTensorDescriptor ResultDescriptor;
+    internal readonly CuTensorDescriptor<T> LeftDescriptor;
+    internal readonly CuTensorDescriptor<T> RightDescriptor;
+    internal readonly CuTensorDescriptor<T> ResultDescriptor;
     internal readonly CuTensorTernaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
 
@@ -21,9 +22,9 @@ public sealed class CuTensorTernaryPlan<T> : IDisposable where T : unmanaged
         cutensorOperator_t opAB,
         cutensorOperator_t opABC)
     {
-        LeftDescriptor = context.CreateDescriptor(left);
-        RightDescriptor = context.CreateDescriptor(right);
-        ResultDescriptor = context.CreateDescriptor(result);
+        LeftDescriptor = new(context, left);
+        RightDescriptor = new(context, right);
+        ResultDescriptor = new(context, result);
 
         Operation = new(
             context,

@@ -1,13 +1,14 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged
+public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
-    internal readonly CuTensorDescriptor InputDescriptor;
-    internal readonly CuTensorDescriptor OutputDescriptor;
+    internal readonly CuTensorDescriptor<T> InputDescriptor;
+    internal readonly CuTensorDescriptor<T> OutputDescriptor;
     internal readonly CuTensorPermutation<T> Permutation;
     internal readonly CuTensorPlan PermutationPlan;
 
@@ -22,8 +23,8 @@ public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged
             outputModes[i] = axis[i];
         }
 
-        InputDescriptor = context.CreateDescriptor(input, inputModes);
-        OutputDescriptor = context.CreateDescriptor(output, outputModes);
+        InputDescriptor = new(context, input, inputModes);
+        OutputDescriptor = new(context, output, outputModes);
 
         Permutation = new(context, InputDescriptor, OutputDescriptor);
         PermutationPlan = Permutation.CreatePlan();

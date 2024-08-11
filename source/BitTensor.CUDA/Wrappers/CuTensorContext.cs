@@ -1,5 +1,4 @@
-﻿using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
+﻿using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
@@ -16,12 +15,6 @@ public sealed unsafe class CuTensorContext : IDisposable
 
         Handle = handle;
     }
-
-    internal CuTensorDescriptor CreateDescriptor(AbstractTensor a) => 
-        new(this, a);
-    
-    internal CuTensorDescriptor CreateDescriptor(AbstractTensor a, int[] modes) => 
-        new(this, a, modes);
 
     public void Dispose()
     {

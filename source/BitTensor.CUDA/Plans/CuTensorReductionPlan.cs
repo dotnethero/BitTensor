@@ -1,14 +1,15 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged
+public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
-    internal readonly CuTensorDescriptor InputDescriptor;
-    internal readonly CuTensorDescriptor OutputDescriptor;
+    internal readonly CuTensorDescriptor<T> InputDescriptor;
+    internal readonly CuTensorDescriptor<T> OutputDescriptor;
     internal readonly CuTensorReduction<T> Reduction;
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
@@ -17,8 +18,8 @@ public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged
     {
         var modes = input.Shape.GetReductionModes(axis);
 
-        InputDescriptor = context.CreateDescriptor(input);
-        OutputDescriptor = context.CreateDescriptor(output, modes);
+        InputDescriptor = new(context, input);
+        OutputDescriptor = new(context, output, modes);
 
         Reduction = new(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
         ReductionPlan = Reduction.CreatePlan();

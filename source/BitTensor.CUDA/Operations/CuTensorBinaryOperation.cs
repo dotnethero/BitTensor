@@ -1,4 +1,5 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
@@ -6,16 +7,16 @@ namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation where T : unmanaged
+internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation where T : unmanaged, INumberBase<T>
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
     public CuTensorBinaryOperation(
         CuTensorContext context,
-        CuTensorDescriptor a,
-        CuTensorDescriptor b,
-        CuTensorDescriptor c,
+        CuTensorDescriptor<T> a,
+        CuTensorDescriptor<T> b,
+        CuTensorDescriptor<T> c,
         cutensorOperator_t opA,
         cutensorOperator_t opB,
         cutensorOperator_t opAB)
@@ -28,14 +29,14 @@ internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation whe
             a.Descriptor, a.Modes, opA,
             b.Descriptor, b.Modes, opB,
             c.Descriptor, c.Modes, opAB,
-            CUTENSOR_COMPUTE_DESC_32F);
+            Types.GetComputeType<T>());
 
         Status.EnsureIsSuccess(status);
 
         Context = context;
         Descriptor = descriptor;
     }
-
+    
     public CuTensorPlan CreatePlan() => new(this);
 
     public void Execute(
