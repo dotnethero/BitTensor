@@ -36,7 +36,7 @@ class MatmulGradientTests
             yg = jax.grad(func, argnums=1)(x, y)
             """);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
         var x = scope.Get2D("x").AsNode(context);
         var y = scope.Get2D("y").AsNode(context);
 
@@ -88,7 +88,7 @@ class MatmulGradientTests
         Console.WriteLine(ca_dc_shape);
         Console.WriteLine(ca_da_shape);
         
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var ab_da_true = scope.Get1D("ab_da").AsTensor(context);
         var ab_db_true = scope.Get2D("ab_db").AsTensor(context);
@@ -160,7 +160,7 @@ class MatmulGradientTests
         Console.WriteLine(cb_dc_shape);
         Console.WriteLine(cb_db_shape);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var aс_da_true = scope.Get1D("aс_da").AsTensor(context);
         var aс_dс_true = scope.Get2D("aс_dс").AsTensor(context);
@@ -272,7 +272,7 @@ class MatmulGradientTests
              xy_dy = jax.grad(func, argnums=1)(x, y)
              """);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
         var x = scope.GetTensor("x").AsNode(context);
         var y = scope.GetTensor("y").AsNode(context);
         var z = x * y;

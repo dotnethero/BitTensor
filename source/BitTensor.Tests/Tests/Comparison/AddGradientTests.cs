@@ -51,7 +51,7 @@ class AddGradientTests
              xy_dy = jax.grad(func, argnums=1)(x, y)
              """);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
         var x = scope.GetTensor("x").AsNode(context);
         var y = scope.GetTensor("y").AsNode(context);
         

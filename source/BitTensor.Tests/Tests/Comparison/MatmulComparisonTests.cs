@@ -30,7 +30,7 @@ class MatmulComparisonTests
             z = jnp.dot(x, y)
             """);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var x = scope.Get2D("x").AsNode(context);
         var y = scope.Get2D("y").AsNode(context);
@@ -67,7 +67,7 @@ class MatmulComparisonTests
         Console.WriteLine(ab_shape);
         Console.WriteLine(ca_shape);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var a = scope.Get1D("a").AsNode(context);
         var b = scope.Get2D("b").AsNode(context);
@@ -113,7 +113,7 @@ class MatmulComparisonTests
         Console.WriteLine(ac_shape);
         Console.WriteLine(cb_shape);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var a = scope.Get1D("a").AsNode(context);
         var b = scope.Get1D("b").AsNode(context);
@@ -205,7 +205,7 @@ class MatmulComparisonTests
              d = jnp.{function}(x, y)
              """);
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var x = scope.GetTensor("x").AsNode(context);
         var y = scope.GetTensor("y").AsNode(context);

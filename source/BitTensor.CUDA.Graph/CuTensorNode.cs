@@ -20,7 +20,7 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
     public unsafe T* Pointer => Tensor.Pointer;
 
     int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
-    int IDeviceArray<T>.Size => Tensor.Array.Size;
+    long IDeviceArray<T>.Size => Tensor.Array.Size;
 
     CuContext IHasContext.GetContext() => Context;
 

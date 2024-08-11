@@ -3,7 +3,7 @@
 public interface IDeviceArray<T> where T : unmanaged
 {
     int ElementSize { get; }
-    int Size { get; }
+    long Size { get; }
     unsafe T* Pointer { get; }
 
     void CopyToDevice(ReadOnlySpan<T> source);

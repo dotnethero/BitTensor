@@ -1,5 +1,7 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
+using ILGPU;
+using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
@@ -7,19 +9,16 @@ using static cudaRT;
 
 public static unsafe class CuArray
 {
-    public static CuArray<T> Allocate<T>(int size) where T : unmanaged
+    public static CuArray<T> Allocate<T>(this Accelerator accelerator, int size) where T : unmanaged
     {
-        var bytes = (uint)(size * sizeof(T));
-        var pointer = (T*)AllocateRaw(bytes);
-        var array = new CuArray<T>(pointer, size);
-        return array;
+        var buffer = accelerator.Allocate1D<T>(size);
+        return new CuArray<T>(buffer);
     }
     
-    public static CuArray<T> Allocate<T>(ReadOnlySpan<T> values) where T : unmanaged
+    public static CuArray<T> Allocate<T>(this Accelerator accelerator, T[] values) where T : unmanaged
     {
-        var array = Allocate<T>(values.Length);
-        array.CopyToDevice(values);
-        return array;
+        var buffer = accelerator.Allocate1D(values);
+        return new CuArray<T>(buffer);
     }
 
     public static void* AllocateRaw(uint bytes)
@@ -37,15 +36,24 @@ public static unsafe class CuArray
 
 public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
 {
+    public MemoryBuffer1D<T, Stride1D.Dense> Buffer { get; }
+    public long Size { get; }
     public int ElementSize { get; }
-    public int Size { get; }
     public T* Pointer { get; }
 
     internal CuArray(T* pointer, int size)
     {
-        ElementSize = sizeof(T);
         Size = size;
+        ElementSize = sizeof(T);
         Pointer = pointer;
+    }
+
+    public CuArray(MemoryBuffer1D<T, Stride1D.Dense> buffer)
+    {
+        Buffer = buffer;
+        Size = buffer.Length;
+        ElementSize = buffer.ElementSize;
+        Pointer = (T*)buffer.NativePtr;
     }
 
     public void CopyToHost(Span<T> destination)

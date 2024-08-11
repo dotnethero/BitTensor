@@ -10,7 +10,7 @@ public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IHasContext w
     public T* Pointer => Array.Pointer;
 
     int IDeviceArray<T>.ElementSize => Array.ElementSize;
-    int IDeviceArray<T>.Size => Array.Size;
+    long IDeviceArray<T>.Size => Array.Size;
 
     CuContext IHasContext.GetContext() => Context;
 

@@ -19,7 +19,7 @@ internal class Program
         const int outputCount = 20;
         const int batchSize = 50;
 
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var x = context.Random.Normal([batchSize, inputCount]).AsNode();
         var d = context.Random.Normal([batchSize, outputCount]).AsNode();
@@ -45,7 +45,7 @@ internal class Program
 
     private static void Test_half()
     {
-        using var context = new CuContext();
+        using var context = CuContext.CreateDefault();
 
         var a = context.Allocate([3], [(Half)1, (Half)2, (Half)3]).AsNode();
         var b = context.Allocate([3], [(Half)4, (Half)7, (Half)2]).AsNode();
