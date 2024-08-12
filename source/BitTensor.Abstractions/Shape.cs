@@ -31,6 +31,8 @@ public sealed class Shape : IEnumerable<int>
         return Create(extents);
     }
 
+    public Shape Append(int size) => Create([..Extents, size]);
+
     public Shape Reduce(HashSet<int> axis)
     {
         var extents = new List<int>(Dimensions);

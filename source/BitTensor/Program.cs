@@ -9,7 +9,15 @@ internal class Program
 {
     public static void Main()
     {
-        Test_linear_module();
+    }
+
+    private static void Test_MNIST()
+    {
+        var trainImages = MNIST.ReadImages(@"C:\Projects\BitTensor\mnist\train-images.idx3-ubyte");
+        var trainLabels = MNIST.ReadLabels(@"C:\Projects\BitTensor\mnist\train-labels.idx1-ubyte");
+        
+        var testImages = MNIST.ReadImages(@"C:\Projects\BitTensor\mnist\t10k-images.idx3-ubyte");
+        var testLabels = MNIST.ReadLabels(@"C:\Projects\BitTensor\mnist\t10k-labels.idx1-ubyte");
     }
 
     private static void Test_linear_module()
