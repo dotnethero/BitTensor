@@ -106,7 +106,7 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Broadcast(grad, a.Shape)]);
     }
     
-    public static CuTensorNode<T> Sum<T>(CuTensorNode<T> a, HashSet<int> axis, float scale = 1f) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Sum<T>(CuTensorNode<T> a, HashSet<Index> axis, float scale = 1f) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis);
@@ -116,10 +116,36 @@ public static partial class CuTensorNode
             output,
             children: [a],
             forward: () => plan.Execute(a, output, scale),
+            backward: (grad, _) => [Broadcast(grad, a.Shape, scale)]); // TODO: Verify!
+    }
+
+    public static CuTensorNode<T> Max<T>(CuTensorNode<T> a, HashSet<Index> axis) where T : unmanaged, INumberBase<T>
+    {
+        var context = GetContext(a);
+        var shape = a.Shape.Reduce(axis);
+        var output = context.Allocate<T>(shape);
+        var plan = context.CreateMaxPlan<T>(a, output, axis);
+        return new(
+            output,
+            children: [a],
+            forward: () => plan.Execute(a, output),
             backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
     }
     
-    public static CuTensorNode<T> Broadcast<T>(CuTensorNode<T> a, Shape shape) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Min<T>(CuTensorNode<T> a, HashSet<Index> axis) where T : unmanaged, INumberBase<T>
+    {
+        var context = GetContext(a);
+        var shape = a.Shape.Reduce(axis);
+        var output = context.Allocate<T>(shape);
+        var plan = context.CreateMinPlan<T>(a, output, axis);
+        return new(
+            output,
+            children: [a],
+            forward: () => plan.Execute(a, output),
+            backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
+    }
+
+    public static CuTensorNode<T> Broadcast<T>(CuTensorNode<T> a, Shape shape, float scale = 1f) where T : unmanaged, INumberBase<T>
     {
         if (!a.Shape.CanBroadcastTo(shape))
             throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
@@ -131,8 +157,8 @@ public static partial class CuTensorNode
         return new(
             output,
             children: [a],
-            forward: () => plan.Execute(a, output, gamma: 0),
-            backward: (grad, _) => [Sum(grad, axis)]); // TODO: Verify!
+            forward: () => plan.Execute(a, output, alpha: scale, gamma: 0),
+            backward: (grad, _) => [Sum(grad, axis, scale)]); // TODO: Verify!
     }
     
     public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>

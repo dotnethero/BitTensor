@@ -22,11 +22,12 @@ internal static class Modes
         return modes;
     }
 
-    public static int[] GetReductionModes(this Shape shape, HashSet<int> axis)
+    public static int[] GetReductionModes(this Shape shape, HashSet<Index> axis)
     {
+        var offsets = shape.GetOffsets(axis);
         return shape
             .GetOrdinaryModes()
-            .Where((_, i) => !axis.Contains(i))
+            .Where((_, i) => !offsets.Contains(i))
             .ToArray();
     }
 }

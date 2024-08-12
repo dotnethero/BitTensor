@@ -14,7 +14,7 @@ public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged, 
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<int> axis, cutensorOperator_t op)
+    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<Index> axis, cutensorOperator_t op)
     {
         var modes = input.Shape.GetReductionModes(axis);
 

@@ -33,12 +33,13 @@ public sealed class Shape : IEnumerable<int>
 
     public Shape Append(int size) => Create([..Extents, size]);
 
-    public Shape Reduce(HashSet<int> axis)
+    public Shape Reduce(HashSet<Index> axis)
     {
+        var offsets = GetOffsets(axis);
         var extents = new List<int>(Dimensions);
         for (var i = 0; i < Dimensions; ++i)
         {
-            if (!axis.Contains(i))
+            if (!offsets.Contains(i))
                 extents.Add(Extents[i]);
         }
         return Create(extents.ToArray());
@@ -88,6 +89,11 @@ public sealed class Shape : IEnumerable<int>
 
         return strides;
     }
+    
+    public HashSet<int> GetOffsets(HashSet<Index> axis) =>
+        axis
+            .Select(x => x.GetOffset(Dimensions))
+            .ToHashSet();
 
     IEnumerator<int> IEnumerable<int>.GetEnumerator() => 
         Extents

@@ -104,11 +104,11 @@ public static class Shapes
         return [..batches, a[^1], b[^1]];
     }
     
-    public static HashSet<int> GetBroadcastedAxis(Shape input, Shape output)
+    public static HashSet<Index> GetBroadcastedAxis(Shape input, Shape output)
     {
         var id = input.Dimensions;
         var od = output.Dimensions;
-        var axis = new HashSet<int>(od);
+        var axis = new HashSet<Index>(od);
 
         for (var i = 1; i <= od; ++i)
         {

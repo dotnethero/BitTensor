@@ -2,6 +2,7 @@
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
+using ILGPU;
 
 namespace BitTensor.CUDA;
 
@@ -65,10 +66,24 @@ public partial class CuContext
     public CuTensorReductionPlan<T> CreateSumPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        HashSet<int> axis) 
+        HashSet<Index> axis) 
         where T : unmanaged, INumberBase<T> => 
         new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_ADD);
     
+    public CuTensorReductionPlan<T> CreateMaxPlan<T>(
+        AbstractTensor a,
+        AbstractTensor output,
+        HashSet<Index> axis) 
+        where T : unmanaged, INumberBase<T> => 
+        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MAX);
+    
+    public CuTensorReductionPlan<T> CreateMinPlan<T>(
+        AbstractTensor a,
+        AbstractTensor output,
+        HashSet<Index> axis) 
+        where T : unmanaged, INumberBase<T> => 
+        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MIN);
+
     public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
         AbstractTensor a,
         AbstractTensor output) 
