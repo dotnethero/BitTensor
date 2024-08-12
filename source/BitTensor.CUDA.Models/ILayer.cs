@@ -1,10 +1,11 @@
-﻿using BitTensor.CUDA.Graph;
+﻿using System.Numerics;
+using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA.Models;
 
-public interface ILayer
+public interface ILayer<T> where T : unmanaged, INumberBase<T>
 {
-    CuTensorWeight[] Parameters { get; }
-    CuTensorNode Compute(CuTensorNode input);
+    CuTensorWeights<T>[] Parameters { get; }
+    CuTensorNode<T> Compute(CuTensorNode<T> input);
 }
 

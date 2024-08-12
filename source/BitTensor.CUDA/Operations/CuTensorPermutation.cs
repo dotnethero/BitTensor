@@ -1,19 +1,21 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-internal unsafe class CuTensorPermutation : ICuTensorOperation
+internal sealed unsafe class CuTensorPermutation<T> : ICuTensorOperation where T : unmanaged, INumberBase<T>
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
     public CuTensorPermutation(
         CuTensorContext context,
-        CuTensorDescriptor a,
-        CuTensorDescriptor b)
+        CuTensorDescriptor<T> a,
+        CuTensorDescriptor<T> b)
     {
         cutensorOperationDescriptor* descriptor;
 
@@ -22,7 +24,7 @@ internal unsafe class CuTensorPermutation : ICuTensorOperation
             &descriptor,
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             b.Descriptor, b.Modes,
-            CUTENSOR_COMPUTE_DESC_32F);
+            Types.GetComputeType<T>());
 
         Status.EnsureIsSuccess(status);
 
@@ -32,7 +34,11 @@ internal unsafe class CuTensorPermutation : ICuTensorOperation
 
     public CuTensorPlan CreatePlan() => new(this);
 
-    public void Execute(CuTensorPlan plan, CuTensor a, CuTensor b, float alpha = 1f)
+    public void Execute(
+        CuTensorPlan plan,
+        IDeviceArray<T> a,
+        IDeviceArray<T> b,
+        float alpha = 1f)
     {
         var status = cutensorPermute(Context.Handle, plan.Plan, &alpha, a.Pointer, b.Pointer, CuStream.Default);
         Status.EnsureIsSuccess(status);

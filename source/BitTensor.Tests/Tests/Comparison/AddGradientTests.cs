@@ -1,7 +1,6 @@
 ﻿using BitTensor.Core.Tests;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
-using BitTensor.CUDA.Wrappers;
 using NUnit.Framework;
 using Python.Runtime;
 
@@ -52,18 +51,18 @@ class AddGradientTests
              xy_dy = jax.grad(func, argnums=1)(x, y)
              """);
 
-        using var context = new CuTensorContext();
-        using var x = scope.GetTensor("x").CreateNode(context);
-        using var y = scope.GetTensor("y").CreateNode(context);
+        using var context = CuContext.CreateDefault();
+        var x = scope.GetTensor("x").AsNode(context);
+        var y = scope.GetTensor("y").AsNode(context);
         
-        using var xy_dx_true = scope.GetTensor("xy_dx");
-        using var xy_dy_true = scope.GetTensor("xy_dy");
+        var xy_dx_true = scope.GetTensor("xy_dx").AsTensor(context);
+        var xy_dy_true = scope.GetTensor("xy_dy").AsTensor(context);
         
-        using var xy_grads = CuTensorNode.Sum(x + y).GetGradients();
+        var xy_grads = CuTensorNode.Sum(x + y).GetGradients();
         var xy_dx = xy_grads[x];
         var xy_dy = xy_grads[y];
 
-        using var yx_grads = CuTensorNode.Sum(x + y).GetGradients();
+        var yx_grads = CuTensorNode.Sum(x + y).GetGradients();
         var yx_dx = yx_grads[x];
         var yx_dy = yx_grads[y];
         

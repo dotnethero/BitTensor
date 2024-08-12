@@ -1,46 +1,32 @@
-﻿using BitTensor.Abstractions;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Operations;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-internal sealed class CuTensorProductPlan(
-    CuTensorContext context,
-    AbstractTensor input,
-    AbstractTensor output,
-    HashSet<int> axis) : 
-    CuTensorReductionPlan(context, input, output, axis, cutensorOperator_t.CUTENSOR_OP_MUL);
-
-internal sealed class CuTensorSumPlan(
-    CuTensorContext context,
-    AbstractTensor input,
-    AbstractTensor output,
-    HashSet<int> axis) : 
-    CuTensorReductionPlan(context, input, output, axis, cutensorOperator_t.CUTENSOR_OP_ADD);
-
-internal abstract class CuTensorReductionPlan : IDisposable
+public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
 {
-    internal readonly CuTensorDescriptor InputDescriptor;
-    internal readonly CuTensorDescriptor OutputDescriptor;
-    
-    internal readonly CuTensorReduction Reduction;
+    internal readonly CuTensorDescriptor<T> InputDescriptor;
+    internal readonly CuTensorDescriptor<T> OutputDescriptor;
+    internal readonly CuTensorReduction<T> Reduction;
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    protected CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<int> axis, cutensorOperator_t op)
+    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<int> axis, cutensorOperator_t op)
     {
         var modes = input.Shape.GetReductionModes(axis);
 
-        InputDescriptor = context.CreateDescriptor(input);
-        OutputDescriptor = context.CreateDescriptor(output, modes);
+        InputDescriptor = new(context, input);
+        OutputDescriptor = new(context, output, modes);
 
-        Reduction = new CuTensorReduction(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
+        Reduction = new(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
         ReductionPlan = Reduction.CreatePlan();
         Workspace = Reduction.CreateWorkspace(ReductionPlan);
     }
     
-    public void Execute(CuTensor input, CuTensor output, float alpha = 1f, float beta = 0f) =>
+    public void Execute(IDeviceArray<T> input, IDeviceArray<T> output, float alpha = 1f, float beta = 0f) =>
         Reduction.Execute(
             ReductionPlan,
             Workspace,

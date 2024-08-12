@@ -1,70 +1,38 @@
 ﻿using BitTensor.Abstractions;
+using ILGPU;
 
 namespace BitTensor.CUDA;
 
-public unsafe partial class CuTensor : AbstractTensor, ITensor<CuTensor>, IDeviceArray, IDisposable
+public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IHasContext where T : unmanaged
 {
-    public static long BytesAllocated = 0;
-    
-    internal readonly float* Pointer;
+    public readonly CuContext Context;
+    public readonly CuArray<T> Array;
 
-    public CuTensor(Shape shape) : base(shape)
+    // TODO: inline
+    public T* Pointer => Array.Pointer;
+    public ArrayView<T> View => Array.Buffer.View;
+
+    int IDeviceArray<T>.ElementSize => Array.ElementSize;
+    long IDeviceArray<T>.Size => Array.Size;
+
+    CuContext IHasContext.GetContext() => Context;
+
+    public CuTensor(CuContext context, CuArray<T> array, Shape shape) : base(shape)
     {
-        Pointer = CuArray.Allocate(Size);
-        BytesAllocated += Size << 2;
+        Context = context;
+        Array = array;
     }
 
-    public CuTensor(Shape shape, float[] values) : base(shape)
-    {
-        Pointer = CuArray.Allocate(Size, values);
-        BytesAllocated += Size << 2;
-    }
-    
-    public CuTensor(Shape shape, float* pointer) : base(shape)
-    {
-        Pointer = pointer;
-    }
-
-    public CuTensor PadLeft() => Reshape([1, ..Shape]);
-
-    public CuTensor PadRight() => Reshape([..Shape, 1]);
-
-    public CuTensor Reshape(Shape shape) // no allocation
+    public CuTensor<T> Reshape(Shape shape) // no allocation
     {
         if (shape.ArraySize != Size)
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
 
-        return new CuTensor(shape, Pointer);
-    }
-
-    public float[] CopyToHost()
-    {
-        var destination = new float[Size];
-        CopyToHost(destination);
-        return destination;
+        return new(Context, Array, shape);
     }
     
-    public void CopyToHost(Span<float> destination)
-    {
-        if (destination.Length != Size)
-            throw new ArgumentException($"Destination array size ({destination.Length}) not equal to allocated array size ({Size})");
-
-        CuArray.CopyToHost(Pointer, destination, Size);
-    }
-
-    public void CopyToDevice(ReadOnlySpan<float> source)
-    {
-        if (source.Length != Size)
-            throw new ArgumentException($"Source array size ({source.Length}) not equal to allocated array size ({Size})");
-
-        CuArray.CopyToDevice(source, Pointer, Size);
-    }
-    
-    public void Dispose()
-    {
-        CuArray.Free(Pointer);
-        BytesAllocated -= Size << 2;
-    }
+    public void CopyToHost(Span<T> destination) => Array.CopyToHost(destination);
+    public void CopyToDevice(ReadOnlySpan<T> source) => Array.CopyToDevice(source);
 
     public override string ToString() => $"Tensor #{Id}, shape={Shape}";
 }

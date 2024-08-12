@@ -1,35 +1,30 @@
 ﻿// ReSharper disable ConvertToPrimaryConstructor
 
 using BitTensor.CUDA.Graph;
-using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Models;
 
-public class LinearLayer : ILayer, IDisposable
+public class LinearLayer : ILayer<float>
 {
-    public CuTensorWeight Weights { get; set; }
-    public CuTensorWeight Bias { get; set; }
-    public Func<CuTensorNode, CuTensorNode> Activation { get; }
+    public delegate CuTensorNode<float> ActivationFunction(CuTensorNode<float> node);
 
-    public CuTensorWeight[] Parameters => [Weights, Bias];
+    public CuTensorWeights<float> Weights { get; set; }
+    public CuTensorWeights<float> Bias { get; set; }
+    public ActivationFunction Activation { get; }
 
-    public LinearLayer(CuTensorContext context, int inputs, int outputs, Func<CuTensorNode, CuTensorNode> activation)
+    public CuTensorWeights<float>[] Parameters => [Weights, Bias];
+
+    public LinearLayer(CuContext context, int inputs, int outputs, ActivationFunction activation)
     {
         Activation = activation;
-        Bias = new CuTensorWeight(context, CuTensor.Random.Normal([outputs]));
-        Weights = new CuTensorWeight(context, CuTensor.Random.Normal([inputs, outputs]));
+        Bias = new CuTensorWeights<float>(context.Random.Normal([outputs]));
+        Weights = new CuTensorWeights<float>(context.Random.Normal([inputs, outputs]));
     }
 
-    public CuTensorNode Compute(CuTensorNode input)
+    public CuTensorNode<float> Compute(CuTensorNode<float> input)
     {
         var z = input * Weights + Bias;
         var y = Activation(z);
         return y;
-    }
-
-    public void Dispose()
-    {
-        Weights.Dispose();
-        Bias.Dispose();
     }
 }

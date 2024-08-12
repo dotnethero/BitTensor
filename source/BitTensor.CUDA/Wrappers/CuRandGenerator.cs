@@ -4,7 +4,7 @@ namespace BitTensor.CUDA.Wrappers;
 
 using static cuRAND;
 
-public unsafe class CuRandGenerator : IDisposable
+internal sealed unsafe class CuRandGenerator : IDisposable
 {
     internal readonly curandGenerator_st* Generator;
 
@@ -24,7 +24,7 @@ public unsafe class CuRandGenerator : IDisposable
         Status.EnsureIsSuccess(status);
     }
     
-    public CuTensor GenerateUniform(CuTensor tensor)
+    public CuTensor<float> GenerateUniform(CuTensor<float> tensor)
     {
         var status = curandGenerateUniform(Generator, tensor.Pointer, (uint) tensor.Size);
         Status.EnsureIsSuccess(status);
@@ -32,7 +32,7 @@ public unsafe class CuRandGenerator : IDisposable
         return tensor;
     }
 
-    public CuTensor GenerateNormal(CuTensor tensor, float mean = 0f, float stddev = 1f)
+    public CuTensor<float> GenerateNormal(CuTensor<float> tensor, float mean = 0f, float stddev = 1f)
     {
         var status = curandGenerateNormal(Generator, tensor.Pointer, (uint) tensor.Size, mean, stddev);
         Status.EnsureIsSuccess(status);

@@ -1,21 +1,23 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-public unsafe class CuTensorContraction : ICuTensorOperation
+internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T : unmanaged, INumberBase<T>
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
     public CuTensorContraction(
         CuTensorContext context,
-        CuTensorDescriptor a,
-        CuTensorDescriptor b,
-        CuTensorDescriptor c,
-        CuTensorDescriptor d)
+        CuTensorDescriptor<T> a,
+        CuTensorDescriptor<T> b,
+        CuTensorDescriptor<T> c,
+        CuTensorDescriptor<T> d)
     {
         cutensorOperationDescriptor* descriptor;
 
@@ -25,7 +27,7 @@ public unsafe class CuTensorContraction : ICuTensorOperation
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY, 
-            d.Descriptor, d.Modes, CUTENSOR_COMPUTE_DESC_32F);
+            d.Descriptor, d.Modes, Types.GetComputeType<T>());
 
         Status.EnsureIsSuccess(status);
 
@@ -37,7 +39,15 @@ public unsafe class CuTensorContraction : ICuTensorOperation
 
     public CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
 
-    public void Execute(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, CuTensor d, float alpha = 1f, float beta = 1f)
+    public void Execute(
+        CuTensorPlan plan,
+        CuTensorWorkspace ws,
+        IDeviceArray<T> a,
+        IDeviceArray<T> b,
+        IDeviceArray<T> c,
+        IDeviceArray<T> d,
+        float alpha = 1f,
+        float beta = 1f)
     {
         var status = cutensorContract(
             Context.Handle, 

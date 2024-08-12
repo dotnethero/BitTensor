@@ -8,9 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
-    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.Interop.csproj" />
-    <ProjectReference Include="..\BitTensor.CUDA.Kernels\BitTensor.CUDA.Kernels.csproj" />
+    <PackageReference Include="ILGPU" Version="1.5.1" />
+    <PackageReference Include="ILGPU.Algorithms" Version="1.5.1" />
   </ItemGroup>
 
 </Project>

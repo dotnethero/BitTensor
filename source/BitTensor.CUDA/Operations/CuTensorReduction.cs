@@ -1,20 +1,22 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using System.Numerics;
+using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-internal unsafe class CuTensorReduction : ICuTensorOperation
+internal sealed unsafe class CuTensorReduction<T> : ICuTensorOperation where T : unmanaged, INumberBase<T>
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }
 
     public CuTensorReduction(
         CuTensorContext context,
-        CuTensorDescriptor a,
-        CuTensorDescriptor b,
-        CuTensorDescriptor c,
+        CuTensorDescriptor<T> a,
+        CuTensorDescriptor<T> b,
+        CuTensorDescriptor<T> c,
         cutensorOperator_t opReduce)
     {
         cutensorOperationDescriptor* descriptor;
@@ -25,7 +27,7 @@ internal unsafe class CuTensorReduction : ICuTensorOperation
             a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
             c.Descriptor, c.Modes, opReduce,
-            CUTENSOR_COMPUTE_DESC_32F);
+            Types.GetComputeType<T>());
 
         Status.EnsureIsSuccess(status);
 
@@ -37,7 +39,14 @@ internal unsafe class CuTensorReduction : ICuTensorOperation
 
     public CuTensorWorkspace CreateWorkspace(CuTensorPlan plan) => new(plan.WorkspaceSize);
 
-    public void Execute(CuTensorPlan plan, CuTensorWorkspace ws, CuTensor a, CuTensor b, CuTensor c, float alpha, float beta)
+    public void Execute(
+        CuTensorPlan plan,
+        CuTensorWorkspace ws, 
+        IDeviceArray<T> a,
+        IDeviceArray<T> b,
+        IDeviceArray<T> c,
+        float alpha,
+        float beta)
     {
         var status = cutensorReduce(Context.Handle, plan.Plan, &alpha, a.Pointer, &beta, b.Pointer, c.Pointer, ws.Pointer, ws.Bytes, CuStream.Default);
         Status.EnsureIsSuccess(status);

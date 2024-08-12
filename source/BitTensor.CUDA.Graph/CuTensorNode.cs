@@ -1,46 +1,50 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Wrappers;
+using ILGPU;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
+public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasContext where T : unmanaged, INumberBase<T>
 {
     public delegate void ForwardFunction();
-    public delegate CuTensorNode[] BackwardFunction(CuTensorNode grad, CuTensorNode self);
+    public delegate CuTensorNode<T>[] BackwardFunction(CuTensorNode<T> grad, CuTensorNode<T> self);
 
-    public readonly CuTensorContext Context;
-    public readonly CuTensor Tensor;
-    public readonly Shape Shape;
+    public readonly CuContext Context;
+    public readonly CuTensor<T> Tensor;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
-    public readonly CuTensorNode[] Children;
-    public readonly List<CuTensorNode> Dependents;
-    public readonly bool Owned;
+    public readonly CuTensorNode<T>[] Children;
+    public readonly List<CuTensorNode<T>> Dependents;
     public bool Outdated;
+    
+    // TODO: inline
+    public unsafe T* Pointer => Tensor.Pointer;
+    public ArrayView<T> View => Tensor.View;
 
-    public CuTensorNode(CuTensorContext context, CuTensor tensor, bool owned = false)
+    int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
+    long IDeviceArray<T>.Size => Tensor.Array.Size;
+
+    CuContext IHasContext.GetContext() => Context;
+
+    public CuTensorNode(CuTensor<T> tensor) : base(tensor.Shape)
     {
-        Context = context;
+        Context = tensor.Context;
         Tensor = tensor;
-        Shape = tensor.Shape;
         Children = [];
         Dependents = new(3);
         Outdated = false;
-        Owned = owned;
     }
     
-    public CuTensorNode(CuTensorContext context, CuTensor tensor, CuTensorNode[] children, ForwardFunction forward, BackwardFunction backward)
+    public CuTensorNode(CuTensor<T> tensor, CuTensorNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
     {
-        Context = context;
+        Context = tensor.Context;
         Tensor = tensor;
-        Shape = tensor.Shape;
         Forward = forward;
         Backward = backward;
         Children = children;
         Dependents = new(3);
         Outdated = true;
-        Owned = true;
 
         foreach (var child in Children)
         {
@@ -75,15 +79,18 @@ public partial class CuTensorNode : ITensor<CuTensorNode>, IDisposable
         Outdated = true;
     }
 
-    public override int GetHashCode() => unchecked((int)Tensor.Id); // TODO: count nodes, not tensors
-
-    public override string ToString() => $"Tensor #{Tensor.Id}, shape={Shape}";
-
-    public void Dispose()
+    public T[] CopyToHost()
     {
-        if (Owned)
-        {
-            Tensor.Dispose();
-        }
+        EnsureHasUpdatedValues();
+        IDeviceArray<T> tensor = Tensor;
+        return tensor.CopyToHost();
     }
+
+    public void CopyToHost(Span<T> destination) => Tensor.CopyToHost(destination);
+
+    public void CopyToDevice(ReadOnlySpan<T> source) => Tensor.CopyToDevice(source);
+
+    public override int GetHashCode() => unchecked((int)Id);
+
+    public override string ToString() => $"Tensor #{Id}, shape={Shape}";
 }
