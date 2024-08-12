@@ -27,6 +27,19 @@ public static class CuKernels
 
     public static void TanhBackward(Index1D i, ArrayView<float> grad, ArrayView<float> tanh, ArrayView<float> output)
     {
-        output[i] = grad[i] * (1f - tanh[i] * tanh[i]);
+        var t = tanh[i];
+        output[i] = grad[i] * (1f - t * t);
+    }
+
+    public static void ReLU(Index1D i, ArrayView<float> a, ArrayView<float> output)
+    {
+        var t = a[i];
+        output[i] = t > 0 ? t : 0;
+    }
+
+    public static void LeakyReLU(Index1D i, ArrayView<float> a, float alpha, ArrayView<float> output)
+    {
+        var t = a[i];
+        output[i] = t > 0 ? t : alpha * t;
     }
 }

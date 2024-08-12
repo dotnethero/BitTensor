@@ -26,7 +26,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, CuTensorNode.Tanh),
+            new LinearLayer(context, inputCount, hiddenCount, a => CuTensorNode.LeakyReLU(a, alpha: 0.01f)),
             new LinearLayer(context, hiddenCount, outputCount, a => a)
         ]);
 
