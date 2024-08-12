@@ -33,14 +33,20 @@ public sealed class Shape : IEnumerable<int>
 
     public Shape Append(int size) => Create([..Extents, size]);
 
-    public Shape Reduce(HashSet<Index> axis)
+    public Shape Reduce(HashSet<Index> axis, bool keepDims = false)
     {
         var offsets = GetOffsets(axis);
         var extents = new List<int>(Dimensions);
         for (var i = 0; i < Dimensions; ++i)
         {
             if (!offsets.Contains(i))
+            {
                 extents.Add(Extents[i]);
+            }
+            else if (keepDims)
+            {
+                extents.Add(1);
+            }
         }
         return Create(extents.ToArray());
     }

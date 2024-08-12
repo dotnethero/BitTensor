@@ -39,15 +39,18 @@ internal class Program
         var model = Model.Sequential(
         [
             new LinearLayer(context, inputCount, hiddenCount, CuTensorNode.ReLU),
-            new LinearLayer(context, hiddenCount, outputCount, CuTensorNode.ReLU)
+            new LinearLayer(context, hiddenCount, outputCount, CuTensorNode.Softmax)
         ]);
 
         // train
+        var sw = Stopwatch.StartNew();
         var compilation = model.Compile(images, labels);
-        model.Fit(compilation, lr: 1e-6f, epochs: 1000, trace: true);
+        model.Fit(compilation, lr: 3e-4f, epochs: 10000, trace: true);
+        Console.WriteLine(sw.Elapsed); // 00:00:06.887
 
         // evaluate
         var output = model.Compute(images);
+        output.EnsureHasUpdatedValues();
         CuDebug.WriteLine(labels.Tensor);
         CuDebug.WriteLine(output.Tensor);
     }

@@ -14,12 +14,14 @@ public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged, 
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<Index> axis, cutensorOperator_t op)
+    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<Index> axis, cutensorOperator_t op, bool keepDims = false)
     {
         var modes = input.Shape.GetReductionModes(axis);
 
         InputDescriptor = new(context, input);
-        OutputDescriptor = new(context, output, modes);
+        OutputDescriptor = keepDims
+            ? new(context, output)
+            : new(context, output, modes);
 
         Reduction = new(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
         ReductionPlan = Reduction.CreatePlan();

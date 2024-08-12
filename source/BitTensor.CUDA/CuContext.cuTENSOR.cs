@@ -66,23 +66,26 @@ public partial class CuContext
     public CuTensorReductionPlan<T> CreateSumPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        HashSet<Index> axis) 
+        HashSet<Index> axis,
+        bool keepDims = false) 
         where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_ADD);
+        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_ADD, keepDims);
     
     public CuTensorReductionPlan<T> CreateMaxPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        HashSet<Index> axis) 
+        HashSet<Index> axis,
+        bool keepDims = false) 
         where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MAX);
+        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MAX, keepDims);
     
     public CuTensorReductionPlan<T> CreateMinPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        HashSet<Index> axis) 
+        HashSet<Index> axis,
+        bool keepDims = false) 
         where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MIN);
+        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MIN, keepDims);
 
     public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
         AbstractTensor a,

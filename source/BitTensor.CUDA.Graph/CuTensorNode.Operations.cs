@@ -1,10 +1,35 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
 public static partial class CuTensorNode
 {
+    public static CuTensorNode<T> Exp<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
+    {
+        var context = GetContext(a);
+        var output = context.Allocate<T>(a.Shape);
+        var plan = context.CreateUnaryPlan<T>(a, output, cutensorOperator_t.CUTENSOR_OP_EXP);
+        return new(
+            output,
+            children: [a],
+            forward: () => plan.Execute(a, output, gamma: 0),
+            backward: (grad, self) => [ElementwiseProduct(grad, self)]);
+    }
+
+    public static CuTensorNode<T> Reciprocal<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
+    {
+        var context = GetContext(a);
+        var output = context.Allocate<T>(a.Shape);
+        var plan = context.CreateUnaryPlan<T>(a, output, cutensorOperator_t.CUTENSOR_OP_RCP);
+        return new(
+            output,
+            children: [a],
+            forward: () => plan.Execute(a, output, gamma: 0),
+            backward: (grad, self) => [ElementwiseProduct(self, self, -1)]);
+    }
+
     public static CuTensorNode<T> Add<T>(CuTensorNode<T> a, CuTensorNode<T> b, float beta = 1f) where T : unmanaged, INumberBase<T>
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
@@ -106,12 +131,12 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Broadcast(grad, a.Shape)]);
     }
     
-    public static CuTensorNode<T> Sum<T>(CuTensorNode<T> a, HashSet<Index> axis, float scale = 1f) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Sum<T>(CuTensorNode<T> a, HashSet<Index> axis, bool keepDims = false, float scale = 1f) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
-        var shape = a.Shape.Reduce(axis);
+        var shape = a.Shape.Reduce(axis, keepDims);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateSumPlan<T>(a, output, axis);
+        var plan = context.CreateSumPlan<T>(a, output, axis, keepDims);
         return new(
             output,
             children: [a],
@@ -119,12 +144,12 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Broadcast(grad, a.Shape, scale)]); // TODO: Verify!
     }
 
-    public static CuTensorNode<T> Max<T>(CuTensorNode<T> a, HashSet<Index> axis) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Max<T>(CuTensorNode<T> a, HashSet<Index> axis, bool keepDims = false) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
-        var shape = a.Shape.Reduce(axis);
+        var shape = a.Shape.Reduce(axis, keepDims);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateMaxPlan<T>(a, output, axis);
+        var plan = context.CreateMaxPlan<T>(a, output, axis, keepDims);
         return new(
             output,
             children: [a],
@@ -132,12 +157,12 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
     }
     
-    public static CuTensorNode<T> Min<T>(CuTensorNode<T> a, HashSet<Index> axis) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Min<T>(CuTensorNode<T> a, HashSet<Index> axis, bool keepDims = false) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
-        var shape = a.Shape.Reduce(axis);
+        var shape = a.Shape.Reduce(axis, keepDims);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateMinPlan<T>(a, output, axis);
+        var plan = context.CreateMinPlan<T>(a, output, axis, keepDims);
         return new(
             output,
             children: [a],
@@ -158,7 +183,7 @@ public static partial class CuTensorNode
             output,
             children: [a],
             forward: () => plan.Execute(a, output, alpha: scale, gamma: 0),
-            backward: (grad, _) => [Sum(grad, axis, scale)]); // TODO: Verify!
+            backward: (grad, _) => [Sum(grad, axis, scale: scale)]); // TODO: Verify!
     }
     
     public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
