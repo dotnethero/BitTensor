@@ -9,7 +9,7 @@ public static unsafe class MNIST
     public static Dataset<float> ReadImages(string path)
     {
         using var stream = File.OpenRead(path);
-        var samples = ReadFile<float>(stream, ConvertToFloat);
+        var samples = ReadFile<float>(stream, Normalize);
         return samples;
     }
 
@@ -37,14 +37,14 @@ public static unsafe class MNIST
         return samples;
     }
 
-    private static void ConvertToFloat(Span<float> view, ReadOnlySpan<byte> buffer)
+    private static void Normalize(Span<float> view, ReadOnlySpan<byte> buffer)
     {
         fixed (byte* src = buffer)
         fixed (float* dst = view)
         {
             for (var i = 0; i < view.Length; ++i)
             {
-                dst[i] = src[i];
+                dst[i] = src[i] / 255f;
             }
         }
     }

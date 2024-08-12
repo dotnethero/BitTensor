@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
 using ILGPU;
+using ILGPU.Runtime;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -89,6 +90,18 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
     public void CopyToHost(Span<T> destination) => Tensor.CopyToHost(destination);
 
     public void CopyToDevice(ReadOnlySpan<T> source) => Tensor.CopyToDevice(source);
+
+    public void LoadBatches(Dataset<T> dataset, int[] batchIndexes)
+    {
+        var stride = dataset.Shape.Strides[0];
+
+        for (var i = 0; i < batchIndexes.Length; i++)
+        {
+            var sampleIndex = batchIndexes[i];
+            var batch = new ReadOnlySpan<T>(dataset.Data, sampleIndex * stride, stride);
+            View.SubView(i * stride, stride).CopyFromCPU(batch);
+        }
+    }
 
     public override int GetHashCode() => unchecked((int)Id);
 
