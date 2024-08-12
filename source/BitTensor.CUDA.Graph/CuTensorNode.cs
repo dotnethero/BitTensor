@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
+using ILGPU;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -18,7 +18,9 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
     public readonly List<CuTensorNode<T>> Dependents;
     public bool Outdated;
     
+    // TODO: inline
     public unsafe T* Pointer => Tensor.Pointer;
+    public ArrayView<T> View => Tensor.View;
 
     int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
     long IDeviceArray<T>.Size => Tensor.Array.Size;
@@ -60,7 +62,6 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
             child.EnsureHasUpdatedValues();
         }
 
-        cudaRT.cudaDeviceSynchronize();
         Forward?.Invoke();
         Outdated = false;
     }

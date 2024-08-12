@@ -1,10 +1,9 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
-public static class CuTensorNode
+public static partial class CuTensorNode
 {
     public static CuTensorNode<T> Add<T>(CuTensorNode<T> a, CuTensorNode<T> b, float beta = 1f) where T : unmanaged, INumberBase<T>
     {
@@ -135,45 +134,7 @@ public static class CuTensorNode
             forward: () => plan.Execute(a, output, gamma: 0),
             backward: (grad, _) => [Sum(grad, axis)]); // TODO: Verify!
     }
-
-    public static CuTensorNode<T> Sigmoid<T>(CuTensorNode<T> a, float scale = 1f) where T : unmanaged, INumberBase<T>
-    {
-        var context = GetContext(a);
-        var output = context.Allocate<T>(a.Shape);
-        var one = context.AllocateOne<T>().AsNode();
-        var plan = context.CreateUnaryPlan<T>(a, output, cutensorOperator_t.CUTENSOR_OP_SIGMOID);
-        return new(
-            output,
-            children: [a],
-            forward: () => plan.Execute(a.Tensor, output, alpha: scale, gamma: 0),
-            backward: (grad, self) => [ElementwiseProduct(grad, ElementwiseProduct(self, one - self), scale)]);
-    }
-
-    public static CuTensorNode<T> Tanh<T>(CuTensorNode<T> a, float scale = 1f) where T : unmanaged, INumberBase<T>
-    {
-        var context = GetContext(a);
-        var output = context.Allocate<T>(a.Shape);
-        var one = context.AllocateOne<T>().AsNode();
-        var plan = context.CreateUnaryPlan<T>(a, output, cutensorOperator_t.CUTENSOR_OP_TANH);
-        return new(
-            output,
-            children: [a],
-            forward: () => plan.Execute(a, output, alpha: scale, gamma: 0),
-            backward: (grad, self) => [ElementwiseProduct(grad, one - Square(self), scale)]);
-    }
-
-    public static CuTensorNode<T> Square<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
-    {
-        var context = GetContext(a);
-        var output = context.Allocate<T>(a.Shape);
-        var plan = context.CreateMultiplyPlan<T>(a, a, output);
-        return new(
-            output,
-            children: [a],
-            forward: () => plan.Execute(a, a, output),
-            backward: (g, _) => [ElementwiseProduct(g, a, scale: 2)]);
-    }
-
+    
     public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
     {
         var axis = a.Shape.GetTransposeAxis();
