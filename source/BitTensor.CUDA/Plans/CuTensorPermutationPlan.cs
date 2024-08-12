@@ -12,7 +12,7 @@ public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged
     internal readonly CuTensorPermutation<T> Permutation;
     internal readonly CuTensorPlan PermutationPlan;
 
-    internal CuTensorPermutationPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, ReadOnlySpan<int> axis)
+    internal CuTensorPermutationPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, ReadOnlySpan<Index> axis)
     {
         var inputModes = new int[input.Dimensions];
         var outputModes = new int[output.Dimensions];
@@ -20,7 +20,7 @@ public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged
         for (var i = 0; i < input.Dimensions; ++i)
         {
             inputModes[i] = i;
-            outputModes[i] = axis[i];
+            outputModes[i] = input.Shape.GetOffset(axis[i]);
         }
 
         InputDescriptor = new(context, input, inputModes);

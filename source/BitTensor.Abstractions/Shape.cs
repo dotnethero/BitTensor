@@ -21,7 +21,7 @@ public sealed class Shape : IEnumerable<int>
         Strides = GetStrides(extents);
     }
 
-    public Shape Transpose(int[] axis)
+    public Shape Transpose(Index[] axis)
     {
         var extents = new int[Dimensions];
         for (var i = 0; i < Dimensions; ++i)
@@ -95,10 +95,12 @@ public sealed class Shape : IEnumerable<int>
 
         return strides;
     }
-    
+
+    public int GetOffset(Index axis) => axis.GetOffset(Dimensions);
+
     public HashSet<int> GetOffsets(HashSet<Index> axis) =>
         axis
-            .Select(x => x.GetOffset(Dimensions))
+            .Select(GetOffset)
             .ToHashSet();
 
     IEnumerator<int> IEnumerable<int>.GetEnumerator() => 

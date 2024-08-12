@@ -11,10 +11,4 @@ public static class ArrayExtensions
     public static IEnumerable<T> Collect<T>(this IEnumerable<IEnumerable<T>> items) => 
         items.SelectMany(x => x);
     
-    public static bool AllElementsAreUnique(this int[] items) => 
-        items.ToHashSet().Count == items.Length;
-    
-    public static string ToText(this int[] items) => 
-        $"({string.Join(",", items)})";
-    
 }

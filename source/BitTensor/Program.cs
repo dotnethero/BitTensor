@@ -20,9 +20,9 @@ internal class Program
         var testImages = MNIST.ReadImages(@"C:\Projects\BitTensor\mnist\t10k-images.idx3-ubyte");
         var testLabels = MNIST.ReadLabels(@"C:\Projects\BitTensor\mnist\t10k-labels.idx1-ubyte");
 
-        const int batchSize = 10;
+        const int batchSize = 20;
         const int inputCount = 28 * 28;
-        const int hiddenCount = 100;
+        const int hiddenCount = 300;
         const int outputCount = 10;
 
         using var context = CuContext.CreateDefault();
@@ -45,7 +45,7 @@ internal class Program
         // train
         var sw = Stopwatch.StartNew();
         var compilation = model.Compile(images, labels);
-        model.Fit(compilation, lr: 3e-4f, epochs: 10000, trace: true);
+        model.Fit(compilation, lr: 3e-4f, epochs: 3000, trace: true);
         Console.WriteLine(sw.Elapsed); // 00:00:06.887
 
         // evaluate

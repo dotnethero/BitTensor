@@ -53,39 +53,18 @@ public partial class CuContext
     public CuTensorPermutationPlan<T> CreatePermutationPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
-        ReadOnlySpan<int> axis) 
+        ReadOnlySpan<Index> axis) 
         where T : unmanaged, INumberBase<T> => 
         new(cuTENSOR, a, output, axis);
 
-    public CuTensorReductionPlan<T> CreateSumPlan<T>(
-        AbstractTensor a,
-        AbstractTensor output) 
-        where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, [], Ops.CUTENSOR_OP_ADD);
-
-    public CuTensorReductionPlan<T> CreateSumPlan<T>(
+    public CuTensorReductionPlan<T> CreateReductionPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
         HashSet<Index> axis,
+        Ops operation,
         bool keepDims = false) 
         where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_ADD, keepDims);
-    
-    public CuTensorReductionPlan<T> CreateMaxPlan<T>(
-        AbstractTensor a,
-        AbstractTensor output,
-        HashSet<Index> axis,
-        bool keepDims = false) 
-        where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MAX, keepDims);
-    
-    public CuTensorReductionPlan<T> CreateMinPlan<T>(
-        AbstractTensor a,
-        AbstractTensor output,
-        HashSet<Index> axis,
-        bool keepDims = false) 
-        where T : unmanaged, INumberBase<T> => 
-        new(cuTENSOR, a, output, axis, Ops.CUTENSOR_OP_MIN, keepDims);
+        new(cuTENSOR, a, output, axis, operation, keepDims);
 
     public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
         AbstractTensor a,

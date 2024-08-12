@@ -4,13 +4,15 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
+using Ops = cutensorOperator_t;
+
 public static partial class CuTensorNode
 {
     public static CuTensorNode<T> Exp<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.CreateUnaryPlan<T>(a, output, cutensorOperator_t.CUTENSOR_OP_EXP);
+        var plan = context.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_EXP);
         return new(
             output,
             children: [a],
@@ -22,7 +24,7 @@ public static partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.CreateUnaryPlan<T>(a, output, cutensorOperator_t.CUTENSOR_OP_RCP);
+        var plan = context.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_RCP);
         return new(
             output,
             children: [a],
@@ -119,55 +121,48 @@ public static partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode<T> Sum<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
-    {
-        var context = GetContext(a);
-        var output = context.Allocate<T>([]);
-        var plan = context.CreateSumPlan<T>(a, output);
-        return new(
-            output,
-            children: [a],
-            forward: () => plan.Execute(a, output),
-            backward: (grad, _) => [Broadcast(grad, a.Shape)]);
-    }
-    
-    public static CuTensorNode<T> Sum<T>(CuTensorNode<T> a, HashSet<Index> axis, bool keepDims = false, float scale = 1f) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Sum<T>(
+        CuTensorNode<T> a,
+        float scale = 1f,
+        bool keepDims = false) 
+        where T : unmanaged, INumberBase<T> =>
+        Sum(a, a.Shape.GetOrdinaryAxis().ToHashSet(), scale, keepDims);
+
+    public static CuTensorNode<T> Sum<T>(
+        CuTensorNode<T> a,
+        HashSet<Index> axis,
+        float scale = 1f,
+        bool keepDims = false) 
+        where T : unmanaged, INumberBase<T> =>
+        Reduce(a, axis, Ops.CUTENSOR_OP_ADD, scale, keepDims);
+
+    public static CuTensorNode<T> Max<T>(
+        CuTensorNode<T> a,
+        HashSet<Index> axis,
+        float scale = 1f,
+        bool keepDims = false) 
+        where T : unmanaged, INumberBase<T> =>
+        Reduce(a, axis, Ops.CUTENSOR_OP_MAX, scale, keepDims);
+
+    public static CuTensorNode<T> Min<T>(
+        CuTensorNode<T> a,
+        HashSet<Index> axis,
+        float scale = 1f,
+        bool keepDims = false) 
+        where T : unmanaged, INumberBase<T> =>
+        Reduce(a, axis, Ops.CUTENSOR_OP_MIN, scale, keepDims);
+
+    internal static CuTensorNode<T> Reduce<T>(CuTensorNode<T> a, HashSet<Index> axis, Ops operation, float scale = 1f, bool keepDims = false) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis, keepDims);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateSumPlan<T>(a, output, axis, keepDims);
+        var plan = context.CreateReductionPlan<T>(a, output, axis, operation, keepDims);
         return new(
             output,
             children: [a],
             forward: () => plan.Execute(a, output, scale),
-            backward: (grad, _) => [Broadcast(grad, a.Shape, scale)]); // TODO: Verify!
-    }
-
-    public static CuTensorNode<T> Max<T>(CuTensorNode<T> a, HashSet<Index> axis, bool keepDims = false) where T : unmanaged, INumberBase<T>
-    {
-        var context = GetContext(a);
-        var shape = a.Shape.Reduce(axis, keepDims);
-        var output = context.Allocate<T>(shape);
-        var plan = context.CreateMaxPlan<T>(a, output, axis, keepDims);
-        return new(
-            output,
-            children: [a],
-            forward: () => plan.Execute(a, output),
-            backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
-    }
-    
-    public static CuTensorNode<T> Min<T>(CuTensorNode<T> a, HashSet<Index> axis, bool keepDims = false) where T : unmanaged, INumberBase<T>
-    {
-        var context = GetContext(a);
-        var shape = a.Shape.Reduce(axis, keepDims);
-        var output = context.Allocate<T>(shape);
-        var plan = context.CreateMinPlan<T>(a, output, axis, keepDims);
-        return new(
-            output,
-            children: [a],
-            forward: () => plan.Execute(a, output),
-            backward: (grad, _) => [Broadcast(grad, a.Shape)]); // TODO: Verify!
+            backward: (grad, _) => [Broadcast(grad, a.Shape, scale)]);
     }
 
     public static CuTensorNode<T> Broadcast<T>(CuTensorNode<T> a, Shape shape, float scale = 1f) where T : unmanaged, INumberBase<T>
@@ -192,12 +187,12 @@ public static partial class CuTensorNode
         return Transpose(a, axis);
     }
     
-    public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a, int[] axis) where T : unmanaged, INumberBase<T>
+    public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a, Index[] axis) where T : unmanaged, INumberBase<T>
     {
         if (axis.Length != a.Dimensions)
             throw new InvalidOperationException($"Axis {axis.ToText()} is not valid argument for {a.Shape} shape tensor");
 
-        if (!axis.AllElementsAreUnique())
+        if (!a.Shape.AxisAreUnique(axis))
             throw new InvalidOperationException($"Axis {axis.ToText()} does not contain all axes for {a.Shape} shape tensor");
 
         var shape = a.Shape.Transpose(axis);

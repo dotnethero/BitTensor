@@ -2,10 +2,10 @@
 
 public static class Axis
 {
-    public static int[] GetOrdinaryAxis(this Shape shape)
+    public static Index[] GetOrdinaryAxis(this Shape shape)
     {
         var dims = shape.Dimensions;
-        var axis = new int[dims];
+        var axis = new Index[dims];
 
         for (var i = 0; i < dims; ++i)
         {
@@ -15,7 +15,7 @@ public static class Axis
         return axis;
     }
 
-    public static int[] GetTransposeAxis(this Shape shape)
+    public static Index[] GetTransposeAxis(this Shape shape)
     {
         var axis = GetOrdinaryAxis(shape);
         var dims = shape.Dimensions;
@@ -26,4 +26,10 @@ public static class Axis
 
         return axis;
     }
+
+    public static bool AxisAreUnique(this Shape shape, Index[] items) =>
+        items.Select(shape.GetOffset).ToHashSet().Count == items.Length;
+    
+    public static string ToText(this Index[] items) => 
+        $"({string.Join(",", items)})";
 }
