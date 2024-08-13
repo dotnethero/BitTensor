@@ -1,5 +1,4 @@
 ﻿using BitTensor.Abstractions;
-using ILGPU;
 
 namespace BitTensor.CUDA;
 
@@ -10,7 +9,6 @@ public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IHasContext w
 
     // TODO: inline
     public T* Pointer => Array.Pointer;
-    public ArrayView<T> View => Array.Buffer.View;
 
     int IDeviceArray<T>.ElementSize => Array.ElementSize;
     long IDeviceArray<T>.Size => Array.Size;

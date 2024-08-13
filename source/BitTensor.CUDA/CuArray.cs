@@ -1,7 +1,5 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
-using ILGPU;
-using ILGPU.Runtime;
 
 namespace BitTensor.CUDA;
 
@@ -9,16 +7,19 @@ using static cudaRT;
 
 public static unsafe class CuArray
 {
-    public static CuArray<T> Allocate<T>(this Accelerator accelerator, int size) where T : unmanaged
+    public static CuArray<T> Allocate<T>(int size) where T : unmanaged
     {
-        var buffer = accelerator.Allocate1D<T>(size);
-        return new CuArray<T>(buffer);
+        var bytes = (uint)(size * sizeof(T));
+        var pointer = (T*)AllocateRaw(bytes);
+        var array = new CuArray<T>(pointer, size);
+        return array;
     }
     
-    public static CuArray<T> Allocate<T>(this Accelerator accelerator, T[] values) where T : unmanaged
+    public static CuArray<T> Allocate<T>(ReadOnlySpan<T> values) where T : unmanaged
     {
-        var buffer = accelerator.Allocate1D(values);
-        return new CuArray<T>(buffer);
+        var array = Allocate<T>(values.Length);
+        array.CopyToDevice(values);
+        return array;
     }
 
     public static void* AllocateRaw(uint bytes)
@@ -36,17 +37,15 @@ public static unsafe class CuArray
 
 public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
 {
-    public MemoryBuffer1D<T, Stride1D.Dense> Buffer { get; }
     public long Size { get; }
     public int ElementSize { get; }
     public T* Pointer { get; }
 
-    public CuArray(MemoryBuffer1D<T, Stride1D.Dense> buffer)
+    internal CuArray(T* pointer, int size)
     {
-        Buffer = buffer;
-        Size = buffer.Length;
-        ElementSize = buffer.ElementSize;
-        Pointer = (T*)buffer.NativePtr;
+        ElementSize = sizeof(T);
+        Size = size;
+        Pointer = pointer;
     }
 
     public void CopyToHost(Span<T> destination)
@@ -61,7 +60,7 @@ public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
             cudaDeviceSynchronize();
         }
     }
-    
+
     public void CopyToDevice(ReadOnlySpan<T> source)
     {
         if (source.Length != Size)
@@ -71,6 +70,18 @@ public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
         fixed (T* sp = source)
         {
             cudaMemcpy(Pointer, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice);
+            cudaDeviceSynchronize();
+        }
+    }
+
+    public void CopyToDevice(ReadOnlySpan<T> source, int offset, int size)
+    {
+        // TODO: check
+
+        var bytes = (uint)(size * ElementSize);
+        fixed (T* sp = source)
+        {
+            cudaMemcpy(Pointer + offset, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice);
             cudaDeviceSynchronize();
         }
     }

@@ -2,7 +2,6 @@
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
-using ILGPU;
 
 namespace BitTensor.CUDA;
 

@@ -1,8 +1,6 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Wrappers;
-using ILGPU;
-using ILGPU.Runtime.Cuda;
 
 // ReSharper disable ConvertToAutoProperty
 // ReSharper disable InconsistentNaming
@@ -16,38 +14,31 @@ public interface IHasContext
 
 public partial class CuContext : IDisposable
 {
-    private readonly Context cuContext;
-    private readonly CudaAccelerator cuAccelerator;
     private readonly CuRandContext cuRAND;
     private readonly CuTensorContext cuTENSOR;
 
-    public CudaAccelerator Accelerator => cuAccelerator;
     public CuRandContext Random => cuRAND;
 
     public static CuContext CreateDefault()
     {
-        var ctx = Context.Create(c => c.Cuda().EnableAlgorithms());
-        var acc = ctx.CreateCudaAccelerator(0);
-        return new CuContext(ctx, acc);
+        return new CuContext();
     }
 
-    private CuContext(Context ctx, CudaAccelerator acc)
+    private CuContext()
     {
-        cuContext = ctx;
-        cuAccelerator = acc;
         cuRAND = new CuRandContext(this);
         cuTENSOR = new CuTensorContext();
     }
 
     public CuTensor<T> Allocate<T>(Shape shape) where T : unmanaged
     {
-        var array = cuAccelerator.Allocate<T>(shape.ArraySize);
+        var array = CuArray.Allocate<T>(shape.ArraySize);
         return new(this, array, shape);
     }
     
     public CuTensor<T> Allocate<T>(Shape shape, T[] values) where T : unmanaged
     {
-        var array = cuAccelerator.Allocate<T>(values);
+        var array = CuArray.Allocate<T>(values);
         return new(this, array, shape);
     }
 
@@ -58,7 +49,5 @@ public partial class CuContext : IDisposable
     public void Dispose()
     {
         cuTENSOR.Dispose();
-        cuAccelerator.Dispose();
-        cuContext.Dispose();
     }
 }

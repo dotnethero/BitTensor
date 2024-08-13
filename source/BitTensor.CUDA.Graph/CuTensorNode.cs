@@ -1,8 +1,6 @@
 ﻿using System.Numerics;
 using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
-using ILGPU;
-using ILGPU.Runtime;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -21,7 +19,6 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
     
     // TODO: inline
     public unsafe T* Pointer => Tensor.Pointer;
-    public ArrayView<T> View => Tensor.View;
 
     int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
     long IDeviceArray<T>.Size => Tensor.Array.Size;
@@ -99,7 +96,7 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
         {
             var sampleIndex = batchIndexes[i];
             var batch = new ReadOnlySpan<T>(dataset.Data, sampleIndex * stride, stride);
-            View.SubView(i * stride, stride).CopyFromCPU(batch);
+            Tensor.Array.CopyToDevice(batch, i * stride, stride);
         }
     }
 

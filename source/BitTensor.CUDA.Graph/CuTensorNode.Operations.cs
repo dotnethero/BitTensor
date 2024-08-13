@@ -20,6 +20,18 @@ public static partial class CuTensorNode
             backward: (grad, self) => [ElementwiseProduct(grad, self)]);
     }
 
+    public static CuTensorNode<T> ReLU<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
+    {
+        var context = GetContext(a);
+        var output = context.Allocate<T>(a.Shape);
+        var plan = context.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_RELU);
+        return new(
+            output,
+            children: [a],
+            forward: () => plan.Execute(a, output, gamma: 0),
+            backward: (grad, _) => [ReLU(grad)]);
+    }
+
     public static CuTensorNode<T> Reciprocal<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
     {
         var context = GetContext(a);
