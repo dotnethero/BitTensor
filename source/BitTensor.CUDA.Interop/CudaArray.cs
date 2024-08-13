@@ -76,7 +76,8 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
 
     public void CopyToDevice(ReadOnlySpan<T> source, int offset, int size)
     {
-        // TODO: check boundaries
+        if (offset < 0 || offset + size > Size)
+            throw new InvalidOperationException($"Out of boundaries: offset={offset}, size={size}, array.Size={Size}");
 
         var bytes = (uint)(size * ElementSize);
         fixed (T* sp = source)
