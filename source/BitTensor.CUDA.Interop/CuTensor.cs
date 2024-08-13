@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged
+public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable where T : unmanaged
 {
     public readonly CuArray<T> Array;
 
@@ -43,4 +43,6 @@ public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T> where T : unma
     public void CopyToDevice(ReadOnlySpan<T> source) => Array.CopyToDevice(source);
 
     public override string ToString() => $"Tensor #{Id}, shape={Shape}";
+
+    public void Dispose() => Array.Dispose();
 }

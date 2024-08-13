@@ -35,7 +35,7 @@ public static unsafe class CuArray
     }
 }
 
-public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
+public unsafe class CuArray<T> : IDeviceArray<T>, IDisposable where T : unmanaged
 {
     public int Size { get; }
     public int ElementSize { get; }
