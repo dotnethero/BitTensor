@@ -17,8 +17,8 @@ public sealed class CuTensorBroadcastPlan<T> : IDisposable where T : unmanaged, 
 
     internal CuTensorBroadcastPlan(
         CuTensorContext context,
-        AbstractTensor a,
-        AbstractTensor b)
+        Shape a,
+        Shape b)
     {
         LeftDescriptor = new(context, a);
         RightDescriptor = new(context, b);

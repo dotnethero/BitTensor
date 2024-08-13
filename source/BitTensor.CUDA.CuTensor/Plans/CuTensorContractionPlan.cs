@@ -14,7 +14,7 @@ public sealed class CuTensorContractionPlan<T> : IDisposable where T : unmanaged
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
     
-    internal CuTensorContractionPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
+    internal CuTensorContractionPlan(CuTensorContext context, Shape left, Shape right, Shape result)
     {
         LeftDescriptor = new(context, left);
         RightDescriptor = new(context, right);

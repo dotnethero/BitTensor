@@ -16,9 +16,9 @@ public sealed class CuTensorTernaryPlan<T> : IDisposable where T : unmanaged, IF
 
     internal CuTensorTernaryPlan(
         CuTensorContext context,
-        AbstractTensor left,
-        AbstractTensor right,
-        AbstractTensor result,
+        Shape left,
+        Shape right,
+        Shape result,
         cutensorOperator_t opAB,
         cutensorOperator_t opABC)
     {

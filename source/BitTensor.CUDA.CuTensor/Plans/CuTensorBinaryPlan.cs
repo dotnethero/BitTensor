@@ -17,8 +17,8 @@ public sealed class CuTensorBinaryPlan<T> : IDisposable where T : unmanaged, IFl
 
     internal CuTensorBinaryPlan(
         CuTensorContext context,
-        AbstractTensor a,
-        AbstractTensor b,
+        Shape a,
+        Shape b,
         Ops opA,
         Ops opB,
         Ops opAB)

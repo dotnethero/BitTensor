@@ -14,9 +14,9 @@ public sealed class CuTensorReductionPlan<T> : IDisposable where T : unmanaged, 
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    internal CuTensorReductionPlan(CuTensorContext context, AbstractTensor input, AbstractTensor output, HashSet<Index> axis, cutensorOperator_t op, bool keepDims = false)
+    internal CuTensorReductionPlan(CuTensorContext context, Shape input, Shape output, HashSet<Index> axis, cutensorOperator_t op, bool keepDims = false)
     {
-        var modes = input.Shape.GetReductionModes(axis);
+        var modes = input.GetReductionModes(axis);
 
         InputDescriptor = new(context, input);
         OutputDescriptor = keepDims

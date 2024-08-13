@@ -14,15 +14,15 @@ public sealed class CuTensorMatMulPlan<T> : IDisposable where T : unmanaged, IFl
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
 
-    internal CuTensorMatMulPlan(CuTensorContext context, AbstractTensor left, AbstractTensor right, AbstractTensor result)
+    internal CuTensorMatMulPlan(CuTensorContext context, Shape left, Shape right, Shape result)
     {
-        if (left.Shape.Dimensions < 2 ||
-            right.Shape.Dimensions < 2)
+        if (left.Dimensions < 2 ||
+            right.Dimensions < 2)
             throw new InvalidOperationException("Can't execute matrix multiplication on vectors and scalars - use dimension padding");
 
-        var leftModes = left.Shape.GetOrdinaryModes();
-        var rightModes = right.Shape.GetOrdinaryModes();
-        var resultModes = result.Shape.GetOrdinaryModes();
+        var leftModes = left.GetOrdinaryModes();
+        var rightModes = right.GetOrdinaryModes();
+        var resultModes = result.GetOrdinaryModes();
 
         // contraction
         leftModes[^1] = -1;

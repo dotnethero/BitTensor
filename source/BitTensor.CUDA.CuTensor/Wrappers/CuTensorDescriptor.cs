@@ -14,24 +14,24 @@ internal sealed unsafe class CuTensorDescriptor<T> : IDisposable where T : IFloa
     internal readonly long* Extents;
     internal readonly long* Strides;
 
-    public CuTensorDescriptor(CuTensorContext context, AbstractTensor a) : this(context, a, a.Shape.GetOrdinaryModes())
+    public CuTensorDescriptor(CuTensorContext context, Shape shape) : this(context, shape, shape.GetOrdinaryModes())
     {
     }
 
-    public CuTensorDescriptor(CuTensorContext context, AbstractTensor a, int[] modes)
+    public CuTensorDescriptor(CuTensorContext context, Shape shape, int[] modes)
     {
         cutensorTensorDescriptor* descriptor;
 
-        ModesNumber = (uint) a.Dimensions;
-        Modes = Allocate<int>(a.Dimensions);
-        Extents = Allocate<long>(a.Dimensions);
-        Strides = Allocate<long>(a.Dimensions);
+        ModesNumber = (uint) shape.Dimensions;
+        Modes = Allocate<int>(shape.Dimensions);
+        Extents = Allocate<long>(shape.Dimensions);
+        Strides = Allocate<long>(shape.Dimensions);
 
-        for (var i = 0; i < a.Dimensions; ++i)
+        for (var i = 0; i < shape.Dimensions; ++i)
         {
             Modes[i] = modes[i];
-            Extents[i] = a.Shape.Extents[i];
-            Strides[i] = a.Shape.Strides[i];
+            Extents[i] = shape.Extents[i];
+            Strides[i] = shape.Strides[i];
         }
 
         var status = cuTENSOR.cutensorCreateTensorDescriptor(
