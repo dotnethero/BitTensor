@@ -4,7 +4,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, INumberBase<T>
+public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
     public delegate void ForwardFunction();
     public delegate CuTensorNode<T>[] BackwardFunction(CuTensorNode<T> grad, CuTensorNode<T> self);

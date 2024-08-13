@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode<T> where T : unmanaged, INumberBase<T>
+public partial class CuTensorNode<T> where T : unmanaged, IFloatingPoint<T>
 {
     public CuTensorGradients<T> GetGradients()
     {

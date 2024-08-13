@@ -25,47 +25,47 @@ public sealed unsafe class CuTensorContext : IDisposable
         AbstractTensor a,
         AbstractTensor output,
         Ops unary) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, output, unary, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
 
     public CuTensorBinaryPlan<T> CreateAggregationPlan<T>(
         AbstractTensor output) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, output, output, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
 
     public CuTensorTernaryPlan<T> CreateAddPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
         AbstractTensor output) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, b, output, Ops.CUTENSOR_OP_ADD, Ops.CUTENSOR_OP_ADD);
 
     public CuTensorTernaryPlan<T> CreateMultiplyPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
         AbstractTensor output) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, b, output, Ops.CUTENSOR_OP_MUL, Ops.CUTENSOR_OP_ADD);
     
     public CuTensorMatMulPlan<T> CreateMatMulPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
         AbstractTensor output) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, b, output);
 
     public CuTensorContractionPlan<T> CreateContractionPlan<T>(
         AbstractTensor a,
         AbstractTensor b,
         AbstractTensor output)
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, b, output);
     
     public CuTensorPermutationPlan<T> CreatePermutationPlan<T>(
         AbstractTensor a,
         AbstractTensor output,
         ReadOnlySpan<Index> axis) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, output, axis);
 
     public CuTensorReductionPlan<T> CreateReductionPlan<T>(
@@ -74,13 +74,13 @@ public sealed unsafe class CuTensorContext : IDisposable
         HashSet<Index> axis,
         Ops operation,
         bool keepDims = false) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, output, axis, operation, keepDims);
 
     public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
         AbstractTensor a,
         AbstractTensor output) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, a, output);
 
     public void Dispose()

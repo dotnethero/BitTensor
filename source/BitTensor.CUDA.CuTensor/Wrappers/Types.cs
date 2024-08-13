@@ -8,7 +8,7 @@ using static cuTENSOR;
 internal static unsafe class Types
 {
     public static cutensorDataType_t GetDataType<T>()
-        where T : INumberBase<T> =>
+        where T : IFloatingPoint<T> =>
         T.Zero switch
         {
             Half => cutensorDataType_t.CUTENSOR_R_16F,
@@ -18,7 +18,7 @@ internal static unsafe class Types
         };
     
     public static cutensorComputeDescriptor* GetComputeType<T>()
-        where T : INumberBase<T> =>
+        where T : IFloatingPoint<T> =>
         T.Zero switch
         {
             Half => CUTENSOR_COMPUTE_DESC_32F,

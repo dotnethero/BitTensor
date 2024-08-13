@@ -8,7 +8,7 @@ namespace BitTensor.CUDA.Plans;
 
 using Ops = cutensorOperator_t;
 
-public sealed class CuTensorBroadcastPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
+public sealed class CuTensorBroadcastPlan<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CuTensorDescriptor<T> LeftDescriptor;
     internal readonly CuTensorDescriptor<T> RightDescriptor;

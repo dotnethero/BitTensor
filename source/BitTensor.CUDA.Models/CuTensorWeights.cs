@@ -4,7 +4,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Models;
 
-public class CuTensorWeights<T> : CuTensorNode<T> where T : unmanaged, INumberBase<T>
+public class CuTensorWeights<T> : CuTensorNode<T> where T : unmanaged, IFloatingPoint<T>
 {
     private readonly CuTensorBinaryPlan<T> _plan;
 

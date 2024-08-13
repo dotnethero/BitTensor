@@ -22,7 +22,7 @@ public class CuContext : IDisposable
     }
     
     public CuTensorNode<T> CreateNode<T>(Shape shape) 
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new(this, Allocate<T>(shape));
 
     public CuTensor<T> Allocate<T>(Shape shape) 
@@ -34,7 +34,7 @@ public class CuContext : IDisposable
         new(shape, values);
 
     public CuTensor<T> AllocateOne<T>()
-        where T : unmanaged, INumberBase<T> =>
+        where T : unmanaged, IFloatingPoint<T> =>
         Allocate<T>([], [T.One]);
 
     public void Dispose()

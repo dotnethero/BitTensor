@@ -6,7 +6,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Wrappers;
 
-internal sealed unsafe class CuTensorDescriptor<T> : IDisposable where T : unmanaged, INumberBase<T>
+internal sealed unsafe class CuTensorDescriptor<T> : IDisposable where T : IFloatingPoint<T>
 {
     internal readonly cutensorTensorDescriptor* Descriptor;
     internal readonly uint ModesNumber;

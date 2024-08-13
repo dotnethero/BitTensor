@@ -5,7 +5,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged, INumberBase<T>
+public sealed class CuTensorPermutationPlan<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CuTensorDescriptor<T> InputDescriptor;
     internal readonly CuTensorDescriptor<T> OutputDescriptor;

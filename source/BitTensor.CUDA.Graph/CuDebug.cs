@@ -8,13 +8,13 @@ namespace BitTensor.CUDA;
 
 public static class CuDebug
 {
-    public static void WriteLine<T>(CuTensor<T> tensor, [CallerArgumentExpression("tensor")] string tensorName = "") where T : unmanaged, INumberBase<T>
+    public static void WriteLine<T>(CuTensor<T> tensor, [CallerArgumentExpression("tensor")] string tensorName = "") where T : unmanaged, IFloatingPoint<T>
     {
         var text = View(tensor);
         Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
     
-    public static string View<T>(CuTensor<T> tensor, int dimensionsPerLine = 1) where T : unmanaged, INumberBase<T>
+    public static string View<T>(CuTensor<T> tensor, int dimensionsPerLine = 1) where T : unmanaged, IFloatingPoint<T>
     {
         IDeviceArray<T> array = tensor;
         var values = array.CopyToHost();
@@ -22,7 +22,7 @@ public static class CuDebug
         return View(values, shape, dimensionsPerLine);
     }
 
-    public static string View<T>(T[] values, Shape shape, int dimensionsPerLine = 1) where T : INumberBase<T>
+    public static string View<T>(T[] values, Shape shape, int dimensionsPerLine = 1) where T : IFloatingPoint<T>
     {
         if (values.Length == 0)
         {

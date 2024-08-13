@@ -7,7 +7,7 @@ namespace BitTensor.CUDA.Operations;
 
 using static cuTENSOR;
 
-internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T : unmanaged, INumberBase<T>
+internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T : unmanaged, IFloatingPoint<T>
 {
     public CuTensorContext Context { get; }
     public cutensorOperationDescriptor* Descriptor { get; }

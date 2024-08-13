@@ -8,16 +8,16 @@ public sealed record Compilation<T>(
     CuTensorNode<T>[] Gradients,
     CuTensorNode<T> Input,
     CuTensorNode<T> Desired)
-    where T : unmanaged, INumberBase<T>;
+    where T : unmanaged, IFloatingPoint<T>;
 
 public static class Model
 {
     public static Model<T> Sequential<T>(ILayer<T>[] layers)
-        where T : unmanaged, INumberBase<T> => 
+        where T : unmanaged, IFloatingPoint<T> => 
         new SequentialModel<T>(layers);
 }
 
-public abstract class Model<T> : ILayer<T> where T : unmanaged, INumberBase<T>
+public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T>
 {
     public abstract CuTensorWeights<T>[] Parameters { get; }
     public abstract CuTensorNode<T> Compute(CuTensorNode<T> input);

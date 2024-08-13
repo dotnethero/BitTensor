@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Graph;
 
-public class CuTensorGradients<T> where T : unmanaged, INumberBase<T>
+public class CuTensorGradients<T> where T : unmanaged, IFloatingPoint<T>
 {
     private readonly Dictionary<CuTensorNode<T>, CuTensorNode<T>> _gradients = new(16);
     

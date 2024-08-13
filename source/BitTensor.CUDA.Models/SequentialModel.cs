@@ -3,7 +3,7 @@ using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA.Models;
 
-public sealed class SequentialModel<T>(ILayer<T>[] layers) : Model<T> where T : unmanaged, INumberBase<T>
+public sealed class SequentialModel<T>(ILayer<T>[] layers) : Model<T> where T : unmanaged, IFloatingPoint<T>
 {
     public override CuTensorWeights<T>[] Parameters =>  
         layers.SelectMany(x => x.Parameters).ToArray();
