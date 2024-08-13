@@ -46,7 +46,7 @@ class AddComparisonTests
              d = jnp.add(x, y)
              """);
 
-        using var context = CuContext.CreateDefault();
+        using var context = CudaContext.CreateDefault();
 
         var x = scope.GetTensor("x").AsNode(context);
         var y = scope.GetTensor("y").AsNode(context);

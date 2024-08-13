@@ -256,12 +256,12 @@ public static class CuNode
         return Multiply(ex, Reciprocal(sumex));
     }
 
-    private static CuContext GetContext<T>(
+    private static CudaContext GetContext<T>(
         CudaNode<T> operand) 
         where T : unmanaged, IFloatingPoint<T> =>
         operand.Context;
 
-    private static CuContext GetContext<T>(
+    private static CudaContext GetContext<T>(
         params CudaNode<T>[] operands)
         where T : unmanaged, IFloatingPoint<T> =>
         operands

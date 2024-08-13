@@ -25,7 +25,7 @@ internal class Program
         const int hiddenCount = 300;
         const int outputCount = 10;
 
-        using var context = CuContext.CreateDefault();
+        using var context = CudaContext.CreateDefault();
 
         var images = context.CreateNode<float>([batchSize, inputCount]);
         var labels = context.CreateNode<float>([batchSize, outputCount]);
@@ -63,7 +63,7 @@ internal class Program
         const int outputCount = 20;
         const int batchSize = 50;
 
-        using var context = CuContext.CreateDefault();
+        using var context = CudaContext.CreateDefault();
 
         var x = context.cuRAND.Normal([batchSize, inputCount]).AsNode(context);
         var d = context.cuRAND.Normal([batchSize, outputCount]).AsNode(context);

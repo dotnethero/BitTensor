@@ -4,17 +4,17 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
-public class CuContext : IDisposable
+public class CudaContext : IDisposable
 {
     public CuRandContext cuRAND { get; }
     public CuTensorContext cuTENSOR { get; }
 
-    public static CuContext CreateDefault()
+    public static CudaContext CreateDefault()
     {
-        return new CuContext();
+        return new CudaContext();
     }
 
-    private CuContext()
+    private CudaContext()
     {
         cuRAND = new CuRandContext();
         cuTENSOR = new CuTensorContext();

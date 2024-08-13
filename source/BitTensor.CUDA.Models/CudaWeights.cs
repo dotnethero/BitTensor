@@ -8,7 +8,7 @@ public class CudaWeights<T> : CudaNode<T> where T : unmanaged, IFloatingPoint<T>
 {
     private readonly CuTensorBinaryPlan<T> _plan;
 
-    public CudaWeights(CuContext context, CudaTensor<T> tensor) : base(context, tensor)
+    public CudaWeights(CudaContext context, CudaTensor<T> tensor) : base(context, tensor)
     {
         _plan = Context.cuTENSOR.CreateAggregationPlan<T>(tensor);
     }

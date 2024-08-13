@@ -9,7 +9,7 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
     public delegate void ForwardFunction();
     public delegate CudaNode<T>[] BackwardFunction(CudaNode<T> grad, CudaNode<T> self);
 
-    public readonly CuContext Context;
+    public readonly CudaContext Context;
     public readonly CudaTensor<T> Tensor;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
@@ -23,7 +23,7 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
     int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
     int IDeviceArray<T>.Size => Tensor.Array.Size;
 
-    public CudaNode(CuContext context, CudaTensor<T> tensor) : base(tensor.Shape)
+    public CudaNode(CudaContext context, CudaTensor<T> tensor) : base(tensor.Shape)
     {
         Context = context;
         Tensor = tensor;
@@ -32,7 +32,7 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
         Outdated = false;
     }
     
-    public CudaNode(CuContext context, CudaTensor<T> tensor, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
+    public CudaNode(CudaContext context, CudaTensor<T> tensor, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
     {
         Context = context;
         Tensor = tensor;

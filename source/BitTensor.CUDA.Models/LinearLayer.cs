@@ -14,7 +14,7 @@ public class LinearLayer : ILayer<float>
 
     public CudaWeights<float>[] Parameters => [Weights, Bias];
 
-    public LinearLayer(CuContext context, int inputs, int outputs, ActivationFunction activation)
+    public LinearLayer(CudaContext context, int inputs, int outputs, ActivationFunction activation)
     {
         var weights = context.cuRAND.Normal([inputs, outputs]);
         var bias = context.cuRAND.Normal([outputs]);

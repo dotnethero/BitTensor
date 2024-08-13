@@ -38,7 +38,7 @@ class SumComparisonTests
              d = jnp.sum(x, axis={axis})
              """);
 
-        using var context = CuContext.CreateDefault();
+        using var context = CudaContext.CreateDefault();
 
         var x = scope.GetTensor("x").AsNode(context);
         var d = scope.GetTensor("d").AsTensor();
