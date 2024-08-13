@@ -7,12 +7,12 @@ internal sealed unsafe class CuTensorWorkspace : IDisposable
 
     public CuTensorWorkspace(ulong bytes)
     {
-        Pointer = CuArray.AllocateRaw((uint)bytes);
+        Pointer = CudaArray.AllocateRaw((uint)bytes);
         Bytes = bytes;
     }
 
     public void Dispose()
     {
-        CuArray.Free(Pointer);
+        CudaArray.Free(Pointer);
     }
 }

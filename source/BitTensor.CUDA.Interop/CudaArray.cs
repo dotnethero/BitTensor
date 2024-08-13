@@ -5,17 +5,17 @@ namespace BitTensor.CUDA;
 
 using static cudaRT;
 
-public static unsafe class CuArray
+public static unsafe class CudaArray
 {
-    public static CuArray<T> Allocate<T>(int size) where T : unmanaged
+    public static CudaArray<T> Allocate<T>(int size) where T : unmanaged
     {
         var bytes = (uint)(size * sizeof(T));
         var pointer = (T*)AllocateRaw(bytes);
-        var array = new CuArray<T>(pointer, size);
+        var array = new CudaArray<T>(pointer, size);
         return array;
     }
     
-    public static CuArray<T> Allocate<T>(ReadOnlySpan<T> values) where T : unmanaged
+    public static CudaArray<T> Allocate<T>(ReadOnlySpan<T> values) where T : unmanaged
     {
         var array = Allocate<T>(values.Length);
         array.CopyToDevice(values);
@@ -35,13 +35,13 @@ public static unsafe class CuArray
     }
 }
 
-public unsafe class CuArray<T> : IDeviceArray<T>, IDisposable where T : unmanaged
+public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmanaged
 {
     public int Size { get; }
     public int ElementSize { get; }
     public T* Pointer { get; }
 
-    internal CuArray(T* pointer, int size)
+    internal CudaArray(T* pointer, int size)
     {
         ElementSize = sizeof(T);
         Size = size;

@@ -4,10 +4,10 @@ using BitTensor.CUDA.Graph;
 namespace BitTensor.CUDA.Models;
 
 public sealed record Compilation<T>(
-    CuNode<T> Loss,
-    CuNode<T>[] Gradients,
-    CuNode<T> Input,
-    CuNode<T> Desired)
+    CudaNode<T> Loss,
+    CudaNode<T>[] Gradients,
+    CudaNode<T> Input,
+    CudaNode<T> Desired)
     where T : unmanaged, IFloatingPoint<T>;
 
 public static class Model
@@ -19,10 +19,10 @@ public static class Model
 
 public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public abstract CuWeights<T>[] Parameters { get; }
-    public abstract CuNode<T> Compute(CuNode<T> input);
+    public abstract CudaWeights<T>[] Parameters { get; }
+    public abstract CudaNode<T> Compute(CudaNode<T> input);
     
-    public Compilation<T> Compile(CuNode<T> input, CuNode<T> desired)
+    public Compilation<T> Compile(CudaNode<T> input, CudaNode<T> desired)
     {
         var output = Compute(input);
         var diff = output - desired;
@@ -49,7 +49,7 @@ public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T
         }
     }
 
-    public static void ApplyGradients(CuWeights<T>[] variables, CuNode<T>[] gradients, float lr)
+    public static void ApplyGradients(CudaWeights<T>[] variables, CudaNode<T>[] gradients, float lr)
     {
         for (var i = 0; i < variables.Length; ++i)
         {

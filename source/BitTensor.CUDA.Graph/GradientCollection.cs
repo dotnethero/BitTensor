@@ -4,20 +4,20 @@ namespace BitTensor.CUDA.Graph;
 
 public class GradientCollection<T> where T : unmanaged, IFloatingPoint<T>
 {
-    private readonly Dictionary<CuNode<T>, CuNode<T>> _gradients = new(16);
+    private readonly Dictionary<CudaNode<T>, CudaNode<T>> _gradients = new(16);
     
-    public CuNode<T> this[CuNode<T> node]
+    public CudaNode<T> this[CudaNode<T> node]
     {
         get => _gradients[node];
         set => _gradients[node] = value;
     }
     
-    public CuNode<T>[] By(IEnumerable<CuNode<T>> variables) =>
+    public CudaNode<T>[] By(IEnumerable<CudaNode<T>> variables) =>
         variables
             .Select(node => _gradients[node])
             .ToArray();
 
-    public bool ContainsKey(CuNode<T> node) => _gradients.ContainsKey(node);
+    public bool ContainsKey(CudaNode<T> node) => _gradients.ContainsKey(node);
     
-    public void Push(CuNode<T> node, CuNode<T> gradient) => _gradients[node] = gradient;
+    public void Push(CudaNode<T> node, CudaNode<T> gradient) => _gradients[node] = gradient;
 }

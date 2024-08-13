@@ -8,19 +8,21 @@ namespace BitTensor.CUDA.Graph;
 
 public static class CuDebug
 {
-    public static void WriteLine<T>(CuNode<T> node, [CallerArgumentExpression(nameof(node))] string tensorName = "") where T : unmanaged, IFloatingPoint<T>
+    public static void WriteLine<T>(CudaNode<T> node, [CallerArgumentExpression(nameof(node))] string tensorName = "") where T : unmanaged, IFloatingPoint<T>
     {
         node.EnsureHasUpdatedValues();
-        WriteLine(node.Tensor);
+        var tensor = node.Tensor;
+        var text = View(tensor);
+        Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
 
-    public static void WriteLine<T>(CuTensor<T> tensor, [CallerArgumentExpression(nameof(tensor))] string tensorName = "") where T : unmanaged, IFloatingPoint<T>
+    public static void WriteLine<T>(CudaTensor<T> tensor, [CallerArgumentExpression(nameof(tensor))] string tensorName = "") where T : unmanaged, IFloatingPoint<T>
     {
         var text = View(tensor);
         Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
 
-    public static string View<T>(CuTensor<T> tensor, int dimensionsPerLine = 1) where T : unmanaged, IFloatingPoint<T>
+    public static string View<T>(CudaTensor<T> tensor, int dimensionsPerLine = 1) where T : unmanaged, IFloatingPoint<T>
     {
         IDeviceArray<T> array = tensor;
         var values = array.CopyToHost();

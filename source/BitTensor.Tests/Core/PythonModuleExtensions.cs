@@ -61,11 +61,11 @@ static class PythonModuleExtensions
         return new([array.Length, array[0].Length, array[0][0].Length], array.Collect3D());
     }
 
-    public static CuTensor<float> AsTensor(
+    public static CudaTensor<float> AsTensor(
         this TensorData tensor) =>
         new(tensor.Shape, tensor.Values);
 
-    public static CuNode<float> AsNode(
+    public static CudaNode<float> AsNode(
         this TensorData tensor, CuContext context) =>
         context.CreateNode(tensor.Shape, tensor.Values);
 }

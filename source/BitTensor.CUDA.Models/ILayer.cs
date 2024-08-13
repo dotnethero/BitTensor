@@ -5,7 +5,7 @@ namespace BitTensor.CUDA.Models;
 
 public interface ILayer<T> where T : unmanaged, IFloatingPoint<T>
 {
-    CuWeights<T>[] Parameters { get; }
-    CuNode<T> Compute(CuNode<T> input);
+    CudaWeights<T>[] Parameters { get; }
+    CudaNode<T> Compute(CudaNode<T> input);
 }
 

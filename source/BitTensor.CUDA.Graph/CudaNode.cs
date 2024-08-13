@@ -4,17 +4,17 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
+public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
     public delegate void ForwardFunction();
-    public delegate CuNode<T>[] BackwardFunction(CuNode<T> grad, CuNode<T> self);
+    public delegate CudaNode<T>[] BackwardFunction(CudaNode<T> grad, CudaNode<T> self);
 
     public readonly CuContext Context;
-    public readonly CuTensor<T> Tensor;
+    public readonly CudaTensor<T> Tensor;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
-    public readonly CuNode<T>[] Children;
-    public readonly List<CuNode<T>> Dependents;
+    public readonly CudaNode<T>[] Children;
+    public readonly List<CudaNode<T>> Dependents;
     public bool Outdated;
     
     // TODO: inline
@@ -23,7 +23,7 @@ public partial class CuNode<T> : AbstractTensor, IDeviceArray<T> where T : unman
     int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
     int IDeviceArray<T>.Size => Tensor.Array.Size;
 
-    public CuNode(CuContext context, CuTensor<T> tensor) : base(tensor.Shape)
+    public CudaNode(CuContext context, CudaTensor<T> tensor) : base(tensor.Shape)
     {
         Context = context;
         Tensor = tensor;
@@ -32,7 +32,7 @@ public partial class CuNode<T> : AbstractTensor, IDeviceArray<T> where T : unman
         Outdated = false;
     }
     
-    public CuNode(CuContext context, CuTensor<T> tensor, CuNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
+    public CudaNode(CuContext context, CudaTensor<T> tensor, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
     {
         Context = context;
         Tensor = tensor;

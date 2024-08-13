@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Plans;
 
-internal static class Modes
+internal static class ModesHelper
 {
     public static int[] GetOrdinaryModes(this Shape shape, int offset = 0, int? skip = null)
     {

@@ -3,9 +3,9 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable where T : unmanaged
+public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable where T : unmanaged
 {
-    public readonly CuArray<T> Array;
+    public readonly CudaArray<T> Array;
 
     public T* Pointer
     {
@@ -13,22 +13,22 @@ public unsafe class CuTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable w
         get => Array.Pointer;
     }
 
-    public CuTensor(Shape shape) : base(shape)
+    public CudaTensor(Shape shape) : base(shape)
     {
-        Array = CuArray.Allocate<T>(shape.ArraySize);
+        Array = CudaArray.Allocate<T>(shape.ArraySize);
     }
     
-    public CuTensor(Shape shape, ReadOnlySpan<T> values) : base(shape)
+    public CudaTensor(Shape shape, ReadOnlySpan<T> values) : base(shape)
     {
-        Array = CuArray.Allocate<T>(values);
+        Array = CudaArray.Allocate<T>(values);
     }
 
-    public CuTensor(Shape shape, CuArray<T> array) : base(shape)
+    public CudaTensor(Shape shape, CudaArray<T> array) : base(shape)
     {
         Array = array;
     }
 
-    public CuTensor<T> Reshape(Shape shape) // no allocation
+    public CudaTensor<T> Reshape(Shape shape) // no allocation
     {
         if (shape.ArraySize != Size)
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");

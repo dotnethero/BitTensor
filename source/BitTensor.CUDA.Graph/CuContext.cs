@@ -20,23 +20,23 @@ public class CuContext : IDisposable
         cuTENSOR = new CuTensorContext();
     }
     
-    public CuNode<T> CreateNode<T>(Shape shape) 
+    public CudaNode<T> CreateNode<T>(Shape shape) 
         where T : unmanaged, IFloatingPoint<T> => 
         new(this, new(shape));
     
-    public CuNode<T> CreateNode<T>(Shape shape, T[] values) 
+    public CudaNode<T> CreateNode<T>(Shape shape, T[] values) 
         where T : unmanaged, IFloatingPoint<T> => 
         new(this, new(shape, values));
     
-    public CuNode<T> CreateNode<T>(T value) 
+    public CudaNode<T> CreateNode<T>(T value) 
         where T : unmanaged, IFloatingPoint<T> => 
         new(this, new([], [value]));
 
-    public CuTensor<T> Allocate<T>(Shape shape) 
+    public CudaTensor<T> Allocate<T>(Shape shape) 
         where T : unmanaged => 
         new(shape);
 
-    public CuTensor<T> Allocate<T>(Shape shape, T[] values) 
+    public CudaTensor<T> Allocate<T>(Shape shape, T[] values) 
         where T : unmanaged =>
         new(shape, values);
 
