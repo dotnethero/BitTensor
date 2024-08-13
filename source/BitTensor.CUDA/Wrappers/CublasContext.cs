@@ -11,7 +11,7 @@ public sealed unsafe class CublasContext : IDisposable
     {
         cublasContext* handle;
 
-        var status = cuBLAS.cublasCreate_v2(&handle);
+        var status = cublasLt.cublasCreate_v2(&handle);
         if (status != cublasStatus_t.CUBLAS_STATUS_SUCCESS)
             throw new CublasException(status);
 
@@ -22,7 +22,7 @@ public sealed unsafe class CublasContext : IDisposable
     {
         cudaRT.cudaMemset(r.Pointer, 0, (uint)r.Size);
 
-        var status = cuBLAS.cublasSaxpy_v2(
+        var status = cublasLt.cublasSaxpy_v2(
             Handle,
             a.Size,
             &alpha,
@@ -45,7 +45,7 @@ public sealed unsafe class CublasContext : IDisposable
         
         foreach (var batch in enumerator.GetBatches(a, b, r))
         {
-            var status = cuBLAS.cublasSgeam(
+            var status = cublasLt.cublasSgeam(
                 Handle,
                 cublasOperation_t.CUBLAS_OP_N,
                 cublasOperation_t.CUBLAS_OP_N,
@@ -75,7 +75,7 @@ public sealed unsafe class CublasContext : IDisposable
         
         foreach (var batch in enumerator.GetBatches(a, b, r))
         {
-            var status = cuBLAS.cublasSgemm_v2(
+            var status = cublasLt.cublasSgemm_v2(
                 Handle,
                 cublasOperation_t.CUBLAS_OP_N,
                 cublasOperation_t.CUBLAS_OP_N,
@@ -98,6 +98,6 @@ public sealed unsafe class CublasContext : IDisposable
 
     public void Dispose()
     {
-        cuBLAS.cublasDestroy_v2(Handle);
+        cublasLt.cublasDestroy_v2(Handle);
     }
 }

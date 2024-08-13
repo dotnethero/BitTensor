@@ -45,11 +45,11 @@ fn main() {
     );
 
     generate_binding(
-        "cuBLAS",
-        "/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.5/include/cublas_v2.h",
+        "cuBLASLt",
+        "/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.5/include/cublasLt.h",
         &["-I/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v12.5/include"],
         "^cublas\\w+",
-        "cublas64_12.dll",
+        "cublasLt64_12.dll",
     );
 
     generate_binding(
