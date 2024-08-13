@@ -38,8 +38,8 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, a => CuTensorNode.LeakyReLU(a, 0.1f)),
-            new LinearLayer(context, hiddenCount, outputCount, CuTensorNode.Softmax)
+            new LinearLayer(context, inputCount, hiddenCount, a => CuNode.LeakyReLU(a, 0.1f)),
+            new LinearLayer(context, hiddenCount, outputCount, CuNode.Softmax)
         ]);
 
         // train
@@ -51,8 +51,8 @@ internal class Program
         // evaluate
         var output = model.Compute(images);
         output.EnsureHasUpdatedValues();
-        CuDebug.WriteLine(labels.Tensor);
-        CuDebug.WriteLine(output.Tensor);
+        CuDebug.WriteLine(labels);
+        CuDebug.WriteLine(output);
     }
 
     private static void Test_linear_module()
@@ -69,7 +69,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, CuTensorNode.ReLU),
+            new LinearLayer(context, inputCount, hiddenCount, CuNode.ReLU),
             new LinearLayer(context, hiddenCount, outputCount, a => a)
         ]);
 
@@ -81,8 +81,8 @@ internal class Program
 
         // evaluate
         var output = model.Compute(x);
-        var diff = CuTensorNode.Sum(output - d, [1]);
+        var diff = CuNode.Sum(output - d, [1]);
         diff.EnsureHasUpdatedValues();
-        CuDebug.WriteLine(diff.Tensor);
+        CuDebug.WriteLine(diff);
     }
 }

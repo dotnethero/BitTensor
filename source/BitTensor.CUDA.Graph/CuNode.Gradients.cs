@@ -5,12 +5,12 @@ namespace BitTensor.CUDA.Graph;
 
 public partial class CuNode<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public CuTensorGradients<T> GetGradients()
+    public GradientCollection<T> GetGradients()
     {
         EnsureHasUpdatedValues();
 
         var nodes = new Stack<CuNode<T>>(16);
-        var grads = new CuTensorGradients<T>();
+        var grads = new GradientCollection<T>();
         var one = Context.CreateNode<T>(T.One);
 
         nodes.Push(this);

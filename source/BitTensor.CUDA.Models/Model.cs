@@ -26,7 +26,7 @@ public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T
     {
         var output = Compute(input);
         var diff = output - desired;
-        var loss = CuTensorNode.DotProduct(diff, diff, scale: 1f);
+        var loss = CuNode.DotProduct(diff, diff, scale: 1f);
         var grads = loss.GetGradients();
         var gradients = grads.By(Parameters);
         return new(loss, gradients, input, desired);
@@ -42,8 +42,7 @@ public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T
            
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
-                var loss = CuDebug.View(compilation.Loss.Tensor);
-                Console.WriteLine($"Loss={loss}");
+                CuDebug.WriteLine(compilation.Loss);
             }
 
             ApplyGradients(Parameters, compilation.Gradients, lr);

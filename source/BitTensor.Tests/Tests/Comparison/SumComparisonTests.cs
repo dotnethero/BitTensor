@@ -43,7 +43,7 @@ class SumComparisonTests
         var x = scope.GetTensor("x").AsNode(context);
         var d = scope.GetTensor("d").AsTensor();
 
-        var z = CuTensorNode.Sum(x, axis: ax.Select(Index.FromStart).ToHashSet());
+        var z = CuNode.Sum(x, axis: ax.Select(Index.FromStart).ToHashSet());
         
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);

@@ -6,7 +6,7 @@ namespace BitTensor.CUDA.Graph;
 
 using Ops = cutensorOperator_t;
 
-public static partial class CuTensorNode
+public static class CuNode
 {
     public static CuNode<T> Exp<T>(CuNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
@@ -239,6 +239,14 @@ public static partial class CuTensorNode
             forward: () => plan.Execute(a, output),
             backward: (grad, _) => [Transpose(grad, axis)]); // TODO: Verify!
     }
+    
+    public static CuNode<T> Softmax<T>(CuNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    {
+        var max = Max(a, [^1], keepDims: true);
+        var ex = Exp(a - max);
+        var sumex = Sum(ex, [^1], keepDims: true);
+        return ElementwiseProduct(ex, Reciprocal(sumex));
+    }
 
     private static CuNode<T> PadLeft<T>(CuNode<T> node) 
         where T : unmanaged, IFloatingPoint<T> =>
@@ -268,21 +276,21 @@ public static partial class CuTensorNode
 
 public partial class CuNode<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public static CuNode<T> operator +(CuNode<T> a, CuNode<T> b) => CuTensorNode.Add(a, b, beta: +1);
+    public static CuNode<T> operator +(CuNode<T> a, CuNode<T> b) => Graph.CuNode.Add(a, b, beta: +1);
 
-    public static CuNode<T> operator -(CuNode<T> a, CuNode<T> b) => CuTensorNode.Add(a, b, beta: -1);
+    public static CuNode<T> operator -(CuNode<T> a, CuNode<T> b) => Graph.CuNode.Add(a, b, beta: -1);
 
     public static CuNode<T> operator *(CuNode<T> a, CuNode<T> b)
     {
         if (a.IsScalar ||
             b.IsScalar)
-            return CuTensorNode.ElementwiseProduct(a, b);
+            return Graph.CuNode.ElementwiseProduct(a, b);
 
         if (a.IsVector && 
             b.IsVector)
-            return CuTensorNode.DotProduct(a, b);
+            return Graph.CuNode.DotProduct(a, b);
 
-        return CuTensorNode.MatrixProduct(a, b);
+        return Graph.CuNode.MatrixProduct(a, b);
     }
 
     public CuNode<T> Reshape(Shape shape)
