@@ -5,7 +5,7 @@
 
 #include "helpers.hpp"
 
-constexpr void ensure_success(const cudaError_t status)
+constexpr void verify(const cudaError_t status)
 {
 	if (status != cudaSuccess)
 	{
@@ -13,11 +13,16 @@ constexpr void ensure_success(const cudaError_t status)
 	}
 }
 
+void ensure_success(const cudaError_t status)
+{
+	verify(status);
+}
+
 float* f32_allocate(const unsigned int size)
 {
     float *devptr = nullptr;
     const auto status = cudaMalloc((void**)&devptr, size * sizeof(float));
-    ensure_success(status);
+    verify(status);
     return devptr;
 }
 
@@ -31,13 +36,13 @@ float* f32_allocate(const unsigned int size, const float* source)
 void f32_copy_to_device(const unsigned int size, const float* source, float* destination)
 {
     const auto status = cudaMemcpy(destination, source, size * sizeof(float), cudaMemcpyHostToDevice);
-    ensure_success(status);
+    verify(status);
 }
 
 void f32_copy_to_host(const unsigned int size, const float* source, float* destination)
 {
     const auto status = cudaMemcpy(destination, source, size * sizeof(float), cudaMemcpyDeviceToHost);
-    ensure_success(status);
+    verify(status);
 }
 
 void f32_print(const unsigned int size, const float* array)

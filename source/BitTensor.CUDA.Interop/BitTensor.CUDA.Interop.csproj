@@ -6,11 +6,7 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-
   <ItemGroup>
-    <None Include="..\..\dependencies\Release\BitTensor.CUDA.Kernels.dll" Link="BitTensor.CUDA.Kernels.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="..\..\dependencies\*.dll" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
-
 </Project>

@@ -6,6 +6,7 @@
 # User
 References/
 mnist/
+dependencies/
 .idea/
 .rustc_info.json
 

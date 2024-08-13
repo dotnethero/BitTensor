@@ -38,8 +38,8 @@ public static partial class CuTensorNode
         var output = context.Allocate<float>(a.Shape);
         return new(
             output,
-            children: [a],
-            forward: () => Kernels.LeakyReLU(a.Size, a.Pointer, output.Pointer, alpha, (void*)0),
+        children: [a],
+            forward: () => Kernels.LeakyReLU(a.Size, a.Pointer, output.Pointer, alpha),
             backward: (grad, _) => [LeakyReLU(grad, alpha)]);
     }
 
