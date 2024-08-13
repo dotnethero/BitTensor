@@ -26,7 +26,7 @@ public class LinearLayer : ILayer<float>
 
     public CudaNode<float> Compute(CudaNode<float> input)
     {
-        var z = input * Weights + Bias;
+        var z = CuNode.MatMul(input, Weights) + Bias;
         var y = Activation(z);
         return y;
     }

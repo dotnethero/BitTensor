@@ -18,7 +18,7 @@ public static class CuNode
             output,
             children: [a],
             forward: () => plan.Execute(a, output, gamma: 0),
-            backward: (grad, self) => [ElementwiseProduct(grad, self)]);
+            backward: (grad, self) => [Multiply(grad, self)]);
     }
 
     public static CudaNode<T> ReLU<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
@@ -56,7 +56,7 @@ public static class CuNode
             output,
             children: [a],
             forward: () => plan.Execute(a, output, gamma: 0),
-            backward: (_, self) => [ElementwiseProduct(self, self, -1)]);
+            backward: (_, self) => [Multiply(self, self, -1)]);
     }
 
     public static CudaNode<T> Add<T>(CudaNode<T> a, CudaNode<T> b, float beta = 1f) where T : unmanaged, IFloatingPoint<T>
@@ -82,7 +82,7 @@ public static class CuNode
             });
     }
 
-    public static CudaNode<T> ElementwiseProduct<T>(CudaNode<T> a, CudaNode<T> b, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<T> Multiply<T>(CudaNode<T> a, CudaNode<T> b, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
@@ -95,8 +95,8 @@ public static class CuNode
             forward: () => plan.Execute(a, b, output, alpha: scale),
             backward: (grad, _) =>
             {
-                var agrad = ElementwiseProduct(grad, b, scale);
-                var bgrad = ElementwiseProduct(grad, a, scale);
+                var agrad = Multiply(grad, b, scale);
+                var bgrad = Multiply(grad, a, scale);
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, agrad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, bgrad.Shape);
                 return
@@ -121,14 +121,22 @@ public static class CuNode
             backward: (grad, _) => [grad * b, a * grad]); // TODO: scale!
     }
 
-    public static CudaNode<T> MatrixProduct<T>(CudaNode<T> a, CudaNode<T> b) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<T> MatMul<T>(CudaNode<T> a, CudaNode<T> b) where T : unmanaged, IFloatingPoint<T>
     {
+        if (a.IsScalar ||
+            b.IsScalar)
+            return Multiply(a, b);
+
+        if (a.IsVector &&
+            b.IsVector)
+            return DotProduct(a, b);
+
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape); // desired shape
         var context = GetContext(a, b);
         var output = context.Allocate<T>(shape); // true output
 
-        var modA = PadLeft(a);
-        var modB = PadRight(b);
+        var modA = a.IsVector ? a.Reshape([1, ..a.Shape]) : a;
+        var modB = b.IsVector ? b.Reshape([..b.Shape, 1]) : b;
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
         var plan = context.cuTENSOR.CreateMatMulPlan<T>(modA, modB, modOutput);
@@ -141,8 +149,8 @@ public static class CuNode
             backward: (grad, _) =>
             {
                 var gpad = grad.Reshape(modShape);
-                var da = gpad * Transpose(modB);
-                var db = Transpose(modA) * gpad;
+                var da = MatMul(gpad, Transpose(modB));
+                var db = MatMul(Transpose(modA), gpad);
                 
                 var adims = Shapes.GetBroadcastedAxis(modA.Shape, da.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(modB.Shape, db.Shape);
@@ -245,21 +253,9 @@ public static class CuNode
         var max = Max(a, [^1], keepDims: true);
         var ex = Exp(a - max);
         var sumex = Sum(ex, [^1], keepDims: true);
-        return ElementwiseProduct(ex, Reciprocal(sumex));
+        return Multiply(ex, Reciprocal(sumex));
     }
 
-    private static CudaNode<T> PadLeft<T>(CudaNode<T> node) 
-        where T : unmanaged, IFloatingPoint<T> =>
-        node.IsVector
-            ? node.Reshape([1, ..node.Shape])
-            : node;
-    
-    private static CudaNode<T> PadRight<T>(CudaNode<T> node)
-        where T : unmanaged, IFloatingPoint<T> =>
-        node.IsVector
-            ? node.Reshape([..node.Shape, 1])
-            : node;
-    
     private static CuContext GetContext<T>(
         CudaNode<T> operand) 
         where T : unmanaged, IFloatingPoint<T> =>
@@ -276,22 +272,11 @@ public static class CuNode
 
 public partial class CudaNode<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public static CudaNode<T> operator +(CudaNode<T> a, CudaNode<T> b) => Graph.CuNode.Add(a, b, beta: +1);
+    public static CudaNode<T> operator +(CudaNode<T> a, CudaNode<T> b) => CuNode.Add(a, b, beta: +1);
 
-    public static CudaNode<T> operator -(CudaNode<T> a, CudaNode<T> b) => Graph.CuNode.Add(a, b, beta: -1);
+    public static CudaNode<T> operator -(CudaNode<T> a, CudaNode<T> b) => CuNode.Add(a, b, beta: -1);
 
-    public static CudaNode<T> operator *(CudaNode<T> a, CudaNode<T> b)
-    {
-        if (a.IsScalar ||
-            b.IsScalar)
-            return Graph.CuNode.ElementwiseProduct(a, b);
-
-        if (a.IsVector && 
-            b.IsVector)
-            return Graph.CuNode.DotProduct(a, b);
-
-        return Graph.CuNode.MatrixProduct(a, b);
-    }
+    public static CudaNode<T> operator *(CudaNode<T> a, CudaNode<T> b) => CuNode.Multiply(a, b);
 
     public CudaNode<T> Reshape(Shape shape)
     {

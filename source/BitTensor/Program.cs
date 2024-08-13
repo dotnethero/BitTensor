@@ -46,13 +46,14 @@ internal class Program
         var sw = Stopwatch.StartNew();
         var compilation = model.Compile(images, labels);
         model.Fit(compilation, lr: 3e-4f, epochs: 3000, trace: true);
-        Console.WriteLine(sw.Elapsed); // 00:00:06.887
+        Console.WriteLine(sw.Elapsed); // 00:00:02.419
 
         // evaluate
         var output = model.Compute(images);
         output.EnsureHasUpdatedValues();
-        CuDebug.WriteLine(labels);
-        CuDebug.WriteLine(output);
+
+        // CuDebug.WriteLine(labels);
+        // CuDebug.WriteLine(output);
     }
 
     private static void Test_linear_module()

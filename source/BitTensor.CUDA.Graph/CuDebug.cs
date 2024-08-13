@@ -22,6 +22,12 @@ public static class CuDebug
         Console.WriteLine($"{tensorName}{tensor.Shape} =\n{text}");
     }
 
+    public static string View<T>(CudaNode<T> node, int dimensionsPerLine = 1) where T : unmanaged, IFloatingPoint<T>
+    {
+        var text = View(node.Tensor);
+        return text;
+    }
+
     public static string View<T>(CudaTensor<T> tensor, int dimensionsPerLine = 1) where T : unmanaged, IFloatingPoint<T>
     {
         IDeviceArray<T> array = tensor;

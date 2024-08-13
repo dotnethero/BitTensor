@@ -42,7 +42,8 @@ public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T
            
             if (trace && (epochs < 10 || i % (epochs / 10) == 0))
             {
-                CuDebug.WriteLine(compilation.Loss);
+                var loss = CuDebug.View(compilation.Loss);
+                Console.WriteLine(loss);
             }
 
             ApplyGradients(Parameters, compilation.Gradients, lr);

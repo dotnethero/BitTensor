@@ -36,7 +36,7 @@ class MatmulComparisonTests
         var x = scope.Get2D("x").AsNode(context);
         var y = scope.Get2D("y").AsNode(context);
         var z_true = scope.Get2D("z").AsTensor();
-        var z = x * y;
+        var z = CuNode.MatMul(x, y);
 
         TensorAsserts.ShapesAreEqual(z_true, z);
         TensorAsserts.ValuesAreEqual(z_true, z);
@@ -76,8 +76,8 @@ class MatmulComparisonTests
         var ab_true = scope.Get1D("ab").AsTensor();
         var ca_true = scope.Get1D("ca").AsTensor();
 
-        var ab = a * b;
-        var ca = c * a;
+        var ab = CuNode.MatMul(a, b);
+        var ca = CuNode.MatMul(c, a);
 
         Assert.Multiple(() =>
         {
@@ -122,8 +122,8 @@ class MatmulComparisonTests
         var ac_true = scope.Get1D("ac").AsTensor();
         var cb_true = scope.Get1D("cb").AsTensor();
 
-        var ac = a * c;
-        var cb = c * b;
+        var ac = CuNode.MatMul(a, c);
+        var cb = CuNode.MatMul(c, b);
 
         Assert.Multiple(() =>
         {
@@ -212,7 +212,7 @@ class MatmulComparisonTests
         var y = scope.GetTensor("y").AsNode(context);
         var d = scope.GetTensor("d").AsTensor();
 
-        var z = x * y;
+        var z = CuNode.MatMul(x, y);
 
         TensorAsserts.ShapesAreEqual(d, z);
         TensorAsserts.ValuesAreEqual(d, z);
