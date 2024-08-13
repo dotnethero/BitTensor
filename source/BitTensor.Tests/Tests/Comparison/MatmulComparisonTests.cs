@@ -107,8 +107,8 @@ class MatmulComparisonTests
              cb = jnp.dot(c, b)
              """);
 
-        var ac_shape = scope.GetShape("ac.shape")!;
-        var cb_shape = scope.GetShape("cb.shape")!;
+        var ac_shape = scope.GetShape("ac");
+        var cb_shape = scope.GetShape("cb");
 
         Console.WriteLine(ac_shape);
         Console.WriteLine(cb_shape);
