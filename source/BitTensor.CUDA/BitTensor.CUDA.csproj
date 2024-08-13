@@ -9,7 +9,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
-    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.Interop.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.cuRAND\BitTensor.CUDA.cuRAND.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.CuTensor\BitTensor.CUDA.cuTENSOR.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.Common.csproj" />
   </ItemGroup>
 
 </Project>

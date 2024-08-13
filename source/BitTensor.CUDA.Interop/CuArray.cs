@@ -37,7 +37,7 @@ public static unsafe class CuArray
 
 public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
 {
-    public long Size { get; }
+    public int Size { get; }
     public int ElementSize { get; }
     public T* Pointer { get; }
 
@@ -76,7 +76,7 @@ public unsafe class CuArray<T> : IDeviceArray<T> where T : unmanaged
 
     public void CopyToDevice(ReadOnlySpan<T> source, int offset, int size)
     {
-        // TODO: check
+        // TODO: check boundaries
 
         var bytes = (uint)(size * ElementSize);
         fixed (T* sp = source)

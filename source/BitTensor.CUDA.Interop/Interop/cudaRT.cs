@@ -929,6 +929,12 @@ public static unsafe partial class cudaRT
 }
 
 [StructLayout(LayoutKind.Sequential)]
+public unsafe partial struct _iobuf
+{
+    public void* _Placeholder;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct dim3
 {
     public uint x;
@@ -1877,6 +1883,12 @@ public unsafe partial struct cudaTextureDesc
     public int seamlessCubemap;
 }
 
+public enum libraryPropertyType_t : int
+{
+    MAJOR_VERSION = 0,
+    MINOR_VERSION = 1,
+    PATCH_LEVEL = 2,
+}
 
 public enum cudaError : int
 {

@@ -5,11 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>BitTensor.CUDA</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BitTensor.CUDA.cuRAND\BitTensor.CUDA.cuRAND.csproj" />
-    <ProjectReference Include="..\BitTensor.CUDA.CuTensor\BitTensor.CUDA.cuTENSOR.csproj" />
+    <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.csproj" />
   </ItemGroup>
 
 </Project>

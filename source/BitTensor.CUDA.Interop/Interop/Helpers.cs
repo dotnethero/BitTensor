@@ -1,11 +1,8 @@
-﻿#nullable disable
-#pragma warning disable CS8500, CS8981
-
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace BitTensor.CUDA.Interop;
 
-internal static class Helpers
+public static class Helpers
 {
     public static IntPtr ReadConstant(IntPtr lib, string name)
     {

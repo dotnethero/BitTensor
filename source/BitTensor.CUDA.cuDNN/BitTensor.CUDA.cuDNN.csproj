@@ -4,12 +4,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>BitTensor.CUDA</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BitTensor.CUDA.cuRAND\BitTensor.CUDA.cuRAND.csproj" />
-    <ProjectReference Include="..\BitTensor.CUDA.CuTensor\BitTensor.CUDA.cuTENSOR.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.csproj" />
   </ItemGroup>
 
 </Project>

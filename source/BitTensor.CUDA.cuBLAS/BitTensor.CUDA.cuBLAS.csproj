@@ -4,9 +4,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <RootNamespace>BitTensor.CUDA</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+
   <ItemGroup>
-    <None Include="..\..\dependencies\*.dll" CopyToOutputDirectory="PreserveNewest"/>
+    <ProjectReference Include="..\BitTensor.Abstractions\BitTensor.Abstractions.csproj" />
+    <ProjectReference Include="..\BitTensor.CUDA.Interop\BitTensor.CUDA.csproj" />
   </ItemGroup>
+
 </Project>

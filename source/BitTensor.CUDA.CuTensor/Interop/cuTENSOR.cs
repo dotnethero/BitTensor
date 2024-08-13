@@ -147,12 +147,6 @@ public static unsafe partial class cuTENSOR
 }
 
 [StructLayout(LayoutKind.Sequential)]
-public unsafe partial struct _iobuf
-{
-    public void* _Placeholder;
-}
-
-[StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct cutensorComputeDescriptor
 {
     public fixed byte _unused[1];

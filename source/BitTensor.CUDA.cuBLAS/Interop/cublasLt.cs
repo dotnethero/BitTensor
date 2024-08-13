@@ -1770,13 +1770,6 @@ namespace BitTensor.CUDA.Interop
         CUDA_R_8F_E5M2 = 29,
     }
 
-    public enum libraryPropertyType_t : int
-    {
-        MAJOR_VERSION = 0,
-        MINOR_VERSION = 1,
-        PATCH_LEVEL = 2,
-    }
-
     public enum cublasStatus_t : int
     {
         CUBLAS_STATUS_SUCCESS = 0,

@@ -4,7 +4,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasContext where T : unmanaged, INumberBase<T>
+public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, INumberBase<T>
 {
     public delegate void ForwardFunction();
     public delegate CuTensorNode<T>[] BackwardFunction(CuTensorNode<T> grad, CuTensorNode<T> self);
@@ -21,22 +21,20 @@ public partial class CuTensorNode<T> : AbstractTensor, IDeviceArray<T>, IHasCont
     public unsafe T* Pointer => Tensor.Pointer;
 
     int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
-    long IDeviceArray<T>.Size => Tensor.Array.Size;
+    int IDeviceArray<T>.Size => Tensor.Array.Size;
 
-    CuContext IHasContext.GetContext() => Context;
-
-    public CuTensorNode(CuTensor<T> tensor) : base(tensor.Shape)
+    public CuTensorNode(CuContext context, CuTensor<T> tensor) : base(tensor.Shape)
     {
-        Context = tensor.Context;
+        Context = context;
         Tensor = tensor;
         Children = [];
         Dependents = new(3);
         Outdated = false;
     }
     
-    public CuTensorNode(CuTensor<T> tensor, CuTensorNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
+    public CuTensorNode(CuContext context, CuTensor<T> tensor, CuTensorNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
     {
-        Context = tensor.Context;
+        Context = context;
         Tensor = tensor;
         Forward = forward;
         Backward = backward;

@@ -12,8 +12,9 @@ public static partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_EXP);
+        var plan = context.cuTENSOR.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_EXP);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a, output, gamma: 0),
@@ -24,8 +25,9 @@ public static partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_RELU);
+        var plan = context.cuTENSOR.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_RELU);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a, output, gamma: 0),
@@ -37,8 +39,9 @@ public static partial class CuTensorNode
         var context = GetContext(a);
         var output = context.Allocate<float>(a.Shape);
         return new(
+            context,
             output,
-        children: [a],
+            children: [a],
             forward: () => Kernels.LeakyReLU(a.Size, a.Pointer, output.Pointer, alpha),
             backward: (grad, _) => [LeakyReLU(grad, alpha)]);
     }
@@ -47,12 +50,13 @@ public static partial class CuTensorNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_RCP);
+        var plan = context.cuTENSOR.CreateUnaryPlan<T>(a, output, Ops.CUTENSOR_OP_RCP);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a, output, gamma: 0),
-            backward: (grad, self) => [ElementwiseProduct(self, self, -1)]);
+            backward: (_, self) => [ElementwiseProduct(self, self, -1)]);
     }
 
     public static CuTensorNode<T> Add<T>(CuTensorNode<T> a, CuTensorNode<T> b, float beta = 1f) where T : unmanaged, INumberBase<T>
@@ -60,8 +64,9 @@ public static partial class CuTensorNode
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateAddPlan<T>(a, b, output);
+        var plan = context.cuTENSOR.CreateAddPlan<T>(a, b, output);
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a, b, output, beta: beta),
@@ -82,8 +87,9 @@ public static partial class CuTensorNode
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateMultiplyPlan<T>(a, b, output);
+        var plan = context.cuTENSOR.CreateMultiplyPlan<T>(a, b, output);
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a, b, output, alpha: scale),
@@ -106,8 +112,9 @@ public static partial class CuTensorNode
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate<T>([]);
-        var plan = context.CreateContractionPlan<T>(a, b, output);
+        var plan = context.cuTENSOR.CreateContractionPlan<T>(a, b, output);
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(a, b, output, alpha: scale),
@@ -124,9 +131,10 @@ public static partial class CuTensorNode
         var modB = PadRight(b);
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
-        var plan = context.CreateMatMulPlan<T>(modA, modB, modOutput);
+        var plan = context.cuTENSOR.CreateMatMulPlan<T>(modA, modB, modOutput);
 
         return new(
+            context,
             output,
             children: [a, b],
             forward: () => plan.Execute(modA, modB, modOutput),
@@ -180,8 +188,9 @@ public static partial class CuTensorNode
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis, keepDims);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreateReductionPlan<T>(a, output, axis, operation, keepDims);
+        var plan = context.cuTENSOR.CreateReductionPlan<T>(a, output, axis, operation, keepDims);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a, output, scale),
@@ -196,8 +205,9 @@ public static partial class CuTensorNode
         var context = GetContext(a);
         var output = context.Allocate<T>(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
-        var plan = context.CreateBroadcastPlan<T>(a, output);
+        var plan = context.cuTENSOR.CreateBroadcastPlan<T>(a, output);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a, output, alpha: scale, gamma: 0),
@@ -221,8 +231,9 @@ public static partial class CuTensorNode
         var shape = a.Shape.Transpose(axis);
         var context = GetContext(a);
         var output = context.Allocate<T>(shape);
-        var plan = context.CreatePermutationPlan<T>(a, output, axis);
+        var plan = context.cuTENSOR.CreatePermutationPlan<T>(a, output, axis);
         return new(
+            context,
             output,
             children: [a],
             forward: () => plan.Execute(a, output),
@@ -242,15 +253,15 @@ public static partial class CuTensorNode
             : node;
     
     private static CuContext GetContext<T>(
-        T operand)
-        where T : IHasContext =>
-        operand.GetContext();
+        CuTensorNode<T> operand) 
+        where T : unmanaged, INumberBase<T> =>
+        operand.Context;
 
     private static CuContext GetContext<T>(
-        params T[] operands)
-        where T : IHasContext =>
+        params CuTensorNode<T>[] operands)
+        where T : unmanaged, INumberBase<T> =>
         operands
-            .Select(c => c.GetContext())
+            .Select(c => c.Context)
             .Distinct()
             .Single();
 }
@@ -281,6 +292,7 @@ public partial class CuTensorNode<T> where T : unmanaged, INumberBase<T>
 
         var output = Tensor.Reshape(shape); // no allocation
         return new(
+            Context,
             output,
             children: [this],
             forward: () => {},

@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
@@ -24,20 +25,18 @@ internal sealed unsafe class CuRandGenerator : IDisposable
         Status.EnsureIsSuccess(status);
     }
     
-    public CuTensor<float> GenerateUniform(CuTensor<float> tensor)
+    public void GenerateUniform(IDeviceArray<float> tensor)
     {
         var status = curandGenerateUniform(Generator, tensor.Pointer, (uint) tensor.Size);
         Status.EnsureIsSuccess(status);
         cudaRT.cudaThreadSynchronize();
-        return tensor;
     }
 
-    public CuTensor<float> GenerateNormal(CuTensor<float> tensor, float mean = 0f, float stddev = 1f)
+    public void GenerateNormal(IDeviceArray<float> tensor, float mean = 0f, float stddev = 1f)
     {
         var status = curandGenerateNormal(Generator, tensor.Pointer, (uint) tensor.Size, mean, stddev);
         Status.EnsureIsSuccess(status);
         cudaRT.cudaThreadSynchronize();
-        return tensor;
     }
 
     public void Dispose()

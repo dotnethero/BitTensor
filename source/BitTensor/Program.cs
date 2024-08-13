@@ -27,8 +27,8 @@ internal class Program
 
         using var context = CuContext.CreateDefault();
 
-        var images = context.Allocate<float>([batchSize, inputCount]).AsNode();
-        var labels = context.Allocate<float>([batchSize, outputCount]).AsNode();
+        var images = context.CreateNode<float>([batchSize, inputCount]);
+        var labels = context.CreateNode<float>([batchSize, outputCount]);
 
         var indexes = Enumerable.Range(0, batchSize).ToArray();
 
@@ -64,8 +64,8 @@ internal class Program
 
         using var context = CuContext.CreateDefault();
 
-        var x = context.Random.Normal([batchSize, inputCount]).AsNode();
-        var d = context.Random.Normal([batchSize, outputCount]).AsNode();
+        var x = context.cuRAND.Normal([batchSize, inputCount]).AsNode(context);
+        var d = context.cuRAND.Normal([batchSize, outputCount]).AsNode(context);
 
         var model = Model.Sequential(
         [
