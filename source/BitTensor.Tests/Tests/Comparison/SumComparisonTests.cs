@@ -41,7 +41,7 @@ class SumComparisonTests
         using var context = CuContext.CreateDefault();
 
         var x = scope.GetTensor("x").AsNode(context);
-        var d = scope.GetTensor("d").AsTensor(context);
+        var d = scope.GetTensor("d").AsTensor();
 
         var z = CuTensorNode.Sum(x, axis: ax.Select(Index.FromStart).ToHashSet());
         

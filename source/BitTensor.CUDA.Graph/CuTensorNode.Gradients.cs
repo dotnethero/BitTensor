@@ -3,15 +3,15 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CuTensorNode<T> where T : unmanaged, IFloatingPoint<T>
+public partial class CuNode<T> where T : unmanaged, IFloatingPoint<T>
 {
     public CuTensorGradients<T> GetGradients()
     {
         EnsureHasUpdatedValues();
 
-        var nodes = new Stack<CuTensorNode<T>>(16);
+        var nodes = new Stack<CuNode<T>>(16);
         var grads = new CuTensorGradients<T>();
-        var one = Context.AllocateOne<T>().AsNode(Context);
+        var one = Context.CreateNode<T>(T.One);
 
         nodes.Push(this);
         grads.Push(this, one);

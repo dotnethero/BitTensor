@@ -7,7 +7,7 @@ namespace BitTensor.CUDA;
 
 public static class CuTensorExtensions
 {
-    public static CuTensorNode<T> AsNode<T>(this CuTensor<T> tensor, CuContext context) 
+    public static CuNode<T> AsNode<T>(this CuTensor<T> tensor, CuContext context) 
         where T : unmanaged, IFloatingPoint<T> => 
         new(context, tensor);
 }

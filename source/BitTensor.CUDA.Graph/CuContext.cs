@@ -1,9 +1,8 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Wrappers;
 
-namespace BitTensor.CUDA;
+namespace BitTensor.CUDA.Graph;
 
 public class CuContext : IDisposable
 {
@@ -21,9 +20,17 @@ public class CuContext : IDisposable
         cuTENSOR = new CuTensorContext();
     }
     
-    public CuTensorNode<T> CreateNode<T>(Shape shape) 
+    public CuNode<T> CreateNode<T>(Shape shape) 
         where T : unmanaged, IFloatingPoint<T> => 
-        new(this, Allocate<T>(shape));
+        new(this, new(shape));
+    
+    public CuNode<T> CreateNode<T>(Shape shape, T[] values) 
+        where T : unmanaged, IFloatingPoint<T> => 
+        new(this, new(shape, values));
+    
+    public CuNode<T> CreateNode<T>(T value) 
+        where T : unmanaged, IFloatingPoint<T> => 
+        new(this, new([], [value]));
 
     public CuTensor<T> Allocate<T>(Shape shape) 
         where T : unmanaged => 
@@ -32,10 +39,6 @@ public class CuContext : IDisposable
     public CuTensor<T> Allocate<T>(Shape shape, T[] values) 
         where T : unmanaged =>
         new(shape, values);
-
-    public CuTensor<T> AllocateOne<T>()
-        where T : unmanaged, IFloatingPoint<T> =>
-        Allocate<T>([], [T.One]);
 
     public void Dispose()
     {

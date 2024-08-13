@@ -8,7 +8,7 @@ using Ops = cutensorOperator_t;
 
 public static partial class CuTensorNode
 {
-    public static CuTensorNode<T> Exp<T>(CuTensorNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> Exp<T>(CuNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
@@ -21,7 +21,7 @@ public static partial class CuTensorNode
             backward: (grad, self) => [ElementwiseProduct(grad, self)]);
     }
 
-    public static CuTensorNode<T> ReLU<T>(CuTensorNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> ReLU<T>(CuNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
@@ -34,7 +34,7 @@ public static partial class CuTensorNode
             backward: (grad, _) => [ReLU(grad)]);
     }
     
-    public static unsafe CuTensorNode<float> LeakyReLU(CuTensorNode<float> a, float alpha)
+    public static unsafe CuNode<float> LeakyReLU(CuNode<float> a, float alpha)
     {
         var context = GetContext(a);
         var output = context.Allocate<float>(a.Shape);
@@ -46,7 +46,7 @@ public static partial class CuTensorNode
             backward: (grad, _) => [LeakyReLU(grad, alpha)]);
     }
 
-    public static CuTensorNode<T> Reciprocal<T>(CuTensorNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> Reciprocal<T>(CuNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
@@ -59,7 +59,7 @@ public static partial class CuTensorNode
             backward: (_, self) => [ElementwiseProduct(self, self, -1)]);
     }
 
-    public static CuTensorNode<T> Add<T>(CuTensorNode<T> a, CuTensorNode<T> b, float beta = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> Add<T>(CuNode<T> a, CuNode<T> b, float beta = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
@@ -82,7 +82,7 @@ public static partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode<T> ElementwiseProduct<T>(CuTensorNode<T> a, CuTensorNode<T> b, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> ElementwiseProduct<T>(CuNode<T> a, CuNode<T> b, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
@@ -107,7 +107,7 @@ public static partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode<T> DotProduct<T>(CuTensorNode<T> a, CuTensorNode<T> b, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> DotProduct<T>(CuNode<T> a, CuNode<T> b, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var context = GetContext(a, b);
@@ -121,7 +121,7 @@ public static partial class CuTensorNode
             backward: (grad, _) => [grad * b, a * grad]); // TODO: scale!
     }
 
-    public static CuTensorNode<T> MatrixProduct<T>(CuTensorNode<T> a, CuTensorNode<T> b) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> MatrixProduct<T>(CuNode<T> a, CuNode<T> b) where T : unmanaged, IFloatingPoint<T>
     {
         var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape); // desired shape
         var context = GetContext(a, b);
@@ -152,38 +152,38 @@ public static partial class CuTensorNode
             });
     }
 
-    public static CuTensorNode<T> Sum<T>(
-        CuTensorNode<T> a,
+    public static CuNode<T> Sum<T>(
+        CuNode<T> a,
         float scale = 1f,
         bool keepDims = false) 
         where T : unmanaged, IFloatingPoint<T> =>
         Sum(a, a.Shape.GetOrdinaryAxis().ToHashSet(), scale, keepDims);
 
-    public static CuTensorNode<T> Sum<T>(
-        CuTensorNode<T> a,
+    public static CuNode<T> Sum<T>(
+        CuNode<T> a,
         HashSet<Index> axis,
         float scale = 1f,
         bool keepDims = false) 
         where T : unmanaged, IFloatingPoint<T> =>
         Reduce(a, axis, Ops.CUTENSOR_OP_ADD, scale, keepDims);
 
-    public static CuTensorNode<T> Max<T>(
-        CuTensorNode<T> a,
+    public static CuNode<T> Max<T>(
+        CuNode<T> a,
         HashSet<Index> axis,
         float scale = 1f,
         bool keepDims = false) 
         where T : unmanaged, IFloatingPoint<T> =>
         Reduce(a, axis, Ops.CUTENSOR_OP_MAX, scale, keepDims);
 
-    public static CuTensorNode<T> Min<T>(
-        CuTensorNode<T> a,
+    public static CuNode<T> Min<T>(
+        CuNode<T> a,
         HashSet<Index> axis,
         float scale = 1f,
         bool keepDims = false) 
         where T : unmanaged, IFloatingPoint<T> =>
         Reduce(a, axis, Ops.CUTENSOR_OP_MIN, scale, keepDims);
 
-    internal static CuTensorNode<T> Reduce<T>(CuTensorNode<T> a, HashSet<Index> axis, Ops operation, float scale = 1f, bool keepDims = false) where T : unmanaged, IFloatingPoint<T>
+    internal static CuNode<T> Reduce<T>(CuNode<T> a, HashSet<Index> axis, Ops operation, float scale = 1f, bool keepDims = false) where T : unmanaged, IFloatingPoint<T>
     {
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis, keepDims);
@@ -197,7 +197,7 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Broadcast(grad, a.Shape, scale)]);
     }
 
-    public static CuTensorNode<T> Broadcast<T>(CuTensorNode<T> a, Shape shape, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> Broadcast<T>(CuNode<T> a, Shape shape, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         if (!a.Shape.CanBroadcastTo(shape))
             throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
@@ -214,13 +214,13 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Sum(grad, axis, scale: scale)]); // TODO: Verify!
     }
     
-    public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> Transpose<T>(CuNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
         var axis = a.Shape.GetTransposeAxis();
         return Transpose(a, axis);
     }
     
-    public static CuTensorNode<T> Transpose<T>(CuTensorNode<T> a, Index[] axis) where T : unmanaged, IFloatingPoint<T>
+    public static CuNode<T> Transpose<T>(CuNode<T> a, Index[] axis) where T : unmanaged, IFloatingPoint<T>
     {
         if (axis.Length != a.Dimensions)
             throw new InvalidOperationException($"Axis {axis.ToText()} is not valid argument for {a.Shape} shape tensor");
@@ -240,25 +240,25 @@ public static partial class CuTensorNode
             backward: (grad, _) => [Transpose(grad, axis)]); // TODO: Verify!
     }
 
-    private static CuTensorNode<T> PadLeft<T>(CuTensorNode<T> node) 
+    private static CuNode<T> PadLeft<T>(CuNode<T> node) 
         where T : unmanaged, IFloatingPoint<T> =>
         node.IsVector
             ? node.Reshape([1, ..node.Shape])
             : node;
     
-    private static CuTensorNode<T> PadRight<T>(CuTensorNode<T> node)
+    private static CuNode<T> PadRight<T>(CuNode<T> node)
         where T : unmanaged, IFloatingPoint<T> =>
         node.IsVector
             ? node.Reshape([..node.Shape, 1])
             : node;
     
     private static CuContext GetContext<T>(
-        CuTensorNode<T> operand) 
+        CuNode<T> operand) 
         where T : unmanaged, IFloatingPoint<T> =>
         operand.Context;
 
     private static CuContext GetContext<T>(
-        params CuTensorNode<T>[] operands)
+        params CuNode<T>[] operands)
         where T : unmanaged, IFloatingPoint<T> =>
         operands
             .Select(c => c.Context)
@@ -266,13 +266,13 @@ public static partial class CuTensorNode
             .Single();
 }
 
-public partial class CuTensorNode<T> where T : unmanaged, IFloatingPoint<T>
+public partial class CuNode<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public static CuTensorNode<T> operator +(CuTensorNode<T> a, CuTensorNode<T> b) => CuTensorNode.Add(a, b, beta: +1);
+    public static CuNode<T> operator +(CuNode<T> a, CuNode<T> b) => CuTensorNode.Add(a, b, beta: +1);
 
-    public static CuTensorNode<T> operator -(CuTensorNode<T> a, CuTensorNode<T> b) => CuTensorNode.Add(a, b, beta: -1);
+    public static CuNode<T> operator -(CuNode<T> a, CuNode<T> b) => CuTensorNode.Add(a, b, beta: -1);
 
-    public static CuTensorNode<T> operator *(CuTensorNode<T> a, CuTensorNode<T> b)
+    public static CuNode<T> operator *(CuNode<T> a, CuNode<T> b)
     {
         if (a.IsScalar ||
             b.IsScalar)
@@ -285,7 +285,7 @@ public partial class CuTensorNode<T> where T : unmanaged, IFloatingPoint<T>
         return CuTensorNode.MatrixProduct(a, b);
     }
 
-    public CuTensorNode<T> Reshape(Shape shape)
+    public CuNode<T> Reshape(Shape shape)
     {
         if (shape.ArraySize != Size)
             throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");

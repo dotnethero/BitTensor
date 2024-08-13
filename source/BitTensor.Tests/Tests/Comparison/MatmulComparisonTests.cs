@@ -1,5 +1,6 @@
 ﻿using BitTensor.Core.Tests;
 using BitTensor.CUDA;
+using BitTensor.CUDA.Graph;
 using NUnit.Framework;
 using Python.Runtime;
 
@@ -34,7 +35,7 @@ class MatmulComparisonTests
 
         var x = scope.Get2D("x").AsNode(context);
         var y = scope.Get2D("y").AsNode(context);
-        var z_true = scope.Get2D("z").AsTensor(context);
+        var z_true = scope.Get2D("z").AsTensor();
         var z = x * y;
 
         TensorAsserts.ShapesAreEqual(z_true, z);
@@ -72,8 +73,8 @@ class MatmulComparisonTests
         var a = scope.Get1D("a").AsNode(context);
         var b = scope.Get2D("b").AsNode(context);
         var c = scope.Get2D("c").AsNode(context);
-        var ab_true = scope.Get1D("ab").AsTensor(context);
-        var ca_true = scope.Get1D("ca").AsTensor(context);
+        var ab_true = scope.Get1D("ab").AsTensor();
+        var ca_true = scope.Get1D("ca").AsTensor();
 
         var ab = a * b;
         var ca = c * a;
@@ -118,8 +119,8 @@ class MatmulComparisonTests
         var a = scope.Get1D("a").AsNode(context);
         var b = scope.Get1D("b").AsNode(context);
         var c = scope.Get2D("c").AsNode(context);
-        var ac_true = scope.Get1D("ac").AsTensor(context);
-        var cb_true = scope.Get1D("cb").AsTensor(context);
+        var ac_true = scope.Get1D("ac").AsTensor();
+        var cb_true = scope.Get1D("cb").AsTensor();
 
         var ac = a * c;
         var cb = c * b;
@@ -209,7 +210,7 @@ class MatmulComparisonTests
 
         var x = scope.GetTensor("x").AsNode(context);
         var y = scope.GetTensor("y").AsNode(context);
-        var d = scope.GetTensor("d").AsTensor(context);
+        var d = scope.GetTensor("d").AsTensor();
 
         var z = x * y;
 
