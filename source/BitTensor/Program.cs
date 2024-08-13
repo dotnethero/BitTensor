@@ -38,7 +38,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, CuTensorNode.ReLU),
+            new LinearLayer(context, inputCount, hiddenCount, a => CuTensorNode.LeakyReLU(a, 0.1f)),
             new LinearLayer(context, hiddenCount, outputCount, CuTensorNode.Softmax)
         ]);
 

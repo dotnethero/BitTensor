@@ -31,6 +31,17 @@ public static partial class CuTensorNode
             forward: () => plan.Execute(a, output, gamma: 0),
             backward: (grad, _) => [ReLU(grad)]);
     }
+    
+    public static unsafe CuTensorNode<float> LeakyReLU(CuTensorNode<float> a, float alpha)
+    {
+        var context = GetContext(a);
+        var output = context.Allocate<float>(a.Shape);
+        return new(
+            output,
+            children: [a],
+            forward: () => Kernels.LeakyReLU(a.Size, a.Pointer, output.Pointer, alpha, (void*)0),
+            backward: (grad, _) => [LeakyReLU(grad, alpha)]);
+    }
 
     public static CuTensorNode<T> Reciprocal<T>(CuTensorNode<T> a) where T : unmanaged, INumberBase<T>
     {

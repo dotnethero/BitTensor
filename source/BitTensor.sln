@@ -10,6 +10,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA", "BitTensor.CUDA\BitTensor.CUDA.csproj", "{FB4C04D7-E359-499A-8BFF-B03EEEDC6E46}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor.CUDA.Interop", "BitTensor.CUDA.Interop\BitTensor.CUDA.Interop.csproj", "{D20D78AE-1CC3-4FDA-9B9A-4BB689F0826F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{28A5AA1A-9535-4FC3-9ED0-75B007A72D07} = {28A5AA1A-9535-4FC3-9ED0-75B007A72D07}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTensor", "BitTensor\BitTensor.csproj", "{66EDC9DB-DFE0-4AEC-B732-4CAF87242248}"
 EndProject
