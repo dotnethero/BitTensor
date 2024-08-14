@@ -12,23 +12,34 @@ public sealed class Shape : IEnumerable<int>
     public readonly int[] Strides;
 
     public static Shape Create(ReadOnlySpan<int> extents) => new(extents);
+    public static Shape Create(ReadOnlySpan<int> extents, ReadOnlySpan<int> strides) => new(extents, strides);
 
     private Shape(ReadOnlySpan<int> extents)
     {
-        Extents = extents.ToArray();
         Dimensions = extents.Length;
         ArraySize = GetArraySize(extents);
+        Extents = extents.ToArray();
         Strides = GetStrides(extents);
+    }
+
+    private Shape(ReadOnlySpan<int> extents, ReadOnlySpan<int> strides)
+    {
+        Dimensions = extents.Length;
+        ArraySize = GetArraySize(extents);
+        Extents = extents.ToArray();
+        Strides = strides.ToArray();
     }
 
     public Shape Transpose(Index[] axis)
     {
         var extents = new int[Dimensions];
+        var strides = new int[Dimensions];
         for (var i = 0; i < Dimensions; ++i)
         {
             extents[i] = Extents[axis[i]];
+            strides[i] = Strides[axis[i]];
         }
-        return Create(extents);
+        return Create(extents, strides);
     }
 
     public Shape Append(int size) => Create([..Extents, size]);
@@ -97,6 +108,11 @@ public sealed class Shape : IEnumerable<int>
     }
 
     public int GetOffset(Index axis) => axis.GetOffset(Dimensions);
+    
+    public int[] GetOffsets(Index[] axis) =>
+        axis
+            .Select(GetOffset)
+            .ToArray();
 
     public HashSet<int> GetOffsets(HashSet<Index> axis) =>
         axis

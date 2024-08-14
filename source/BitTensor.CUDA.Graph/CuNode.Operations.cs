@@ -149,8 +149,8 @@ public static class CuNode
             backward: (grad, _) =>
             {
                 var gpad = grad.Reshape(modShape);
-                var da = MatMul(gpad, Transpose(modB));
-                var db = MatMul(Transpose(modA), gpad);
+                var da = MatMul(gpad, modB.Transpose());
+                var db = MatMul(modA.Transpose(), gpad);
                 
                 var adims = Shapes.GetBroadcastedAxis(modA.Shape, da.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(modB.Shape, db.Shape);
@@ -280,9 +280,6 @@ public partial class CudaNode<T> where T : unmanaged, IFloatingPoint<T>
 
     public CudaNode<T> Reshape(Shape shape)
     {
-        if (shape.ArraySize != Size)
-            throw new InvalidOperationException($"Can't reshape {Shape} into {shape}");
-
         var output = Tensor.Reshape(shape); // no allocation
         return new(
             Context,
@@ -290,5 +287,22 @@ public partial class CudaNode<T> where T : unmanaged, IFloatingPoint<T>
             children: [this],
             forward: () => {},
             backward: (grad, _) => [grad.Reshape(Shape)]);
+    }
+    
+    public CudaNode<T> Transpose()
+    {
+        var axis = Shape.GetTransposeAxis();
+        return Transpose(axis);
+    }
+
+    public CudaNode<T> Transpose(Index[] axis)
+    {
+        var output = Tensor.Transpose(axis); // no allocation
+        return new(
+            Context,
+            output,
+            children: [this],
+            forward: () => {},
+            backward: (grad, _) => [grad.Transpose(axis)]); // TODO: Verify!
     }
 }

@@ -36,6 +36,16 @@ public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable
         return new(shape, Array);
     }
     
+    public CudaTensor<T> Transpose(Index[] axis) // no allocation
+    {
+        var offsets = Shape.GetOffsets(axis).ToHashSet();
+        if (offsets.Count != Dimensions)
+            throw new InvalidOperationException($"Can't transpose {Shape} with permutation {axis.ToText()}");
+
+        var shape = Shape.Transpose(axis);
+        return new(shape, Array);
+    }
+
     int IDeviceArray.ElementSize => Array.ElementSize;
     int IDeviceArray.Size => Array.Size;
 
