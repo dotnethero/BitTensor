@@ -41,7 +41,9 @@ public sealed class CuTensorMatMulPlan<T> : ICuTensorPlan where T : unmanaged, I
     public void Execute(
         IDeviceArray<T> left,
         IDeviceArray<T> right,
-        IDeviceArray<T> result) =>
+        IDeviceArray<T> result,
+        float alpha = 1f,
+        float beta = 0f) =>
         Contraction.Execute(
             ContractionPlan,
             Workspace,
@@ -49,8 +51,8 @@ public sealed class CuTensorMatMulPlan<T> : ICuTensorPlan where T : unmanaged, I
             right,
             result,
             result,
-            alpha: 1,
-            beta: 0);
+            alpha,
+            beta);
 
     public void Dispose()
     {

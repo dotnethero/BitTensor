@@ -8,8 +8,8 @@ public class LinearLayer : ILayer<float>
 {
     public delegate CudaNode<float> ActivationFunction(CudaNode<float> node);
 
-    public CudaWeights<float> Weights { get; set; }
-    public CudaWeights<float> Bias { get; set; }
+    public CudaWeights<float> Weights { get; }
+    public CudaWeights<float> Bias { get; }
     public ActivationFunction Activation { get; }
 
     public CudaWeights<float>[] Parameters => [Weights, Bias];
@@ -26,7 +26,7 @@ public class LinearLayer : ILayer<float>
 
     public CudaNode<float> Compute(CudaNode<float> input)
     {
-        var z = CuNode.MatMul(input, Weights) + Bias;
+        var z = CuNode.Gemm(input, Weights, Bias);
         var y = Activation(z);
         return y;
     }

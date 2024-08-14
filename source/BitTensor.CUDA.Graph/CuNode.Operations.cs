@@ -218,7 +218,7 @@ public static class CuNode
             context,
             output,
             children: [a],
-            forward: () => plan.Execute(a, output, alpha: scale, gamma: 0),
+            forward: () => plan.Execute(a, output, alpha: scale),
             backward: (grad, _) => [Sum(grad, axis, scale: scale)]); // TODO: Verify!
     }
     
@@ -254,6 +254,42 @@ public static class CuNode
         var ex = Exp(a - max);
         var sumex = Sum(ex, [^1], keepDims: true);
         return Multiply(ex, Reciprocal(sumex));
+    }
+
+    public static CudaNode<float> Gemm(CudaNode<float> a, CudaNode<float> b, CudaNode<float> c)
+    {
+        var modA = a.IsVector ? a.Reshape([1, ..a.Shape]) : a;
+        var modB = b.IsVector ? b.Reshape([..b.Shape, 1]) : b;
+        var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
+        var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
+
+        var context = GetContext(a, b, c);
+        var output = context.Allocate<float>(shape);
+        var broadcastPlan = context.cuTENSOR.CreateBroadcastPlan<float>(c.Shape, output.Shape);
+        var matmulPlan = context.cuTENSOR.CreateMatMulPlan<float>(modA.Shape, modB.Shape, modShape);
+
+        return new(
+            context,
+            output,
+            children: [a, b, c],
+            forward: () =>
+            {
+                broadcastPlan.Execute(c, output);
+                matmulPlan.Execute(a, b, output, beta: 1f);
+            },
+            backward: (grad, self) =>
+            {
+                var modG = grad.Reshape(modShape);
+                var da = MatMul(modG, modB.Transpose());
+                var db = MatMul(modA.Transpose(), modG);
+                var adims = Shapes.GetBroadcastedAxis(modA.Shape, da.Shape);
+                var bdims = Shapes.GetBroadcastedAxis(modB.Shape, db.Shape);
+                var cdims = Shapes.GetBroadcastedAxis(c.Shape, grad.Shape);
+                var agrad = Sum(da, axis: adims).Reshape(a.Shape);
+                var bgrad = Sum(db, axis: bdims).Reshape(b.Shape);
+                var cgrad = Sum(grad, axis: cdims).Reshape(c.Shape);
+                return [agrad, bgrad, cgrad];
+            });
     }
 
     private static CudaContext GetContext<T>(

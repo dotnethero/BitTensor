@@ -36,7 +36,7 @@ public sealed class CuTensorBroadcastPlan<T> : ICuTensorPlan where T : unmanaged
         OperationPlan = Operation.CreatePlan();
     }
     
-    public void Execute(IDeviceArray<T> left, IDeviceArray<T> right, float alpha = 1f, float gamma = 1f) =>
+    public void Execute(IDeviceArray<T> left, IDeviceArray<T> right, float alpha = 1f, float gamma = 0f) =>
         Operation.Execute(
             OperationPlan,
             left,
