@@ -5,7 +5,7 @@ namespace BitTensor.CUDA.Graph;
 
 public static partial class CuNode
 {
-    public static CudaNode<T> Add<T>(CudaNode<T> a, CudaNode<T> b, float beta = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<T> Add<T>(CudaNode<T> a, CudaNode<T> b, float beta = 1f, float gamma = 0f) where T : unmanaged, IFloatingPoint<T>
     {
         var context = GetContext(a, b);
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
@@ -14,7 +14,7 @@ public static partial class CuNode
             context,
             shape,
             children: [a, b],
-            forward: (output) => plan.Execute(a, b, output, beta: beta),
+            forward: (output) => plan.Execute(a, b, output, beta: beta, gamma: gamma),
             backward: (grad, _) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, grad.Shape);
@@ -101,7 +101,7 @@ public static partial class CuNode
             });
     }
 
-    public static CudaNode<T> Broadcast<T>(CudaNode<T> a, Shape shape, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<T> Broadcast<T>(CudaNode<T> a, Shape shape, float scale = 1f, float gamma = 0) where T : unmanaged, IFloatingPoint<T>
     {
         if (!a.Shape.CanBroadcastTo(shape))
             throw new InvalidOperationException($"Can't broadcast {a.Shape} to {shape}");
@@ -113,7 +113,7 @@ public static partial class CuNode
             context,
             shape,
             children: [a],
-            forward: (output) => plan.Execute(a, output, alpha: scale),
+            forward: (output) => plan.Execute(a, output, alpha: scale, gamma: gamma),
             backward: (grad, _) => [Sum(grad, axis, scale: scale)]); // TODO: Verify!
     }
     
@@ -154,23 +154,24 @@ public static partial class CuNode
     public static CudaNode<float> Gemm(CudaNode<float> a, CudaNode<float> b, CudaNode<float> c)
     {
         var context = GetContext(a, b, c);
+        var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
+        var broadcast = context.cuTENSOR.CreateBroadcastPlan<float>(c.Shape, shape);
         var matmul = MatMul(a, b);
-        var broadcast = Broadcast(c, matmul.Shape);
-        var shape = broadcast.Shape;
         return new(
             context,
             shape,
             children: [a, b, c],
             forward: (output) =>
             {
-                broadcast.Forward!.Invoke(output);
                 matmul.Forward!.Invoke(output);
+                broadcast.Execute(c, output, gamma: 1f); // add inplace
             },
-            backward: (grad, self) =>
+            backward: (grad, _) =>
             {
-                var dab = matmul.Backward!(grad, self);
-                var dc = broadcast.Backward!(grad, self);
-                return [..dab, ..dc];
+                var grads = matmul.Backward!.Invoke(grad, matmul); // matmul gradients don't depend on C and likewise
+                var cdims = Shapes.GetBroadcastedAxis(c.Shape, grad.Shape);
+                var cgrad = Sum(grad, axis: cdims).Reshape(c.Shape);
+                return [..grads, cgrad];
             });
     }
 
@@ -182,7 +183,7 @@ public static partial class CuNode
     private static CudaContext GetContext<T>(
         params CudaNode<T>[] operands)
         where T : unmanaged, IFloatingPoint<T> =>
-        operands
+        operands 
             .Select(c => c.Context)
             .Distinct()
             .Single();
