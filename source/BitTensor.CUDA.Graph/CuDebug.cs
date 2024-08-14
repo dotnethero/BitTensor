@@ -58,11 +58,23 @@ public static class CuDebug
             products.Add(product);
         }
 
+        var s1 = Shape.GetStrides(shape.Extents);
+        var s2 = shape.Strides;
+
         for (var i = 0; i < values.Length; ++i)
         {
+            var leftover = i;
+            var translate = 0;
+            for (var k = 0; k < dimensions; ++k)
+            {
+                var di = leftover / s1[k]; // dimension index
+                translate += s2[k] * di;
+                leftover -= di * s1[k];
+            }
+
             var opens = products.Count(p => (i) % p == 0);
             var closes = products.Count(p => (i + 1) % p == 0);
-            var value = values[i].ToString("0.00#", CultureInfo.InvariantCulture).PadLeft(dimensions > 1 ? 6 : 0);
+            var value = values[translate].ToString("0.00#", CultureInfo.InvariantCulture).PadLeft(dimensions > 1 ? 6 : 0);
 
             if (opens > 0)
                 sb.Append(new string(' ', dimensions - opens));
