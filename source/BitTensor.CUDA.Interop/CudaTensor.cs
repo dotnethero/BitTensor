@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable where T : unmanaged
+public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged
 {
     public readonly CudaArray<T> Array;
 
@@ -23,15 +23,15 @@ public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable
         Array = CudaArray.Allocate<T>(values);
     }
 
-    public CudaTensor(Shape shape, CudaArray<T> array) : base(shape)
+    private CudaTensor(Shape shape, CudaArray<T> array) : base(shape)
     {
         Array = array;
     }
 
     public CudaTensor<T> Reshape(Shape shape) // no allocation
     {
-        var reshape = Shape.EnsureCanReshape(shape);
-        return new(reshape, Array);
+        Shape.EnsureCanReshape(shape);
+        return new(shape, Array);
     }
     
     public CudaTensor<T> Transpose(Index[] axis) // no allocation

@@ -2,6 +2,19 @@
 
 public static class Axis
 {
+    public static Index[] InvertPermutation(Index[] axis)
+    {
+        var dims = axis.Length;
+        var inverted = new Index[dims];
+
+        for (var i = 0; i < dims; i++)
+        {
+            inverted[axis[i]] = i;
+        }
+
+        return inverted;
+    }
+
     public static Index[] GetOrdinaryAxis(this Shape shape)
     {
         var dims = shape.Dimensions;

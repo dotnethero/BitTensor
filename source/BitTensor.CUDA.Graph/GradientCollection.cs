@@ -12,6 +12,8 @@ public class GradientCollection<T> where T : unmanaged, IFloatingPoint<T>
         set => _gradients[node] = value;
     }
     
+    public CudaNode<T> By(CudaNode<T> variable) => _gradients[variable];
+
     public CudaNode<T>[] By(IEnumerable<CudaNode<T>> variables) =>
         variables
             .Select(node => _gradients[node])

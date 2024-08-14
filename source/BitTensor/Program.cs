@@ -86,4 +86,18 @@ internal class Program
         diff.EnsureHasUpdatedValues();
         CuDebug.WriteLine(diff);
     }
+    
+    private static void Test_transpose()
+    {
+        using var context = CudaContext.CreateDefault();
+
+        var a = context.cuRAND.Normal([2, 3, 4]).AsNode(context);
+        var b = a.Transpose([1, 2, 0]);
+        var c = b.Transpose([1, 2, 0]);
+        var grads = CuNode.Sum(c).GetGradients();
+
+        CuDebug.WriteLine(a);
+        CuDebug.WriteLine(b);
+        CuDebug.WriteLine(c);
+    }
 }

@@ -131,15 +131,16 @@ public static partial class CuNode
         if (!a.Shape.AxisAreUnique(axis))
             throw new InvalidOperationException($"Axis {axis.ToText()} does not contain all axes for {a.Shape} shape tensor");
 
-        var shape = a.Shape.Transpose(axis);
         var context = GetContext(a);
+        var shape = a.Shape.Transpose(axis);
+        var inverted = Axis.InvertPermutation(axis);
         var plan = context.cuTENSOR.CreatePermutationPlan<T>(a.Shape, shape, axis);
         return new(
             context,
             shape,
             children: [a],
             forward: (output) => plan.Execute(a, output),
-            backward: (grad, _) => [Transpose(grad, axis)]); // TODO: Verify!
+            backward: (grad, _) => [Transpose(grad, inverted)]);
     }
     
     public static CudaNode<T> Softmax<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>

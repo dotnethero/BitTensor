@@ -29,26 +29,10 @@ public unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where 
         Context = context;
         TensorGetter = new(tensor);
         Children = [];
-        Dependents = new(3);
+        Dependents = new(2);
         Outdated = false;
     }
     
-    public CudaNode(CudaContext context, Shape shape, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward, Lazy<CudaTensor<T>> tensor) : base(shape)
-    {
-        Context = context;
-        TensorGetter = tensor;
-        Forward = forward;
-        Backward = backward;
-        Children = children;
-        Dependents = new(3);
-        Outdated = true;
-
-        foreach (var child in Children)
-        {
-            child.Dependents.Add(this);
-        }
-    }
-
     public CudaNode(CudaContext context, Shape shape, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(shape)
     {
         Context = context;
@@ -56,7 +40,7 @@ public unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where 
         Forward = forward;
         Backward = backward;
         Children = children;
-        Dependents = new(3);
+        Dependents = new(2);
         Outdated = true;
 
         foreach (var child in Children)
@@ -64,6 +48,47 @@ public unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where 
             child.Dependents.Add(this);
         }
     }
+    
+    private CudaNode(CudaContext context, Shape shape, CudaNode<T> source, Func<CudaTensor<T>, CudaTensor<T>> transformation, BackwardFunction backward) : base(shape)
+    {
+        Context = context;
+        TensorGetter = new(() => transformation(source.Tensor));
+        Forward = static _ => {};
+        Backward = backward;
+        Children = [source];
+        Dependents = new(2);
+        Outdated = true;
+
+        foreach (var child in Children)
+        {
+            child.Dependents.Add(this);
+        }
+    }
+
+    public CudaNode<T> Reshape(Shape shape) // no allocation
+    {
+        Shape.EnsureCanReshape(shape);
+        return new(
+            Context,
+            shape,
+            source: this,
+            transformation: tensor => tensor.Reshape(shape),
+            backward: (grad, _) => [grad.Reshape(Shape)]);
+    }
+
+    public CudaNode<T> Transpose(Index[] axis) // no allocation
+    {
+        var shape = Shape.Transpose(axis);
+        var inverted = Axis.InvertPermutation(axis);
+        return new(
+            Context,
+            shape,
+            source: this,
+            transformation: tensor => tensor.Transpose(axis),
+            backward: (grad, _) => [grad.Transpose(inverted)]);
+    }
+
+    public CudaNode<T> Transpose() => Transpose(Shape.GetTransposeAxis());
 
     [MethodImpl(MethodImplOptions.NoInlining)]
     public void EnsureHasUpdatedValues()

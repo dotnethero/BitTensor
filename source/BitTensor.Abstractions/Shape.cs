@@ -31,12 +31,10 @@ public sealed class Shape : IEnumerable<int>
         Strides = strides.ToArray();
     }
 
-    public Shape EnsureCanReshape(Shape shape)
+    public void EnsureCanReshape(Shape shape)
     {
         if (shape.ArraySize != ArraySize)
             throw new InvalidOperationException($"Can't reshape {this} into {shape}");
-
-        return shape;
     }
 
     public Shape Transpose(Index[] axis)
