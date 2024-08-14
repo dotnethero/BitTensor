@@ -12,7 +12,7 @@ public static class CuNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(a.Shape, output.Shape, Ops.CUTENSOR_OP_EXP);
+        var plan = context.CreateUnaryPlan<T>(a.Shape, output.Shape, Ops.CUTENSOR_OP_EXP);
         return new(
             context,
             output,
@@ -25,7 +25,7 @@ public static class CuNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(a.Shape, output.Shape, Ops.CUTENSOR_OP_RELU);
+        var plan = context.CreateUnaryPlan<T>(a.Shape, output.Shape, Ops.CUTENSOR_OP_RELU);
         return new(
             context,
             output,
@@ -50,7 +50,7 @@ public static class CuNode
     {
         var context = GetContext(a);
         var output = context.Allocate<T>(a.Shape);
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(a.Shape, output.Shape, Ops.CUTENSOR_OP_RCP);
+        var plan = context.CreateUnaryPlan<T>(a.Shape, output.Shape, Ops.CUTENSOR_OP_RCP);
         return new(
             context,
             output,
@@ -64,7 +64,7 @@ public static class CuNode
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate<T>(shape);
-        var plan = context.cuTENSOR.CreateAddPlan<T>(a.Shape, b.Shape, output.Shape);
+        var plan = context.CreateAddPlan<T>(a.Shape, b.Shape, output.Shape);
         return new(
             context,
             output,
@@ -87,7 +87,7 @@ public static class CuNode
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate<T>(shape);
-        var plan = context.cuTENSOR.CreateMultiplyPlan<T>(a.Shape, b.Shape, output.Shape);
+        var plan = context.CreateMultiplyPlan<T>(a.Shape, b.Shape, output.Shape);
         return new(
             context,
             output,
@@ -112,7 +112,7 @@ public static class CuNode
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var context = GetContext(a, b);
         var output = context.Allocate<T>([]);
-        var plan = context.cuTENSOR.CreateContractionPlan<T>(a.Shape, b.Shape, output.Shape);
+        var plan = context.CreateContractionPlan<T>(a.Shape, b.Shape, output.Shape);
         return new(
             context,
             output,
@@ -139,7 +139,7 @@ public static class CuNode
         var modB = b.IsVector ? b.Reshape([..b.Shape, 1]) : b;
         var modShape = Shapes.BroadcastMatrixProduct(modA.Shape, modB.Shape); // padded shape
         var modOutput = output.Reshape(modShape); // padded output
-        var plan = context.cuTENSOR.CreateMatMulPlan<T>(modA.Shape, modB.Shape, modOutput.Shape);
+        var plan = context.CreateMatMulPlan<T>(modA.Shape, modB.Shape, modOutput.Shape);
 
         return new(
             context,
@@ -196,7 +196,7 @@ public static class CuNode
         var context = GetContext(a);
         var shape = a.Shape.Reduce(axis, keepDims);
         var output = context.Allocate<T>(shape);
-        var plan = context.cuTENSOR.CreateReductionPlan<T>(a.Shape, output.Shape, axis, operation, keepDims);
+        var plan = context.CreateReductionPlan<T>(a.Shape, output.Shape, axis, operation, keepDims);
         return new(
             context,
             output,
@@ -213,7 +213,7 @@ public static class CuNode
         var context = GetContext(a);
         var output = context.Allocate<T>(shape);
         var axis = Shapes.GetBroadcastedAxis(a.Shape, shape);
-        var plan = context.cuTENSOR.CreateBroadcastPlan<T>(a.Shape, output.Shape);
+        var plan = context.CreateBroadcastPlan<T>(a.Shape, output.Shape);
         return new(
             context,
             output,
@@ -239,7 +239,7 @@ public static class CuNode
         var shape = a.Shape.Transpose(axis);
         var context = GetContext(a);
         var output = context.Allocate<T>(shape);
-        var plan = context.cuTENSOR.CreatePermutationPlan<T>(a.Shape, output.Shape, axis);
+        var plan = context.CreatePermutationPlan<T>(a.Shape, output.Shape, axis);
         return new(
             context,
             output,

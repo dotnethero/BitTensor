@@ -57,7 +57,6 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
         fixed (T* dp = destination)
         {
             cudaMemcpy(dp, Pointer, bytes, cudaMemcpyKind.cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
         }
     }
 
@@ -70,7 +69,6 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
         fixed (T* sp = source)
         {
             cudaMemcpy(Pointer, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice);
-            cudaDeviceSynchronize();
         }
     }
 
@@ -83,7 +81,6 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
         fixed (T* sp = source)
         {
             cudaMemcpy(Pointer + offset, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice);
-            cudaDeviceSynchronize();
         }
     }
 
