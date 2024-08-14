@@ -13,7 +13,8 @@ public sealed class CuTensorContractionPlan<T> : ICuTensorPlan where T : unmanag
     internal readonly CuTensorContraction<T> Contraction;
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
-    
+    internal bool IsDisposed;
+
     internal CuTensorContractionPlan(CuTensorContext context, Shape left, Shape right, Shape result)
     {
         LeftDescriptor = new(context, left);
@@ -43,11 +44,14 @@ public sealed class CuTensorContractionPlan<T> : ICuTensorPlan where T : unmanag
 
     public void Dispose()
     {
+        if (IsDisposed) return;
+
         ContractionPlan.Dispose();
         Workspace.Dispose();
         Contraction.Dispose();
         ResultDescriptor.Dispose();
         RightDescriptor.Dispose();
         LeftDescriptor.Dispose();
+        IsDisposed = true;
     }
 }

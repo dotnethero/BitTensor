@@ -14,6 +14,7 @@ public sealed class CuTensorBinaryPlan<T> : ICuTensorPlan where T : unmanaged, I
     internal readonly CuTensorDescriptor<T> RightDescriptor;
     internal readonly CuTensorBinaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
+    internal bool IsDisposed;
 
     internal CuTensorBinaryPlan(
         CuTensorContext context,
@@ -48,9 +49,12 @@ public sealed class CuTensorBinaryPlan<T> : ICuTensorPlan where T : unmanaged, I
 
     public void Dispose()
     {
+        if (IsDisposed) return;
+
         OperationPlan.Dispose();
         Operation.Dispose();
         RightDescriptor.Dispose();
         LeftDescriptor.Dispose();
+        IsDisposed = true;
     }
 }

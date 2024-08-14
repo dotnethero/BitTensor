@@ -13,6 +13,7 @@ public sealed class CuTensorTernaryPlan<T> : ICuTensorPlan where T : unmanaged, 
     internal readonly CuTensorDescriptor<T> ResultDescriptor;
     internal readonly CuTensorTernaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
+    internal bool IsDisposed;
 
     internal CuTensorTernaryPlan(
         CuTensorContext context,
@@ -57,10 +58,13 @@ public sealed class CuTensorTernaryPlan<T> : ICuTensorPlan where T : unmanaged, 
 
     public void Dispose()
     {
+        if (IsDisposed) return;
+
         OperationPlan.Dispose();
         Operation.Dispose();
         ResultDescriptor.Dispose();
         RightDescriptor.Dispose();
         LeftDescriptor.Dispose();
+        IsDisposed = true;
     }
 }

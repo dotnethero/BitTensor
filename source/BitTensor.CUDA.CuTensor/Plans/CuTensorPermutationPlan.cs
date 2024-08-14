@@ -11,6 +11,7 @@ public sealed class CuTensorPermutationPlan<T> : ICuTensorPlan where T : unmanag
     internal readonly CuTensorDescriptor<T> OutputDescriptor;
     internal readonly CuTensorPermutation<T> Permutation;
     internal readonly CuTensorPlan PermutationPlan;
+    internal bool IsDisposed;
 
     internal CuTensorPermutationPlan(CuTensorContext context, Shape input, Shape output, ReadOnlySpan<Index> axis)
     {
@@ -39,9 +40,12 @@ public sealed class CuTensorPermutationPlan<T> : ICuTensorPlan where T : unmanag
 
     public void Dispose()
     {
+        if (IsDisposed) return;
+
         PermutationPlan.Dispose();
         Permutation.Dispose();
         OutputDescriptor.Dispose();
         InputDescriptor.Dispose();
+        IsDisposed = true;
     }
 }

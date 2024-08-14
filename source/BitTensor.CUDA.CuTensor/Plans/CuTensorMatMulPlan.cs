@@ -13,6 +13,7 @@ public sealed class CuTensorMatMulPlan<T> : ICuTensorPlan where T : unmanaged, I
     internal readonly CuTensorContraction<T> Contraction;
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
+    internal bool IsDisposed;
 
     internal CuTensorMatMulPlan(CuTensorContext context, Shape left, Shape right, Shape result)
     {
@@ -53,11 +54,14 @@ public sealed class CuTensorMatMulPlan<T> : ICuTensorPlan where T : unmanaged, I
 
     public void Dispose()
     {
+        if (IsDisposed) return;
+
         ContractionPlan.Dispose();
         Workspace.Dispose();
         Contraction.Dispose();
         ResultDescriptor.Dispose();
         RightDescriptor.Dispose();
         LeftDescriptor.Dispose();
+        IsDisposed = true;
     }
 }

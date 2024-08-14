@@ -1,15 +1,13 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
-using BitTensor.CUDA.Plans;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CudaContext : IDisposable
+public class CudaContext : IDisposable
 {
     internal readonly List<IDeviceArray> DeviceArrays = [];
-    internal readonly List<IDisposable> Resources = [];
 
     public CuRandContext cuRAND { get; }
     public CuTensorContext cuTENSOR { get; }
@@ -56,30 +54,10 @@ public partial class CudaContext : IDisposable
         return array;
     }
     
-    private TResouce AddResource<TResouce>(TResouce resouce) where TResouce : IDisposable
-    {
-        Resources.Add(resouce);
-        return resouce;
-    }
-
     public void Dispose()
     {
         cuTENSOR.Dispose();
-        FreeResources();
         FreeArrays();
-    }
-
-    private void FreeResources()
-    {
-        var plans = 0;
-        foreach (var resource in Resources)
-        {
-            if (resource is ICuTensorPlan)
-                plans++;
-
-            resource.Dispose();
-        }
-        Console.WriteLine($"{plans} operation plans disposed");
     }
 
     private void FreeArrays()
@@ -92,6 +70,6 @@ public partial class CudaContext : IDisposable
             bytes += array.Size + array.ElementSize;
             arrays++;
         }
-        Console.WriteLine($"{arrays} arrays ({bytes >> 10} kB) disposed");
+        Console.Error.WriteLine($"{arrays} arrays ({bytes >> 10} kB) disposed");
     }
 }

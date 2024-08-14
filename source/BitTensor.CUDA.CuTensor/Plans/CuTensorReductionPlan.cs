@@ -13,6 +13,7 @@ public sealed class CuTensorReductionPlan<T> : ICuTensorPlan where T : unmanaged
     internal readonly CuTensorReduction<T> Reduction;
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
+    internal bool IsDisposed;
 
     internal CuTensorReductionPlan(CuTensorContext context, Shape input, Shape output, HashSet<Index> axis, cutensorOperator_t op, bool keepDims = false)
     {
@@ -40,10 +41,13 @@ public sealed class CuTensorReductionPlan<T> : ICuTensorPlan where T : unmanaged
 
     public void Dispose()
     {
+        if (IsDisposed) return;
+
         ReductionPlan.Dispose();
         Workspace.Dispose();
         Reduction.Dispose();
         OutputDescriptor.Dispose();
         InputDescriptor.Dispose();
+        IsDisposed = true;
     }
 }

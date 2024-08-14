@@ -10,7 +10,7 @@ public sealed class CudaWeights<T> : CudaNode<T> where T : unmanaged, IFloatingP
 
     public CudaWeights(CudaContext context, CudaTensor<T> tensor) : base(context, tensor)
     {
-        _plan = Context.CreateAggregationPlan<T>(tensor.Shape);
+        _plan = Context.cuTENSOR.CreateAggregationPlan<T>(tensor.Shape);
     }
 
     public void AdjustWeights(CudaTensor<T> gradient, float lr)
