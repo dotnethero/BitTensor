@@ -154,9 +154,9 @@ public static partial class CuNode
     public static CudaNode<float> Gemm(CudaNode<float> a, CudaNode<float> b, CudaNode<float> c)
     {
         var context = GetContext(a, b, c);
-        var shape = Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
-        var broadcast = context.cuTENSOR.CreateBroadcastPlan<float>(c.Shape, shape);
         var matmul = MatMul(a, b);
+        var shape = Shapes.Broadcast(matmul.Shape, c.Shape);
+        var broadcast = context.cuTENSOR.CreateBroadcastPlan<float>(c.Shape, shape);
         return new(
             context,
             shape,
