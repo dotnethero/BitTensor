@@ -6,8 +6,6 @@ namespace BitTensor.CUDA.Graph;
 
 public static partial class Ops
 {
-    public delegate void EpilogueForward<T>(CudaTensor<T> output) where T : unmanaged, IFloatingPoint<T>;
-    public delegate CudaNode<T> EpilogueBackward<T>(CudaNode<T> grad) where T : unmanaged, IFloatingPoint<T>;
 
     public static CudaNode<T> Gemm<T>(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c) where T : unmanaged, IFloatingPoint<T>
     {
@@ -37,8 +35,7 @@ public static partial class Ops
         CudaNode<T> a,
         CudaNode<T> b,
         CudaNode<T> c,
-        EpilogueForward<T> epilogueFwd,
-        EpilogueBackward<T> epilogueBwd)
+        IEpilogue<T> epilogue)
         where T : unmanaged, IFloatingPoint<T>
     {
         var context = CudaContext.GetContext(a, b, c);
@@ -52,11 +49,11 @@ public static partial class Ops
             forward: (output) =>
             {
                 gemm.Forward!.Invoke(output);
-                epilogueFwd(output);
+                epilogue.Execute(output);
             },
             backward: (grad, _) =>
             {
-                var g1 = epilogueBwd(grad);
+                var g1 = epilogue.Propagate(grad);
                 var g2 = gemm.Backward!.Invoke(g1, gemm);
                 return g2;
             });
@@ -66,8 +63,12 @@ public static partial class Ops
         CudaNode<float> a,
         CudaNode<float> b,
         CudaNode<float> c,
-        float alpha) =>
-        Gemm(a, b, c,
-            output => Kernels.LeakyReLU(output.Size, output.Pointer, output.Pointer, alpha), // TODO: create abstraction for this pair
-            grad => LeakyReLU(grad, alpha));
+        float alpha)
+    {
+        var epilogue = new Epilogue<float>(
+            dest => Kernels.LeakyReLU(dest.Size, dest.Pointer, dest.Pointer, alpha),
+            grad => Ops.LeakyReLU(grad, alpha));
+
+        return Gemm(a, b, c, epilogue);
+    }
 }
