@@ -10,6 +10,7 @@ using Ops = cutensorOperator_t;
 public sealed unsafe class CuTensorContext : IDisposable
 {
     internal readonly cutensorHandle* Handle;
+    internal readonly List<IDisposable> Plans = new List<IDisposable>();
 
     public CuTensorContext()
     {
@@ -25,48 +26,48 @@ public sealed unsafe class CuTensorContext : IDisposable
         Shape a,
         Shape output,
         Ops unary) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, output, unary, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
-
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorBinaryPlan<T>(this, a, output, unary, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD));
+    
     public CuTensorBinaryPlan<T> CreateAggregationPlan<T>(
         Shape output) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, output, output, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorBinaryPlan<T>(this, output, output, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD));
 
     public CuTensorTernaryPlan<T> CreateAddPlan<T>(
         Shape a,
         Shape b,
         Shape output) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, b, output, Ops.CUTENSOR_OP_ADD, Ops.CUTENSOR_OP_ADD);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorTernaryPlan<T>(this, a, b, output, Ops.CUTENSOR_OP_ADD, Ops.CUTENSOR_OP_ADD));
 
     public CuTensorTernaryPlan<T> CreateMultiplyPlan<T>(
         Shape a,
         Shape b,
         Shape output) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, b, output, Ops.CUTENSOR_OP_MUL, Ops.CUTENSOR_OP_ADD);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorTernaryPlan<T>(this, a, b, output, Ops.CUTENSOR_OP_MUL, Ops.CUTENSOR_OP_ADD));
     
     public CuTensorMatMulPlan<T> CreateMatMulPlan<T>(
         Shape a,
         Shape b,
         Shape output) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, b, output);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorMatMulPlan<T>(this, a, b, output));
 
     public CuTensorContractionPlan<T> CreateContractionPlan<T>(
         Shape a,
         Shape b,
         Shape output)
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, b, output);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorContractionPlan<T>(this, a, b, output));
     
     public CuTensorPermutationPlan<T> CreatePermutationPlan<T>(
         Shape a,
         Shape output,
         ReadOnlySpan<Index> axis) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, output, axis);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorPermutationPlan<T>(this, a, output, axis));
 
     public CuTensorReductionPlan<T> CreateReductionPlan<T>(
         Shape a,
@@ -74,17 +75,27 @@ public sealed unsafe class CuTensorContext : IDisposable
         HashSet<Index> axis,
         Ops operation,
         bool keepDims = false) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, output, axis, operation, keepDims);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorReductionPlan<T>(this, a, output, axis, operation, keepDims));
 
     public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
         Shape a,
         Shape output) 
-        where T : unmanaged, IFloatingPoint<T> => 
-        new(this, a, output);
+        where T : unmanaged, IFloatingPoint<T> =>
+        TrackPlan(new CuTensorBroadcastPlan<T>(this, a, output));
+    
+    private TPlan TrackPlan<TPlan>(TPlan plan) where TPlan : ICuTensorPlan
+    {
+        Plans.Add(plan);
+        return plan;
+    }
 
     public void Dispose()
     {
+        foreach (var plan in Plans)
+        {
+            plan.Dispose();
+        }
         cuTENSOR.cutensorDestroy(Handle);
     }
 }

@@ -5,7 +5,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-public sealed class CuTensorMatMulPlan<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
+public sealed class CuTensorMatMulPlan<T> : ICuTensorPlan where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CuTensorDescriptor<T> LeftDescriptor;
     internal readonly CuTensorDescriptor<T> RightDescriptor;
