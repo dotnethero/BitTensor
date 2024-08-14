@@ -38,8 +38,8 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, a => CuNode.LeakyReLU(a, 0.1f)),
-            new LinearLayer(context, hiddenCount, outputCount, CuNode.Softmax)
+            new LinearLayer(context, inputCount, hiddenCount, a => Ops.LeakyReLU(a, 0.1f)),
+            new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
         ]);
 
         // train
@@ -70,7 +70,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, CuNode.ReLU),
+            new LinearLayer(context, inputCount, hiddenCount, Ops.ReLU),
             new LinearLayer(context, hiddenCount, outputCount, a => a)
         ]);
 
@@ -82,7 +82,7 @@ internal class Program
 
         // evaluate
         var output = model.Compute(x);
-        var diff = CuNode.Sum(output - d, [1]);
+        var diff = Ops.Sum(output - d, [1]);
         diff.EnsureHasUpdatedValues();
         CuDebug.WriteLine(diff);
     }
@@ -94,7 +94,7 @@ internal class Program
         var a = context.cuRAND.Normal([2, 3, 4]).AsNode(context);
         var b = a.Transpose([1, 2, 0]);
         var c = b.Transpose([1, 2, 0]);
-        var grads = CuNode.Sum(c).GetGradients();
+        var grads = Ops.Sum(c).GetGradients();
 
         CuDebug.WriteLine(a);
         CuDebug.WriteLine(b);

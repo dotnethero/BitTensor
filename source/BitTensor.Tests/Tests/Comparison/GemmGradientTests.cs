@@ -73,7 +73,7 @@ class GemmGradientTests
         var b = scope.GetTensor("b").AsNode(context);
         var c = scope.GetTensor("c").AsNode(context);
 
-        var z = CuNode.Gemm(a, b, c);
+        var z = Ops.Gemm(a, b, c);
         var z_true = scope.GetTensor("z").AsTensor();
 
         context.Synchronize();
@@ -152,14 +152,14 @@ class GemmGradientTests
         var b = scope.GetTensor("b").AsNode(context);
         var c = scope.GetTensor("c").AsNode(context);
 
-        var z = CuNode.Gemm(a, b, c);
+        var z = Ops.Gemm(a, b, c);
         var z_true = scope.GetTensor("z").AsTensor();
 
         var da_true = scope.GetTensor("da").AsTensor();
         var db_true = scope.GetTensor("db").AsTensor();
         var dc_true = scope.GetTensor("dc").AsTensor();
 
-        var grads = CuNode.Sum(z).GetGradients();
+        var grads = Ops.Sum(z).GetGradients();
         var da = grads[a];
         var db = grads[b];
         var dc = grads[c];

@@ -3,28 +3,28 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
-using Ops = cutensorOperator_t;
+using OpCode = cutensorOperator_t;
 
-public static partial class CuNode
+public static partial class Ops
 {
     public static CudaNode<T> Reciprocal<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
         var context = a.Context;
         var shape = a.Shape;
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, Ops.CUTENSOR_OP_RCP);
+        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, OpCode.CUTENSOR_OP_RCP);
         return new(
             context,
             shape,
             children: [a],
             forward: (output) => plan.Execute(a, output, gamma: 0),
-            backward: (_, self) => [Multiply(self, self, -1)]); // TODO: Simplify
+            backward: (_, self) => [Multiply(self, self, -1)]); // TODO: Simplify square
     }
 
     public static CudaNode<T> Exp<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
         var context = a.Context;
         var shape = a.Shape;
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, Ops.CUTENSOR_OP_EXP);
+        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, OpCode.CUTENSOR_OP_EXP);
         return new(
             context,
             shape,
@@ -37,7 +37,7 @@ public static partial class CuNode
     {
         var context = a.Context;
         var shape = a.Shape;
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, Ops.CUTENSOR_OP_RELU);
+        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, OpCode.CUTENSOR_OP_RELU);
         return new(
             context,
             shape,
@@ -56,5 +56,13 @@ public static partial class CuNode
             children: [a],
             forward: (output) => Kernels.LeakyReLU(a.Size, a.Pointer, output.Pointer, alpha),
             backward: (grad, _) => [LeakyReLU(grad, alpha)]);
+    }
+
+    public static CudaNode<T> Softmax<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    {
+        var max = Max(a, [^1], keepDims: true);
+        var ex = Exp(a - max);
+        var sumex = Sum(ex, [^1], keepDims: true);
+        return Multiply(ex, Reciprocal(sumex));
     }
 }

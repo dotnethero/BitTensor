@@ -37,6 +37,8 @@ public sealed class Shape : IEnumerable<int>
             throw new InvalidOperationException($"Can't reshape {this} into {shape}");
     }
 
+    public Shape Transpose() => Transpose(this.GetTransposeAxis());
+
     public Shape Transpose(Index[] axis)
     {
         var offsets = GetOffsets(axis).ToHashSet();

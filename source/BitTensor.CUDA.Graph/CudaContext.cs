@@ -17,6 +17,19 @@ public class CudaContext : IDisposable
         return new CudaContext();
     }
 
+    public static CudaContext GetContext<T>(
+        CudaNode<T> operand) 
+        where T : unmanaged, IFloatingPoint<T> =>
+        operand.Context;
+
+    public static CudaContext GetContext<T>(
+        params CudaNode<T>[] operands)
+        where T : unmanaged, IFloatingPoint<T> =>
+        operands 
+            .Select(c => c.Context)
+            .Distinct()
+            .Single();
+
     private CudaContext()
     {
         cuRAND = new CuRandContext();

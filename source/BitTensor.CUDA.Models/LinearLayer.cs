@@ -26,7 +26,7 @@ public class LinearLayer : ILayer<float>
 
     public CudaNode<float> Compute(CudaNode<float> input)
     {
-        var z = CuNode.Gemm(input, Weights, Bias);
+        var z = Graph.Ops.Gemm(input, Weights, Bias);
         var y = Activation(z);
         return y;
     }
