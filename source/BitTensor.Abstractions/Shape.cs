@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 
 namespace BitTensor.Abstractions;
@@ -30,8 +31,20 @@ public sealed class Shape : IEnumerable<int>
         Strides = strides.ToArray();
     }
 
+    public Shape EnsureCanReshape(Shape shape)
+    {
+        if (shape.ArraySize != ArraySize)
+            throw new InvalidOperationException($"Can't reshape {this} into {shape}");
+
+        return shape;
+    }
+
     public Shape Transpose(Index[] axis)
     {
+        var offsets = GetOffsets(axis).ToHashSet();
+        if (offsets.Count != Dimensions)
+            throw new InvalidOperationException($"Can't transpose {this} with permutation {axis.ToText()}");
+
         var extents = new int[Dimensions];
         var strides = new int[Dimensions];
         for (var i = 0; i < Dimensions; ++i)

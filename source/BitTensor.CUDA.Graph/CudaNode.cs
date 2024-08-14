@@ -4,13 +4,14 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
 
-public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
+public unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public delegate void ForwardFunction();
+    public delegate void ForwardFunction(CudaTensor<T> output);
     public delegate CudaNode<T>[] BackwardFunction(CudaNode<T> grad, CudaNode<T> self);
 
     public readonly CudaContext Context;
-    public readonly CudaTensor<T> Tensor;
+    public CudaTensor<T> Tensor => TensorGetter.Value;
+    public readonly Lazy<CudaTensor<T>> TensorGetter;
     public readonly ForwardFunction? Forward;
     public readonly BackwardFunction? Backward;
     public readonly CudaNode<T>[] Children;
@@ -18,24 +19,40 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
     public bool Outdated;
     
     // TODO: inline
-    public unsafe T* Pointer => Tensor.Pointer;
+    public T* Pointer => Tensor.Pointer;
 
-    int IDeviceArray.ElementSize => Tensor.Array.ElementSize;
-    int IDeviceArray.Size => Tensor.Array.Size;
+    int IDeviceArray.ElementSize => sizeof(T);
+    int IDeviceArray.Size => Shape.ArraySize;
 
     public CudaNode(CudaContext context, CudaTensor<T> tensor) : base(tensor.Shape)
     {
         Context = context;
-        Tensor = tensor;
+        TensorGetter = new(tensor);
         Children = [];
         Dependents = new(3);
         Outdated = false;
     }
     
-    public CudaNode(CudaContext context, CudaTensor<T> tensor, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(tensor.Shape)
+    public CudaNode(CudaContext context, Shape shape, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward, Lazy<CudaTensor<T>> tensor) : base(shape)
     {
         Context = context;
-        Tensor = tensor;
+        TensorGetter = tensor;
+        Forward = forward;
+        Backward = backward;
+        Children = children;
+        Dependents = new(3);
+        Outdated = true;
+
+        foreach (var child in Children)
+        {
+            child.Dependents.Add(this);
+        }
+    }
+
+    public CudaNode(CudaContext context, Shape shape, CudaNode<T>[] children, ForwardFunction forward, BackwardFunction backward) : base(shape)
+    {
+        Context = context;
+        TensorGetter = new(() => context.Allocate<T>(shape));
         Forward = forward;
         Backward = backward;
         Children = children;
@@ -58,7 +75,7 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
             child.EnsureHasUpdatedValues();
         }
 
-        Forward?.Invoke();
+        Forward?.Invoke(Tensor);
         Outdated = false;
     }
 
