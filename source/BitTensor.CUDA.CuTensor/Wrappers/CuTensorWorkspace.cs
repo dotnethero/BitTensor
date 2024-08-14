@@ -2,17 +2,20 @@
 
 internal sealed unsafe class CuTensorWorkspace : IDisposable
 {
-    internal readonly void* Pointer;
+    internal readonly void* Pointer = (void*)0;
     internal readonly ulong Bytes;
 
     public CuTensorWorkspace(ulong bytes)
     {
-        Pointer = CudaArray.AllocateRaw((uint)bytes);
         Bytes = bytes;
+
+        if (Bytes > 0)
+            Pointer = CudaArray.AllocateRaw((uint)bytes);
     }
 
     public void Dispose()
     {
-        CudaArray.Free(Pointer);
+        if (Bytes > 0)
+            CudaArray.Free(Pointer);
     }
 }

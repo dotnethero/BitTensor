@@ -1,13 +1,16 @@
 ﻿namespace BitTensor.Abstractions;
 
-public interface IDeviceArray<T> where T : unmanaged
+public interface IDeviceArray : IDisposable
 {
     int ElementSize { get; }
     int Size { get; }
+}
+
+public interface IDeviceArray<T> : IDeviceArray where T : unmanaged
+{
     unsafe T* Pointer { get; }
 
     void CopyToDevice(ReadOnlySpan<T> source);
-
     void CopyToHost(Span<T> destination);
     
     T[] CopyToHost()

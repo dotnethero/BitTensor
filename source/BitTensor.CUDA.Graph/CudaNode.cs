@@ -20,8 +20,8 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
     // TODO: inline
     public unsafe T* Pointer => Tensor.Pointer;
 
-    int IDeviceArray<T>.ElementSize => Tensor.Array.ElementSize;
-    int IDeviceArray<T>.Size => Tensor.Array.Size;
+    int IDeviceArray.ElementSize => Tensor.Array.ElementSize;
+    int IDeviceArray.Size => Tensor.Array.Size;
 
     public CudaNode(CudaContext context, CudaTensor<T> tensor) : base(tensor.Shape)
     {
@@ -101,4 +101,9 @@ public partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unm
     public override int GetHashCode() => unchecked((int)Id);
 
     public override string ToString() => $"Tensor #{Id}, shape={Shape}";
+
+    public void Dispose()
+    {
+        // TODO: release plans early
+    }
 }

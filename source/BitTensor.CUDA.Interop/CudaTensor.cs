@@ -36,8 +36,8 @@ public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T>, IDisposable
         return new(shape, Array);
     }
     
-    int IDeviceArray<T>.ElementSize => Array.ElementSize;
-    int IDeviceArray<T>.Size => Array.Size;
+    int IDeviceArray.ElementSize => Array.ElementSize;
+    int IDeviceArray.Size => Array.Size;
 
     public void CopyToHost(Span<T> destination) => Array.CopyToHost(destination);
     public void CopyToDevice(ReadOnlySpan<T> source) => Array.CopyToDevice(source);
