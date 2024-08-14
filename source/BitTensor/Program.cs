@@ -38,7 +38,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, a => Ops.LeakyReLU(a, 0.1f)),
+            new ReluLinearLayer(context, inputCount, hiddenCount, 0.1f),
             new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
         ]);
 

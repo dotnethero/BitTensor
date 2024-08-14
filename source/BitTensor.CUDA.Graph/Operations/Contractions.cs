@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -68,30 +69,6 @@ public static partial class Ops
                 var agrad = Sum(da, axis: adims).Reshape(a.Shape);
                 var bgrad = Sum(db, axis: bdims).Reshape(b.Shape);
                 return [agrad, bgrad];
-            });
-    }
-
-    public static CudaNode<T> Gemm<T>(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c) where T : unmanaged, IFloatingPoint<T>
-    {
-        var context = CudaContext.GetContext(a, b, c);
-        var matmul = MatMul(a, b);
-        var shape = Shapes.Broadcast(matmul.Shape, c.Shape);
-        var broadcast = context.cuTENSOR.CreateBroadcastPlan<T>(c.Shape, shape);
-        return new(
-            context,
-            shape,
-            children: [a, b, c],
-            forward: (output) =>
-            {
-                matmul.Forward!.Invoke(output);
-                broadcast.Execute(c, output, gamma: 1f); // add inplace
-            },
-            backward: (grad, _) =>
-            {
-                var grads = matmul.Backward!.Invoke(grad, matmul); // matmul gradients don't depend on C and likewise
-                var cdims = Shapes.GetBroadcastedAxis(c.Shape, grad.Shape);
-                var cgrad = Sum(grad, axis: cdims).Reshape(c.Shape);
-                return [..grads, cgrad];
             });
     }
 }
