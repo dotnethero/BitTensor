@@ -39,7 +39,7 @@ internal class Program
         var model = Model.Sequential(
         [
             new LinearLayer(context, inputCount, hiddenCount, new ReLU(0.1f)),
-            new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
+            new LinearLayer(context, hiddenCount, outputCount, Ops.SoftmaxRaw)
         ]);
 
         // train
@@ -91,16 +91,15 @@ internal class Program
     {
         using var context = CudaContext.CreateDefault();
 
-        var logits = context.Allocate<float>([2, 2], [1, 2, 3, 4]).AsNode(context);
-        var preds  = context.Allocate<float>([2, 2], [1, 0, 1, 1]).AsNode(context);
+        var logits = context.Allocate<float>([2, 2], [0, 0, 0, 1]).AsNode(context);
 
-        var x1 = Ops.Sum(Ops.Softmax(logits) - preds);
-        var x2 = Ops.Sum(Ops.SoftmaxRaw(logits) - preds);
+        var x1 = Ops.Softmax(logits);
+        var x2 = Ops.SoftmaxRaw(logits);
 
         CuDebug.WriteLine(x1);
         CuDebug.WriteLine(x2);
-        CuDebug.WriteLine(x1.GetGradients().By(logits));
-        CuDebug.WriteLine(x2.GetGradients().By(logits));
+        CuDebug.WriteLine(Ops.DotProduct(x1, x1).GetGradients().By(logits));
+        CuDebug.WriteLine(Ops.DotProduct(x2, x2).GetGradients().By(logits));
     }
 
     private static void Test_transpose()

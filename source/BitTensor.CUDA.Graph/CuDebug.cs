@@ -24,6 +24,7 @@ public static class CuDebug
 
     public static string View<T>(CudaNode<T> node, int dimensionsPerLine = 1) where T : unmanaged, IFloatingPoint<T>
     {
+        node.EnsureHasUpdatedValues();
         var text = View(node.Tensor);
         return text;
     }

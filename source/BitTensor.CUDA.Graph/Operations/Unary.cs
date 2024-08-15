@@ -69,11 +69,6 @@ public static partial class Ops
 
     public static CudaNode<T> SoftmaxRaw<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
     {
-        // var max = Max(a, [^1], keepDims: true);
-        // var ex = Exp(a - max);
-        // var sumex = Sum(ex, [^1], keepDims: true);
-        // return ex / sumex;
-
         var context = a.Context;
         var shape = a.Shape;
         var reduced = a.Shape.Reduce([^1], keepDims: true);
@@ -106,10 +101,6 @@ public static partial class Ops
                 smx.Execute(output, temp); // temp is sum of exp
                 div.Execute(output, temp, output);                
             },
-            backward: (grad, output) =>
-            {
-                var dot = DotProduct(output, grad);
-                return [(dot - grad) * output];
-            });
+            backward: (grad, output) => [grad * output]);
     }
 }

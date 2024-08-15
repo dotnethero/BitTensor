@@ -7,6 +7,7 @@ public sealed record Compilation<T>(
     CudaNode<T> Loss,
     CudaNode<T>[] Gradients,
     CudaNode<T> Input,
+    CudaNode<T> Output,
     CudaNode<T> Desired)
     where T : unmanaged, IFloatingPoint<T>;
 
@@ -29,7 +30,7 @@ public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T
         var loss = Ops.DotProduct(diff, diff, scale: 1f);
         var grads = loss.GetGradients();
         var gradients = grads.By(Parameters);
-        return new(loss, gradients, input, desired);
+        return new(loss, gradients, input, output, desired);
     }
 
     public void Fit(Compilation<T> compilation, float lr, int epochs, bool trace = false)
