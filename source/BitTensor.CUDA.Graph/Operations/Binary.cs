@@ -5,7 +5,7 @@ namespace BitTensor.CUDA.Graph;
 
 public static partial class Ops
 {
-    public static CudaNode<T> Add<T>(CudaNode<T> a, CudaNode<T> b, float beta = 1f, float gamma = 0f) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<T> Add<T>(CudaNode<T> a, CudaNode<T> b, float alpha = 1f, float beta = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         var context = CudaContext.GetContext(a, b);
         var shape = Shapes.Broadcast(a.Shape, b.Shape);
@@ -14,14 +14,14 @@ public static partial class Ops
             context,
             shape,
             children: [a, b],
-            forward: (output) => plan.Execute(a, b, output, beta: beta, gamma: gamma),
+            forward: (output) => plan.Execute(a, b, output, alpha, beta, gamma: 0f),
             backward: (grad, _) =>
             {
                 var adims = Shapes.GetBroadcastedAxis(a.Shape, grad.Shape);
                 var bdims = Shapes.GetBroadcastedAxis(b.Shape, grad.Shape);
                 return
                 [
-                    Sum(grad, axis: adims, scale: 1f).Reshape(a.Shape),
+                    Sum(grad, axis: adims, scale: alpha).Reshape(a.Shape),
                     Sum(grad, axis: bdims, scale: beta).Reshape(b.Shape)
                 ];
             });
