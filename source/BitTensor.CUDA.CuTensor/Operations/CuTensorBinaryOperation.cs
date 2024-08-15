@@ -17,8 +17,6 @@ internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation whe
         CuTensorDescriptor<T> a,
         CuTensorDescriptor<T> b,
         CuTensorDescriptor<T> c,
-        cutensorOperator_t opA,
-        cutensorOperator_t opB,
         cutensorOperator_t opAB)
     {
         cutensorOperationDescriptor* descriptor;
@@ -26,8 +24,8 @@ internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation whe
         var status = cutensorCreateElementwiseBinary(
             context.Handle, 
             &descriptor,
-            a.Descriptor, a.Modes, opA,
-            b.Descriptor, b.Modes, opB,
+            a.Descriptor, a.Modes, a.Transformation,
+            b.Descriptor, b.Modes, b.Transformation,
             c.Descriptor, c.Modes, opAB,
             Types.GetComputeType<T>());
 
@@ -44,8 +42,8 @@ internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation whe
         IDeviceArray<T> a,
         IDeviceArray<T> b,
         IDeviceArray<T> c,
-        float alpha = 1f,
-        float gamma = 1f)
+        float alpha,
+        float gamma)
     {
         var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
         Status.EnsureIsSuccess(status);

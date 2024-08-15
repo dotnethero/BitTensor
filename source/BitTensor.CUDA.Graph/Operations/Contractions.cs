@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -26,10 +25,11 @@ public static partial class Ops
     {
         Shapes.EnsureAreEqual(a.Shape, b.Shape);
         var context = CudaContext.GetContext(a, b);
-        var plan = context.cuTENSOR.CreateContractionPlan<T>(a.Shape, b.Shape, []);
+        var shape = Shape.Scalar;
+        var plan = context.cuTENSOR.CreateContractionPlan<T>(a.Shape, b.Shape, shape);
         return new(
             context,
-            [],
+            shape,
             children: [a, b],
             forward: (output) => plan.Execute(a, b, output, alpha: scale),
             backward: (grad, _) => [grad * b, a * grad]); // TODO: scale!

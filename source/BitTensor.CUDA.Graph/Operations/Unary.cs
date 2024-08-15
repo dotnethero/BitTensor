@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph;
 
@@ -11,7 +12,7 @@ public static partial class Ops
     {
         var context = a.Context;
         var shape = a.Shape;
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, OpCode.CUTENSOR_OP_RCP);
+        var plan = context.cuTENSOR.CreateAggregationPlan<T>(Operand.Rcp(shape), shape);
         return new(
             context,
             shape,
@@ -24,7 +25,7 @@ public static partial class Ops
     {
         var context = a.Context;
         var shape = a.Shape;
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, OpCode.CUTENSOR_OP_EXP);
+        var plan = context.cuTENSOR.CreateAggregationPlan<T>(Operand.Exp(shape), shape);
         return new(
             context,
             shape,
@@ -37,7 +38,7 @@ public static partial class Ops
     {
         var context = a.Context;
         var shape = a.Shape;
-        var plan = context.cuTENSOR.CreateUnaryPlan<T>(shape, shape, OpCode.CUTENSOR_OP_RELU);
+        var plan = context.cuTENSOR.CreateAggregationPlan<T>(Operand.Relu(shape), shape);
         return new(
             context,
             shape,
@@ -64,5 +65,51 @@ public static partial class Ops
         var ex = Exp(a - max);
         var sumex = Sum(ex, [^1], keepDims: true);
         return Multiply(ex, Reciprocal(sumex));
+    }
+
+    public static CudaNode<T> SoftmaxRaw<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    {
+        // var max = Max(a, [^1], keepDims: true);
+        // var ex = Exp(a - max);
+        // var sumex = Sum(ex, [^1], keepDims: true);
+        // return ex / sumex;
+
+        var context = a.Context;
+        var shape = a.Shape;
+        var reduced = a.Shape.Reduce([^1], keepDims: true);
+
+        var max = context.cuTENSOR.CreateReductionPlan<T>(shape, reduced, [^1], OpCode.CUTENSOR_OP_MAX, true);
+        var dif = context.cuTENSOR.CreateAddPlan<T>(shape, reduced, shape);
+
+        var smx = context.cuTENSOR.CreateReductionPlan<T>(
+            Operand.Exp(shape),
+            reduced,
+            axis: [^1],
+            operation: OpCode.CUTENSOR_OP_ADD,
+            keepDims: true);
+
+        var div = context.cuTENSOR.CreateMultiplyPlan<T>(
+            Operand.Exp(shape),
+            Operand.Rcp(reduced),
+            shape);
+
+        var temp = context.Allocate<T>(reduced);
+
+        return new(
+            context,
+            shape,
+            children: [a],
+            forward: (output) =>
+            {
+                max.Execute(a, temp); // temp is max
+                dif.Execute(a, temp, output, alpha: 1, beta: -1); // output is diff
+                smx.Execute(output, temp); // temp is sum of exp
+                div.Execute(output, temp, output);                
+            },
+            backward: (grad, output) =>
+            {
+                var dot = DotProduct(output, grad);
+                return [(dot - grad) * output];
+            });
     }
 }

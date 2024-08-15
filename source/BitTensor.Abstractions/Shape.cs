@@ -6,6 +6,8 @@ namespace BitTensor.Abstractions;
 [CollectionBuilder(typeof(Shape), "Create")]
 public sealed class Shape : IEnumerable<int>
 {
+    public static readonly Shape Scalar = [];
+
     public readonly int Dimensions;
     public readonly int ArraySize;
     public readonly int[] Extents;

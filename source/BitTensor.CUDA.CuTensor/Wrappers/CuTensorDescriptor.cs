@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
-using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 
@@ -9,18 +8,21 @@ namespace BitTensor.CUDA.Wrappers;
 internal sealed unsafe class CuTensorDescriptor<T> : IDisposable where T : IFloatingPoint<T>
 {
     internal readonly cutensorTensorDescriptor* Descriptor;
+    internal readonly cutensorOperator_t Transformation;
     internal readonly uint ModesNumber;
     internal readonly int* Modes;
     internal readonly long* Extents;
     internal readonly long* Strides;
 
-    public CuTensorDescriptor(CuTensorContext context, Shape shape) : this(context, shape, shape.GetOrdinaryModes())
+    public CuTensorDescriptor(CuTensorContext context, Operand operand) : this(context, operand, operand.Shape.GetOrdinaryModes())
     {
     }
 
-    public CuTensorDescriptor(CuTensorContext context, Shape shape, int[] modes)
+    public CuTensorDescriptor(CuTensorContext context, Operand operand, int[] modes)
     {
         cutensorTensorDescriptor* descriptor;
+
+        var shape = operand.Shape;
 
         ModesNumber = (uint) shape.Dimensions;
         Modes = Allocate<int>(shape.Dimensions);
@@ -46,6 +48,7 @@ internal sealed unsafe class CuTensorDescriptor<T> : IDisposable where T : IFloa
         Status.EnsureIsSuccess(status);
 
         Descriptor = descriptor;
+        Transformation = operand.Transformation;
     }
 
     private static TAny* Allocate<TAny>(int count)

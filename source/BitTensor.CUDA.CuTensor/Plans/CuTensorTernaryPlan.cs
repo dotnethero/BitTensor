@@ -17,15 +17,15 @@ public sealed class CuTensorTernaryPlan<T> : ICuTensorPlan where T : unmanaged, 
 
     internal CuTensorTernaryPlan(
         CuTensorContext context,
-        Shape left,
-        Shape right,
-        Shape result,
+        Operand a,
+        Operand b,
+        Operand c,
         cutensorOperator_t opAB,
         cutensorOperator_t opABC)
     {
-        LeftDescriptor = new(context, left);
-        RightDescriptor = new(context, right);
-        ResultDescriptor = new(context, result);
+        LeftDescriptor = new(context, a);
+        RightDescriptor = new(context, b);
+        ResultDescriptor = new(context, c);
 
         Operation = new(
             context,

@@ -26,9 +26,9 @@ internal sealed unsafe class CuTensorTernaryOperation<T> : ICuTensorOperation wh
         var status = cutensorCreateElementwiseTrinary(
             context.Handle, 
             &descriptor,
-            a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            a.Descriptor, a.Modes, a.Transformation,
+            b.Descriptor, b.Modes, b.Transformation,
+            c.Descriptor, c.Modes, c.Transformation,
             d.Descriptor, d.Modes, opAB, opABC,
             Types.GetComputeType<T>());
 
@@ -46,9 +46,9 @@ internal sealed unsafe class CuTensorTernaryOperation<T> : ICuTensorOperation wh
         IDeviceArray<T> b,
         IDeviceArray<T> c,
         IDeviceArray<T> d,
-        float alpha = 1f,
-        float beta = 1f,
-        float gamma = 0f)
+        float alpha,
+        float beta,
+        float gamma)
     {
         var status = cutensorElementwiseTrinaryExecute(
             Context.Handle,

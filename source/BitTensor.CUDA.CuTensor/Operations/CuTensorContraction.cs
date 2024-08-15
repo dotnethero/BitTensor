@@ -24,9 +24,9 @@ internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T
         var status = cutensorCreateContraction(
             context.Handle, 
             &descriptor,
-            a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            c.Descriptor, c.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY, 
+            a.Descriptor, a.Modes, a.Transformation,
+            b.Descriptor, b.Modes, b.Transformation,
+            c.Descriptor, c.Modes, c.Transformation, 
             d.Descriptor, d.Modes, Types.GetComputeType<T>());
 
         Status.EnsureIsSuccess(status);
@@ -46,8 +46,8 @@ internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T
         IDeviceArray<T> b,
         IDeviceArray<T> c,
         IDeviceArray<T> d,
-        float alpha = 1f,
-        float beta = 1f)
+        float alpha,
+        float beta)
     {
         var status = cutensorContract(
             Context.Handle, 

@@ -6,25 +6,27 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
+using OpCode = cutensorOperator_t;
+
 public sealed class CuTensorReductionPlan<T> : ICuTensorPlan where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly CuTensorDescriptor<T> InputDescriptor;
-    internal readonly CuTensorDescriptor<T> OutputDescriptor;
+    internal readonly CuTensorDescriptor<T> A;
+    internal readonly CuTensorDescriptor<T> B;
     internal readonly CuTensorReduction<T> Reduction;
     internal readonly CuTensorPlan ReductionPlan;
     internal readonly CuTensorWorkspace Workspace;
     internal bool IsDisposed;
 
-    internal CuTensorReductionPlan(CuTensorContext context, Shape input, Shape output, HashSet<Index> axis, cutensorOperator_t op, bool keepDims = false)
+    internal CuTensorReductionPlan(CuTensorContext context, Operand a, Operand b, HashSet<Index> axis, OpCode op, bool keepDims = false)
     {
-        var modes = input.GetReductionModes(axis);
+        var modes = a.Shape.GetReductionModes(axis);
 
-        InputDescriptor = new(context, input);
-        OutputDescriptor = keepDims
-            ? new(context, output)
-            : new(context, output, modes);
+        A = new(context, a);
+        B = keepDims
+            ? new(context, b)
+            : new(context, b, modes);
 
-        Reduction = new(context, InputDescriptor, OutputDescriptor, OutputDescriptor, op);
+        Reduction = new(context, A, B, B, op);
         ReductionPlan = Reduction.CreatePlan();
         Workspace = Reduction.CreateWorkspace(ReductionPlan);
     }
@@ -46,8 +48,8 @@ public sealed class CuTensorReductionPlan<T> : ICuTensorPlan where T : unmanaged
         ReductionPlan.Dispose();
         Workspace.Dispose();
         Reduction.Dispose();
-        OutputDescriptor.Dispose();
-        InputDescriptor.Dispose();
+        A.Dispose();
+        B.Dispose();
         IsDisposed = true;
     }
 }

@@ -5,7 +5,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Wrappers;
 
-using Ops = cutensorOperator_t;
+using OpCode = cutensorOperator_t;
 
 public sealed unsafe class CuTensorContext : IDisposable
 {
@@ -22,68 +22,67 @@ public sealed unsafe class CuTensorContext : IDisposable
         Handle = handle;
     }
     
-    public CuTensorBinaryPlan<T> CreateUnaryPlan<T>(
-        Shape a,
-        Shape output,
-        Ops unary) 
+    public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
+        Operand a,
+        Operand output) 
         where T : unmanaged, IFloatingPoint<T> =>
-        Add(new CuTensorBinaryPlan<T>(this, a, output, unary, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD));
+        Add(new CuTensorBroadcastPlan<T>(this, a, output));
 
     public CuTensorBinaryPlan<T> CreateAggregationPlan<T>(
+        Shape output)
+        where T : unmanaged, IFloatingPoint<T> =>
+        CreateAggregationPlan<T>(output, output);
+
+    public CuTensorBinaryPlan<T> CreateAggregationPlan<T>(
+        Operand a,
         Shape output) 
         where T : unmanaged, IFloatingPoint<T> =>
-        Add(new CuTensorBinaryPlan<T>(this, output, output, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_IDENTITY, Ops.CUTENSOR_OP_ADD));
-    
+        Add(new CuTensorBinaryPlan<T>(this, a, output, OpCode.CUTENSOR_OP_ADD));
+
     public CuTensorTernaryPlan<T> CreateAddPlan<T>(
-        Shape a,
-        Shape b,
-        Shape output) 
+        Operand a,
+        Operand b,
+        Operand output) 
         where T : unmanaged, IFloatingPoint<T> =>
-        Add(new CuTensorTernaryPlan<T>(this, a, b, output, Ops.CUTENSOR_OP_ADD, Ops.CUTENSOR_OP_ADD));
+        Add(new CuTensorTernaryPlan<T>(this, a, b, output, OpCode.CUTENSOR_OP_ADD, OpCode.CUTENSOR_OP_ADD));
 
     public CuTensorTernaryPlan<T> CreateMultiplyPlan<T>(
-        Shape a,
-        Shape b,
-        Shape output) 
+        Operand a,
+        Operand b,
+        Operand output) 
         where T : unmanaged, IFloatingPoint<T> =>
-        Add(new CuTensorTernaryPlan<T>(this, a, b, output, Ops.CUTENSOR_OP_MUL, Ops.CUTENSOR_OP_ADD));
+        Add(new CuTensorTernaryPlan<T>(this, a, b, output, OpCode.CUTENSOR_OP_MUL, OpCode.CUTENSOR_OP_ADD));
     
     public CuTensorMatMulPlan<T> CreateMatMulPlan<T>(
-        Shape a,
-        Shape b,
+        Operand a,
+        Operand b,
         Shape output) 
         where T : unmanaged, IFloatingPoint<T> =>
         Add(new CuTensorMatMulPlan<T>(this, a, b, output));
 
     public CuTensorContractionPlan<T> CreateContractionPlan<T>(
-        Shape a,
-        Shape b,
-        Shape output)
+        Operand a,
+        Operand b,
+        Operand output)
         where T : unmanaged, IFloatingPoint<T> =>
         Add(new CuTensorContractionPlan<T>(this, a, b, output));
     
     public CuTensorPermutationPlan<T> CreatePermutationPlan<T>(
-        Shape a,
+        Operand a,
         Shape output,
         ReadOnlySpan<Index> axis) 
         where T : unmanaged, IFloatingPoint<T> =>
         Add(new CuTensorPermutationPlan<T>(this, a, output, axis));
 
     public CuTensorReductionPlan<T> CreateReductionPlan<T>(
-        Shape a,
-        Shape output,
+        Operand a,
+        Operand output,
         HashSet<Index> axis,
-        Ops operation,
+        OpCode operation,
         bool keepDims = false) 
         where T : unmanaged, IFloatingPoint<T> =>
         Add(new CuTensorReductionPlan<T>(this, a, output, axis, operation, keepDims));
 
-    public CuTensorBroadcastPlan<T> CreateBroadcastPlan<T>(
-        Shape a,
-        Shape output) 
-        where T : unmanaged, IFloatingPoint<T> =>
-        Add(new CuTensorBroadcastPlan<T>(this, a, output));
-    
     private TPlan Add<TPlan>(TPlan plan) where TPlan : ICuTensorPlan
     {
         Plans.Add(plan);

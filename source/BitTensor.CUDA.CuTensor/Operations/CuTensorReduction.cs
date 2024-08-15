@@ -24,8 +24,8 @@ internal sealed unsafe class CuTensorReduction<T> : ICuTensorOperation where T :
         var status = cutensorCreateReduction(
             context.Handle, 
             &descriptor,
-            a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
-            b.Descriptor, b.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            a.Descriptor, a.Modes, a.Transformation,
+            b.Descriptor, b.Modes, b.Transformation,
             c.Descriptor, c.Modes, opReduce,
             Types.GetComputeType<T>());
 

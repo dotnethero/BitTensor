@@ -7,36 +7,31 @@ namespace BitTensor.CUDA.Plans;
 
 public sealed class CuTensorPermutationPlan<T> : ICuTensorPlan where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly CuTensorDescriptor<T> InputDescriptor;
-    internal readonly CuTensorDescriptor<T> OutputDescriptor;
+    internal readonly CuTensorDescriptor<T> A;
+    internal readonly CuTensorDescriptor<T> B;
     internal readonly CuTensorPermutation<T> Permutation;
     internal readonly CuTensorPlan PermutationPlan;
     internal bool IsDisposed;
 
-    internal CuTensorPermutationPlan(CuTensorContext context, Shape input, Shape output, ReadOnlySpan<Index> axis)
+    internal CuTensorPermutationPlan(CuTensorContext context, Operand a, Shape b, ReadOnlySpan<Index> axis)
     {
-        var inputModes = new int[input.Dimensions];
-        var outputModes = new int[output.Dimensions];
+        var inputModes = new int[a.Shape.Dimensions];
+        var outputModes = new int[b.Dimensions];
 
-        for (var i = 0; i < input.Dimensions; ++i)
+        for (var i = 0; i < a.Shape.Dimensions; ++i)
         {
             inputModes[i] = i;
-            outputModes[i] = input.GetOffset(axis[i]);
+            outputModes[i] = a.Shape.GetOffset(axis[i]);
         }
 
-        InputDescriptor = new(context, input, inputModes);
-        OutputDescriptor = new(context, output, outputModes);
-
-        Permutation = new(context, InputDescriptor, OutputDescriptor);
+        A = new(context, a, inputModes);
+        B = new(context, b, outputModes);
+        Permutation = new(context, A, B);
         PermutationPlan = Permutation.CreatePlan();
     }
     
-    public void Execute(IDeviceArray<T> input, IDeviceArray<T> output, float alpha = 1f) =>
-        Permutation.Execute(
-            PermutationPlan,
-            input,
-            output,
-            alpha);
+    public void Execute(IDeviceArray<T> a, IDeviceArray<T> b, float alpha = 1f) =>
+        Permutation.Execute(PermutationPlan, a, b, alpha);
 
     public void Dispose()
     {
@@ -44,8 +39,8 @@ public sealed class CuTensorPermutationPlan<T> : ICuTensorPlan where T : unmanag
 
         PermutationPlan.Dispose();
         Permutation.Dispose();
-        OutputDescriptor.Dispose();
-        InputDescriptor.Dispose();
+        A.Dispose();
+        B.Dispose();
         IsDisposed = true;
     }
 }

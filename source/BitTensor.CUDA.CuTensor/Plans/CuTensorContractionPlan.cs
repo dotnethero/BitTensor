@@ -7,40 +7,31 @@ namespace BitTensor.CUDA.Plans;
 
 public sealed class CuTensorContractionPlan<T> : ICuTensorPlan where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly CuTensorDescriptor<T> LeftDescriptor;
-    internal readonly CuTensorDescriptor<T> RightDescriptor;
-    internal readonly CuTensorDescriptor<T> ResultDescriptor;
+    internal readonly CuTensorDescriptor<T> A;
+    internal readonly CuTensorDescriptor<T> B;
+    internal readonly CuTensorDescriptor<T> C;
     internal readonly CuTensorContraction<T> Contraction;
     internal readonly CuTensorPlan ContractionPlan;
     internal readonly CuTensorWorkspace Workspace;
     internal bool IsDisposed;
 
-    internal CuTensorContractionPlan(CuTensorContext context, Shape left, Shape right, Shape result)
+    internal CuTensorContractionPlan(CuTensorContext context, Operand a, Operand b, Operand c)
     {
-        LeftDescriptor = new(context, left);
-        RightDescriptor = new(context, right);
-        ResultDescriptor = new(context, result);
-        
-        Contraction = new(context, LeftDescriptor, RightDescriptor, ResultDescriptor, ResultDescriptor);
+        A = new(context, a);
+        B = new(context, b);
+        C = new(context, c);
+        Contraction = new(context, A, B, C, C);
         ContractionPlan = Contraction.CreatePlan();
         Workspace = Contraction.CreateWorkspace(ContractionPlan);
     }
     
     public void Execute(
-        IDeviceArray<T> left,
-        IDeviceArray<T> right,
-        IDeviceArray<T> result,
+        IDeviceArray<T> a,
+        IDeviceArray<T> b,
+        IDeviceArray<T> c,
         float alpha = 1f,
         float beta = 0f) =>
-        Contraction.Execute(
-            ContractionPlan,
-            Workspace,
-            left,
-            right,
-            result,
-            result,
-            alpha,
-            beta);
+        Contraction.Execute(ContractionPlan, Workspace, a, b, c, c, alpha, beta);
 
     public void Dispose()
     {
@@ -49,9 +40,9 @@ public sealed class CuTensorContractionPlan<T> : ICuTensorPlan where T : unmanag
         ContractionPlan.Dispose();
         Workspace.Dispose();
         Contraction.Dispose();
-        ResultDescriptor.Dispose();
-        RightDescriptor.Dispose();
-        LeftDescriptor.Dispose();
+        A.Dispose();
+        B.Dispose();
+        C.Dispose();
         IsDisposed = true;
     }
 }

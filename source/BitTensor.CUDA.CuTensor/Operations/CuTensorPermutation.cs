@@ -22,7 +22,7 @@ internal sealed unsafe class CuTensorPermutation<T> : ICuTensorOperation where T
         var status = cutensorCreatePermutation(
             context.Handle, 
             &descriptor,
-            a.Descriptor, a.Modes, cutensorOperator_t.CUTENSOR_OP_IDENTITY,
+            a.Descriptor, a.Modes, a.Transformation,
             b.Descriptor, b.Modes,
             Types.GetComputeType<T>());
 
@@ -38,7 +38,7 @@ internal sealed unsafe class CuTensorPermutation<T> : ICuTensorOperation where T
         CuTensorPlan plan,
         IDeviceArray<T> a,
         IDeviceArray<T> b,
-        float alpha = 1f)
+        float alpha)
     {
         var status = cutensorPermute(Context.Handle, plan.Plan, &alpha, a.Pointer, b.Pointer, CuStream.Default);
         Status.EnsureIsSuccess(status);

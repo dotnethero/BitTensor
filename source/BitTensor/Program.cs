@@ -87,6 +87,22 @@ internal class Program
         CuDebug.WriteLine(diff);
     }
     
+    private static void Compare_softmax_gradients()
+    {
+        using var context = CudaContext.CreateDefault();
+
+        var logits = context.Allocate<float>([2, 2], [1, 2, 3, 4]).AsNode(context);
+        var preds  = context.Allocate<float>([2, 2], [1, 0, 1, 1]).AsNode(context);
+
+        var x1 = Ops.Sum(Ops.Softmax(logits) - preds);
+        var x2 = Ops.Sum(Ops.SoftmaxRaw(logits) - preds);
+
+        CuDebug.WriteLine(x1);
+        CuDebug.WriteLine(x2);
+        CuDebug.WriteLine(x1.GetGradients().By(logits));
+        CuDebug.WriteLine(x2.GetGradients().By(logits));
+    }
+
     private static void Test_transpose()
     {
         using var context = CudaContext.CreateDefault();

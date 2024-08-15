@@ -6,46 +6,26 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Plans;
 
-using Ops = cutensorOperator_t;
+using OpCode = cutensorOperator_t;
 
 public sealed class CuTensorBinaryPlan<T> : ICuTensorPlan where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly CuTensorDescriptor<T> LeftDescriptor;
-    internal readonly CuTensorDescriptor<T> RightDescriptor;
+    internal readonly CuTensorDescriptor<T> A;
+    internal readonly CuTensorDescriptor<T> B;
     internal readonly CuTensorBinaryOperation<T> Operation;
     internal readonly CuTensorPlan OperationPlan;
     internal bool IsDisposed;
 
-    internal CuTensorBinaryPlan(
-        CuTensorContext context,
-        Shape a,
-        Shape b,
-        Ops opA,
-        Ops opB,
-        Ops opAB)
+    internal CuTensorBinaryPlan(CuTensorContext context, Operand a, Operand b, OpCode opAB)
     {
-        LeftDescriptor = new(context, a);
-        RightDescriptor = new(context, b);
-        Operation = new(
-            context,
-            LeftDescriptor,
-            RightDescriptor,
-            RightDescriptor,
-            opA,
-            opB,
-            opAB);
-
+        A = new(context, a);
+        B = new(context, b);
+        Operation = new(context, A, B, B, opAB);
         OperationPlan = Operation.CreatePlan();
     }
     
-    public void Execute(IDeviceArray<T> left, IDeviceArray<T> right, float alpha = 1f, float gamma = 1f) =>
-        Operation.Execute(
-            OperationPlan,
-            left,
-            right,
-            right,
-            alpha,
-            gamma);
+    public void Execute(IDeviceArray<T> a, IDeviceArray<T> b, float alpha = 1f, float gamma = 1f) =>
+        Operation.Execute(OperationPlan, a, b, b, alpha, gamma);
 
     public void Dispose()
     {
@@ -53,8 +33,8 @@ public sealed class CuTensorBinaryPlan<T> : ICuTensorPlan where T : unmanaged, I
 
         OperationPlan.Dispose();
         Operation.Dispose();
-        RightDescriptor.Dispose();
-        LeftDescriptor.Dispose();
+        A.Dispose();
+        B.Dispose();
         IsDisposed = true;
     }
 }
