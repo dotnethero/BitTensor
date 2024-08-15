@@ -38,7 +38,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new ReluLinearLayer(context, inputCount, hiddenCount, 0.1f),
+            new LinearLayer(context, inputCount, hiddenCount, new ReLU(0.1f)),
             new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
         ]);
 
@@ -70,8 +70,8 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, Ops.ReLU),
-            new LinearLayer(context, hiddenCount, outputCount, a => a)
+            new LinearLayer(context, inputCount, hiddenCount, new ReLU()),
+            new LinearLayer(context, hiddenCount, outputCount, new Identity())
         ]);
 
         // train
