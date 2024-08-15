@@ -18,18 +18,26 @@ public static class Model
         new SequentialModel<T>(layers);
 }
 
+public static class Loss
+{
+    public static CudaNode<float> MSE(CudaNode<float> output, CudaNode<float> desired)
+    {
+        var diff = output - desired;
+        var loss = Ops.DotProduct(diff, diff, scale: 1f); // TODO: scale by batch size
+        return loss;
+    }
+}
+
 public abstract class Model<T> : ILayer<T> where T : unmanaged, IFloatingPoint<T>
 {
     public abstract CudaWeights<T>[] Parameters { get; }
     public abstract CudaNode<T> Compute(CudaNode<T> input);
     
-    public Compilation<T> Compile(CudaNode<T> input, CudaNode<T> desired)
+    public Compilation<T> Compile(CudaNode<T> input, CudaNode<T> desired, LossFunction<T> lossFunction)
     {
         var output = Compute(input);
-        var diff = output - desired;
-        var loss = Ops.DotProduct(diff, diff, scale: 1f);
-        var grads = loss.GetGradients();
-        var gradients = grads.By(Parameters);
+        var loss = lossFunction(output, desired);
+        var gradients = loss.GetGradients().By(Parameters);
         return new(loss, gradients, input, output, desired);
     }
 

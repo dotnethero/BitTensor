@@ -2,17 +2,15 @@
 
 namespace BitTensor.CUDA.Models;
 
-public delegate CudaNode<float> ActivationFunction(CudaNode<float> node);
-
 public class LinearLayer : ILayer<float>
 {
     public CudaWeights<float>[] Parameters => [Weights, Bias];
     public CudaWeights<float> Weights { get; }
     public CudaWeights<float> Bias { get; }
     public IEpilogue<float> Epilogue { get; }
-    public ActivationFunction? Activation { get; }
+    public ActivationFunction<float>? Activation { get; }
     
-    public LinearLayer(CudaContext context, int inputs, int outputs, ActivationFunction activation)
+    public LinearLayer(CudaContext context, int inputs, int outputs, ActivationFunction<float> activation)
     {
         var weights = context.cuRAND.Normal([inputs, outputs]);
         var bias = context.cuRAND.Normal([outputs]);
