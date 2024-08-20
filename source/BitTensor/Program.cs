@@ -52,8 +52,8 @@ internal class Program
         var output = model.Compute(images);
         output.EnsureHasUpdatedValues();
 
-        // CuDebug.WriteLine(labels);
-        // CuDebug.WriteLine(output);
+        CuDebug.WriteLine(labels);
+        CuDebug.WriteLine(output);
     }
 
     private static void Test_linear_module()
@@ -87,21 +87,6 @@ internal class Program
         CuDebug.WriteLine(diff);
     }
     
-    private static void Compare_softmax_gradients()
-    {
-        using var context = CudaContext.CreateDefault();
-
-        var logits = context.Allocate<float>([2, 2], [0, 0, 0, 1]).AsNode(context);
-
-        var x1 = Ops.Softmax(logits);
-        var x2 = Ops.SoftmaxRaw(logits);
-
-        CuDebug.WriteLine(x1);
-        CuDebug.WriteLine(x2);
-        CuDebug.WriteLine(Ops.DotProduct(x1, x1).GetGradients().By(logits));
-        CuDebug.WriteLine(Ops.DotProduct(x2, x2).GetGradients().By(logits));
-    }
-
     private static void Test_transpose()
     {
         using var context = CudaContext.CreateDefault();

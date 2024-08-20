@@ -166,4 +166,110 @@ class UnaryComparisonTests
             TensorAsserts.ValuesAreEqual(h_true, h);
         });
     }
+
+    [TestCase(new[] {3})]
+    [TestCase(new[] {3, 4})]
+    [TestCase(new[] {3, 4, 5})]
+    public void Compare_softmax_and_gradients(int[] shape)
+    {
+        using var scope = Py.CreateScope();
+        using var _ = Py.GIL();
+
+        var pyshape = $"[{string.Join(",", shape)}]";
+
+        scope.ExecuteJax(
+            $"""
+             def test_sum(A):
+                result = jax.nn.softmax(A)
+                return jnp.sum(result)
+                
+             def test_dot(A):
+                result = jax.nn.softmax(A)
+                return jnp.sum(jnp.multiply(result, result))
+                
+             key = jax.random.PRNGKey(0)
+             a = jnp.abs(jax.random.normal(key, {pyshape}))
+             d = jax.nn.softmax(a)
+             g = jax.grad(test_sum)(a)
+             h = jax.grad(test_dot)(a)
+             """);
+
+        using var context = CudaContext.CreateDefault();
+        
+        var a = scope.GetTensor("a").AsNode(context);
+        var d_true = scope.GetTensor("d").AsTensor();
+        var g_true = scope.GetTensor("g").AsTensor();
+        var h_true = scope.GetTensor("h").AsTensor();
+
+        var z = Ops.Softmax(a);
+        var g = Ops.Sum(z).GetGradients().By(a);
+        var h = Ops.DotProduct(z, z).GetGradients().By(a);
+
+        Assert.Multiple(() =>
+        {
+            TensorAsserts.ShapesAreEqual(d_true, z);
+            TensorAsserts.ShapesAreEqual(g_true, g);
+            TensorAsserts.ShapesAreEqual(h_true, h);
+        });
+
+        Assert.Multiple(() =>
+        {
+            TensorAsserts.ValuesAreEqual(d_true, z);
+            TensorAsserts.ValuesAreEqual(g_true, g);
+            TensorAsserts.ValuesAreEqual(h_true, h);
+        });
+    }
+
+    
+    [TestCase(new[] {3, 4})]
+    [TestCase(new[] {3, 4, 5})]
+    public void Compare_softmax_and_gradients_different_axis(int[] shape)
+    {
+        using var scope = Py.CreateScope();
+        using var _ = Py.GIL();
+
+        var pyshape = $"[{string.Join(",", shape)}]";
+
+        scope.ExecuteJax(
+            $"""
+             def test_sum(A):
+                result = jax.nn.softmax(A, axis=-2)
+                return jnp.sum(result)
+                
+             def test_dot(A):
+                result = jax.nn.softmax(A, axis=-2)
+                return jnp.sum(jnp.multiply(result, result))
+                
+             key = jax.random.PRNGKey(0)
+             a = jnp.abs(jax.random.normal(key, {pyshape}))
+             d = jax.nn.softmax(a, axis=-2)
+             g = jax.grad(test_sum)(a)
+             h = jax.grad(test_dot)(a)
+             """);
+
+        using var context = CudaContext.CreateDefault();
+        
+        var a = scope.GetTensor("a").AsNode(context);
+        var d_true = scope.GetTensor("d").AsTensor();
+        var g_true = scope.GetTensor("g").AsTensor();
+        var h_true = scope.GetTensor("h").AsTensor();
+
+        var z = Ops.Softmax(a, axis: [^2]);
+        var g = Ops.Sum(z).GetGradients().By(a);
+        var h = Ops.DotProduct(z, z).GetGradients().By(a);
+
+        Assert.Multiple(() =>
+        {
+            TensorAsserts.ShapesAreEqual(d_true, z);
+            TensorAsserts.ShapesAreEqual(g_true, g);
+            TensorAsserts.ShapesAreEqual(h_true, h);
+        });
+
+        Assert.Multiple(() =>
+        {
+            TensorAsserts.ValuesAreEqual(d_true, z);
+            TensorAsserts.ValuesAreEqual(g_true, g);
+            TensorAsserts.ValuesAreEqual(h_true, h);
+        });
+    }
 }

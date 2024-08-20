@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
@@ -72,37 +73,36 @@ public static partial class Ops
             backward: (grad, _) => [LeakyReLU(grad, alpha)]);
     }
 
-    public static CudaNode<float> Softmax(CudaNode<float> a) 
-    {
-        var epsilon = a.Context.CreateNode(0.00001f);
-        var max = Max(a, [^1], keepDims: true);
-        var ex = Exp(a - max) + epsilon;
-        var sumex = Sum(ex, [^1], keepDims: true);
-        return Multiply(ex, Reciprocal(sumex));
-    }
+    public static CudaNode<float> Softmax(CudaNode<float> a) => Softmax(a, axis: [^1]);
 
-    public static CudaNode<T> SoftmaxRaw<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<float> Softmax(CudaNode<float> a, HashSet<Index> axis)
     {
         var context = a.Context;
+        var epsilon = a.Context.CreateNode(1e-6f);
         var shape = a.Shape;
-        var reduced = a.Shape.Reduce([^1], keepDims: true);
+        var reduced = a.Shape.Reduce(axis, keepDims: true);
 
-        var max = context.cuTENSOR.CreateReductionPlan<T>(shape, reduced, [^1], OpCode.CUTENSOR_OP_MAX, true);
-        var dif = context.cuTENSOR.CreateAddPlan<T>(shape, reduced, shape);
+        var max = context.cuTENSOR.CreateReductionPlan<float>(shape, reduced, axis, OpCode.CUTENSOR_OP_MAX, true);
+        var dif = context.cuTENSOR.CreateAddPlan<float>(shape, reduced, shape);
 
-        var smx = context.cuTENSOR.CreateReductionPlan<T>(
+        var eps = context.cuTENSOR.CreateAddPlan<float>(
             Operand.Exp(shape),
+            Shape.Scalar,
+            shape);
+
+        var smx = context.cuTENSOR.CreateReductionPlan<float>(
+            shape,
             reduced,
             axis: [^1],
             operation: OpCode.CUTENSOR_OP_ADD,
             keepDims: true);
 
-        var div = context.cuTENSOR.CreateMultiplyPlan<T>(
-            Operand.Exp(shape),
+        var div = context.cuTENSOR.CreateMultiplyPlan<float>(
+            shape,
             Operand.Rcp(reduced),
             shape);
 
-        var temp = context.Allocate<T>(reduced);
+        var temp = context.Allocate<float>(reduced);
 
         return new(
             context,
@@ -112,9 +112,14 @@ public static partial class Ops
             {
                 max.Execute(a, temp); // temp is max
                 dif.Execute(a, temp, output, alpha: 1, beta: -1); // output is diff
+                eps.Execute(output, epsilon, output); // outputs is exp + eps
                 smx.Execute(output, temp); // temp is sum of exp
                 div.Execute(output, temp, output);                
             },
-            backward: (grad, output) => [grad * output]);
+            backward: (grad, output) =>
+            {
+                var product = Sum(Multiply(output, grad), axis, keepDims: true);
+                return [output * (grad - product)];
+            });
     }
 }
