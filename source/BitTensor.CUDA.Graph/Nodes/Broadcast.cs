@@ -4,7 +4,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public class Broadcast<T> : AbstractNode<T> where T : unmanaged, IFloatingPoint<T>
+public sealed class Broadcast<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly AbstractNode<T> A;
     internal readonly HashSet<Index> BroadcastedAxis;

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Graph.Epilogues;
 using BitTensor.CUDA.Graph.Nodes;
 using BitTensor.CUDA.Models;
 

@@ -1,6 +1,7 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using BitTensor.CUDA.Graph.Nodes;
+using BitTensor.CUDA.Interop;
 
-namespace BitTensor.CUDA.Graph.Nodes;
+namespace BitTensor.CUDA.Graph.Epilogues;
 
 public unsafe class LeakyReluEpilogue : IEpilogue<float>
 {

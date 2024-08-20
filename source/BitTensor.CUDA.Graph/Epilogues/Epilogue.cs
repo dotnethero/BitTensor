@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using BitTensor.CUDA.Graph.Nodes;
 
-namespace BitTensor.CUDA.Graph;
+namespace BitTensor.CUDA.Graph.Epilogues;
 
 public interface IEpilogue<T> where T : unmanaged, IFloatingPoint<T>
 {

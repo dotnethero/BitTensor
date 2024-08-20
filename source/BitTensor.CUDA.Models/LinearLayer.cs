@@ -1,4 +1,5 @@
 ﻿using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Graph.Epilogues;
 
 namespace BitTensor.CUDA.Models;
 

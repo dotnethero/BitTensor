@@ -4,7 +4,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public class MatMul<T> : AbstractNode<T> where T : unmanaged, IFloatingPoint<T>
+public sealed class MatMul<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly AbstractNode<T> A;
     internal readonly AbstractNode<T> B;

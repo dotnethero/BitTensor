@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public unsafe class LeakyReLU : AbstractNode<float>
+public sealed unsafe class LeakyReLU : AbstractOperation<float>
 {
     internal readonly AbstractNode<float> A;
     internal readonly float Alpha;

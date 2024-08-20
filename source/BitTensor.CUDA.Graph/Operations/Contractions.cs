@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Graph.Epilogues;
 
 namespace BitTensor.CUDA.Graph;
 

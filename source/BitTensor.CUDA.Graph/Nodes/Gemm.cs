@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Graph.Epilogues;
 using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public class Gemm<T> : AbstractNode<T> where T : unmanaged, IFloatingPoint<T>
+public sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly MatMul<T> Multiplication;
     internal readonly AbstractNode<T> Bias;
