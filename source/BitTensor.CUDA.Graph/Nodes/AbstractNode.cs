@@ -5,6 +5,9 @@ namespace BitTensor.CUDA.Graph.Nodes;
 
 public abstract unsafe class AbstractNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
+    internal readonly List<AbstractNode<T>> Dependents = [];
+    internal bool Outdated;
+
     public abstract CudaContext Context { get; }
     public abstract CudaTensor<T> Tensor { get; }
 
@@ -18,6 +21,18 @@ public abstract unsafe class AbstractNode<T> : AbstractTensor, IDeviceArray<T> w
     }
 
     public abstract void EnsureHasUpdatedValue();
+
+    public void Invalidate()
+    {
+        if (Outdated) return;
+
+        foreach (var child in Dependents)
+        {
+            child.Invalidate();
+        }
+
+        Outdated = true;
+    }
 
     // non-allocating transormations
     public AbstractNode<T> Reshape(Shape shape) => new Reshape<T>(this, shape);

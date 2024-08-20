@@ -14,6 +14,11 @@ public abstract class AbstractOperation<T> : AbstractNode<T> where T : unmanaged
     {
         Context = CudaContext.GetContext(children);
         TensorGetter = new(() => Context.Allocate<T>(shape));
+        
+        foreach (var child in children)
+        {
+            child.Dependents.Add(this);
+        }
     }
 
     public abstract AbstractNode<T>[] Propagate(AbstractNode<T> gradient);

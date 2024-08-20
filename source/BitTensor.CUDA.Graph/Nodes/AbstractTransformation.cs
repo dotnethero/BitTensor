@@ -16,6 +16,7 @@ public abstract class AbstractTransformation<T> : AbstractNode<T> where T : unma
         Context = CudaContext.GetContext(source);
         TensorGetter = new(() => transformation(source.Tensor));
         Source = source;
+        Source.Dependents.Add(this);
     }
 
     public abstract AbstractNode<T>[] Propagate(AbstractNode<T> gradient);
