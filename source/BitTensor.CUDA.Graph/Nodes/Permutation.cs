@@ -17,4 +17,6 @@ public sealed class Permutation<T> : AbstractTransformation<T> where T : unmanag
 
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient) => 
         [gradient.Transpose(InversePermutation)];
+
+    public override void EnsureHasUpdatedValue() => Source.EnsureHasUpdatedValue();
 }

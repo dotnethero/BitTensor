@@ -18,4 +18,6 @@ public sealed class Reshape<T> : AbstractTransformation<T> where T : unmanaged, 
 
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient) => 
         [gradient.Reshape(Source.Shape)];
+
+    public override void EnsureHasUpdatedValue() => Source.EnsureHasUpdatedValue();
 }

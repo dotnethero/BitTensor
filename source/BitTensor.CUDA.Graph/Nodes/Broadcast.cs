@@ -26,9 +26,10 @@ public sealed class Broadcast<T> : AbstractOperation<T> where T : unmanaged, IFl
         Plan = Context.cuTENSOR.CreateBroadcastPlan<T>(a.Shape, shape);
     }
     
-    public override void Execute(CudaTensor<T> output)
+    public override void EnsureHasUpdatedValue()
     {
-        Plan.Execute(A, output, alpha: Scale, gamma: 0);
+        A.EnsureHasUpdatedValue();
+        Plan.Execute(A, Tensor, alpha: Scale, gamma: 0);
     }
 
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)

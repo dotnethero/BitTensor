@@ -17,6 +17,8 @@ public abstract unsafe class AbstractNode<T> : AbstractTensor, IDeviceArray<T> w
     {
     }
 
+    public abstract void EnsureHasUpdatedValue();
+
     // non-allocating transormations
     public AbstractNode<T> Reshape(Shape shape) => new Reshape<T>(this, shape);
     public AbstractNode<T> Transpose(Index[] axis) => new Permutation<T>(this, axis);

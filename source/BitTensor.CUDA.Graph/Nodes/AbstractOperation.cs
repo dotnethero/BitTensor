@@ -16,6 +16,5 @@ public abstract class AbstractOperation<T> : AbstractNode<T> where T : unmanaged
         TensorGetter = new(() => Context.Allocate<T>(shape));
     }
 
-    public abstract void Execute(CudaTensor<T> output);
     public abstract AbstractNode<T>[] Propagate(AbstractNode<T> gradient);
 }

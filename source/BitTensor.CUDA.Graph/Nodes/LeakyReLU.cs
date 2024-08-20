@@ -13,9 +13,10 @@ public sealed unsafe class LeakyReLU : AbstractOperation<float>
         Alpha = alpha;
     }
     
-    public override void Execute(CudaTensor<float> output)
+    public override void EnsureHasUpdatedValue()
     {
-        Kernels.LeakyReLU(A.Size, A.Pointer, output.Pointer, Alpha);
+        A.EnsureHasUpdatedValue();
+        Kernels.LeakyReLU(A.Size, A.Pointer, Tensor.Pointer, Alpha);
     }
 
     public override AbstractNode<float>[] Propagate(AbstractNode<float> gradient)
