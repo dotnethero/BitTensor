@@ -39,7 +39,7 @@ internal class Program
         var model = Model.Sequential(
         [
             new LinearLayer(context, inputCount, hiddenCount, new ReLU(0.1f)),
-            new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
+            new LinearLayer(context, hiddenCount, outputCount, Ops.SoftmaxRaw)
         ]);
 
         // train

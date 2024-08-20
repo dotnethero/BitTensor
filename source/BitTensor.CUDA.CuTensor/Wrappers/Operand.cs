@@ -13,6 +13,7 @@ public class Operand
     public static implicit operator Operand(Shape shape) => new(shape);
     
     public static Operand Exp(Shape shape) => new(shape, OpCode.CUTENSOR_OP_EXP);
+    public static Operand Log(Shape shape) => new(shape, OpCode.CUTENSOR_OP_LOG);
     public static Operand Rcp(Shape shape) => new(shape, OpCode.CUTENSOR_OP_RCP);
     public static Operand Relu(Shape shape) => new(shape, OpCode.CUTENSOR_OP_RELU);
 

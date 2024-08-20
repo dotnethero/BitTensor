@@ -8,7 +8,7 @@ using OpCode = cutensorOperator_t;
 
 public static partial class Ops
 {
-    public static CudaNode<T> Reciprocal<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<T> Reciprocal<T>(CudaNode<T> a, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
     {
         var context = a.Context;
         var shape = a.Shape;
@@ -17,8 +17,8 @@ public static partial class Ops
             context,
             shape,
             children: [a],
-            forward: (output) => plan.Execute(a, output, gamma: 0),
-            backward: (_, self) => [Multiply(self, self, -1)]); // TODO: Simplify square
+            forward: (output) => plan.Execute(a, output, alpha: scale, gamma: 0),
+            backward: (grad, self) => [grad * Multiply(self, self, -scale)]); // TODO: Simplify square
     }
 
     public static CudaNode<T> Exp<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
@@ -32,6 +32,19 @@ public static partial class Ops
             children: [a],
             forward: (output) => plan.Execute(a, output, gamma: 0),
             backward: (grad, self) => [Multiply(grad, self)]);
+    }
+    
+    public static CudaNode<T> Log<T>(CudaNode<T> a, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
+    {
+        var context = a.Context;
+        var shape = a.Shape;
+        var plan = context.cuTENSOR.CreateAggregationPlan<T>(Operand.Log(shape), shape);
+        return new(
+            context,
+            shape,
+            children: [a],
+            forward: (output) => plan.Execute(a, output, alpha: scale, gamma: 0),
+            backward: (grad, self) => [grad * Reciprocal(self, scale)]); // TODO: scale
     }
 
     public static CudaNode<T> ReLU<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
