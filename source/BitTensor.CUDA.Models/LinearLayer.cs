@@ -7,7 +7,7 @@ public class LinearLayer : ILayer<float>
     public CudaWeights<float>[] Parameters => [Weights, Bias];
     public CudaWeights<float> Weights { get; }
     public CudaWeights<float> Bias { get; }
-    public IEpilogue<float> Epilogue { get; }
+    public IEpilogue<float>? Epilogue { get; }
     public ActivationFunction<float>? Activation { get; }
     
     public LinearLayer(CudaContext context, int inputs, int outputs, ActivationFunction<float> activation)
@@ -17,11 +17,10 @@ public class LinearLayer : ILayer<float>
 
         Weights = new CudaWeights<float>(context, weights);
         Bias = new CudaWeights<float>(context, bias);
-        Epilogue = new Identity();
         Activation = activation;
     }
 
-    public LinearLayer(CudaContext context, int inputs, int outputs, IEpilogue<float> epilogue)
+    public LinearLayer(CudaContext context, int inputs, int outputs, IEpilogue<float>? epilogue = null)
     {
         var weights = context.cuRAND.Normal([inputs, outputs]);
         var bias = context.cuRAND.Normal([outputs]);

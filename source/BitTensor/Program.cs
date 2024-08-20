@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Graph.Nodes;
 using BitTensor.CUDA.Models;
 
 namespace BitTensor;
@@ -38,7 +39,7 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, new ReLU(0.1f)),
+            new LinearLayer(context, inputCount, hiddenCount, new LeakyReluEpilogue(0.1f)),
             new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
         ]);
 
@@ -70,8 +71,8 @@ internal class Program
 
         var model = Model.Sequential(
         [
-            new LinearLayer(context, inputCount, hiddenCount, new ReLU()),
-            new LinearLayer(context, hiddenCount, outputCount, new Identity())
+            new LinearLayer(context, inputCount, hiddenCount, new LeakyReluEpilogue()),
+            new LinearLayer(context, hiddenCount, outputCount)
         ]);
 
         // train

@@ -71,4 +71,10 @@ public static partial class Ops
                 return [agrad, bgrad];
             });
     }
+
+    public static CudaNode<T> Gemm<T>(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c, IEpilogue<float>? epilogue = null) where T : unmanaged, IFloatingPoint<T>
+    {
+        throw new InvalidOperationException();
+    }
+
 }

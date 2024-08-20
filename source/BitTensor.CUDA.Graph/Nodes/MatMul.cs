@@ -13,7 +13,9 @@ public class MatMul<T> : AbstractNode<T> where T : unmanaged, IFloatingPoint<T>
     internal readonly Shape PaddedShape;
     internal readonly CuTensorMatMulPlan<T> Plan;
 
-    public MatMul(AbstractNode<T> a, AbstractNode<T> b) : base(Shapes.BroadcastMatrixProduct(a.Shape, b.Shape), [a, b])
+    private static Shape GetShape(AbstractTensor a, AbstractTensor b) => Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
+
+    public MatMul(AbstractNode<T> a, AbstractNode<T> b) : base(GetShape(a, b), [a, b])
     {
         A = a;
         B = b;
