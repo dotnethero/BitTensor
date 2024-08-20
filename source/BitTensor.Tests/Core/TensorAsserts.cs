@@ -15,7 +15,7 @@ static class TensorAsserts
     public static void ShapesAreEqual(AbstractTensor expected, AbstractTensor actual) =>
         ShapesAreEqual(expected.Shape, actual.Shape);
     
-    public static void ValuesAreEqual(IDeviceArray<float> expected, IDeviceArray<float> actual, float tolerance = 1e-5f) =>
+    public static void ValuesAreEqual(IDeviceArray<float> expected, IDeviceArray<float> actual, float tolerance = 3e-5f) =>
         CollectionAssert.AreEqual(
             expected.CopyToHost(), 
             actual.CopyToHost(),

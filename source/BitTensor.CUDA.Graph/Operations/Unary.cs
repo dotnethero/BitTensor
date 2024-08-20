@@ -31,7 +31,7 @@ public static partial class Ops
             shape,
             children: [a],
             forward: (output) => plan.Execute(a, output, gamma: 0),
-            backward: (grad, self) => [Multiply(grad, self)]);
+            backward: (grad, self) => [grad * self]);
     }
     
     public static CudaNode<T> Log<T>(CudaNode<T> a, float scale = 1f) where T : unmanaged, IFloatingPoint<T>
@@ -44,7 +44,7 @@ public static partial class Ops
             shape,
             children: [a],
             forward: (output) => plan.Execute(a, output, alpha: scale, gamma: 0),
-            backward: (grad, self) => [grad * Reciprocal(self, scale)]); // TODO: scale
+            backward: (grad, self) => [grad * Reciprocal(a, scale)]);
     }
 
     public static CudaNode<T> ReLU<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
@@ -72,10 +72,11 @@ public static partial class Ops
             backward: (grad, _) => [LeakyReLU(grad, alpha)]);
     }
 
-    public static CudaNode<T> Softmax<T>(CudaNode<T> a) where T : unmanaged, IFloatingPoint<T>
+    public static CudaNode<float> Softmax(CudaNode<float> a) 
     {
+        var epsilon = a.Context.CreateNode(0.00001f);
         var max = Max(a, [^1], keepDims: true);
-        var ex = Exp(a - max);
+        var ex = Exp(a - max) + epsilon;
         var sumex = Sum(ex, [^1], keepDims: true);
         return Multiply(ex, Reciprocal(sumex));
     }

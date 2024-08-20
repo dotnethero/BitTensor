@@ -39,12 +39,12 @@ internal class Program
         var model = Model.Sequential(
         [
             new LinearLayer(context, inputCount, hiddenCount, new ReLU(0.1f)),
-            new LinearLayer(context, hiddenCount, outputCount, Ops.SoftmaxRaw)
+            new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
         ]);
 
         // train
         var sw = Stopwatch.StartNew();
-        var compilation = model.Compile(images, labels, Loss.MSE);
+        var compilation = model.Compile(images, labels, Loss.CrossEntropy);
         model.Fit(compilation, lr: 3e-4f, epochs: 3000, trace: true);
         Console.WriteLine(sw.Elapsed); // 00:00:02.419
 

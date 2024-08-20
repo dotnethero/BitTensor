@@ -33,6 +33,8 @@ public partial class CudaNode<T> where T : unmanaged, IFloatingPoint<T>
                 if (grads.ContainsKey(child))
                 {
                     using var plan = Context.cuTENSOR.CreateAggregationPlan<T>(grad.Shape);
+                    grad.EnsureHasUpdatedValues();
+                    grads[child].EnsureHasUpdatedValues();
                     plan.Execute(grad, grads[child]);
                 }
                 else
