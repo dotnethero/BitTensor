@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Graph.Nodes;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 
@@ -16,6 +17,19 @@ public class CudaContext : IDisposable
     {
         return new CudaContext();
     }
+    
+    public static CudaContext GetContext<T>(
+        AbstractNode<T> operand) 
+        where T : unmanaged, IFloatingPoint<T> =>
+        operand.Context;
+
+    public static CudaContext GetContext<T>(
+        params AbstractNode<T>[] operands)
+        where T : unmanaged, IFloatingPoint<T> =>
+        operands 
+            .Select(c => c.Context)
+            .Distinct()
+            .Single();
 
     public static CudaContext GetContext<T>(
         CudaNode<T> operand) 
