@@ -19,6 +19,6 @@ public unsafe class LeakyReluEpilogue : IEpilogue<float>
 
     public AbstractNode<float> GetGradient(AbstractNode<float> gradient)
     {
-        return new LeakyReLU(gradient, Alpha);
+        return new ReLU(gradient, Alpha);
     }
 }
