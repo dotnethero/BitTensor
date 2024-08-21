@@ -34,7 +34,7 @@ public sealed class Broadcast<T> : AbstractOperation<T> where T : unmanaged, IFl
 
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
     {
-        return [new Sum<T>(gradient, BroadcastedAxis, scale: Scale)];
+        return [Ops.Sum(gradient, BroadcastedAxis, scale: Scale)];
     }
 
     public override void DisposeResources()

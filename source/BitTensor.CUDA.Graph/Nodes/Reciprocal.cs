@@ -26,8 +26,7 @@ public sealed class Reciprocal<T> : AbstractOperation<T> where T : unmanaged, IF
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
     {
         var square = new Multiply<T>(this, this, -Scale); // TODO: Simplify square
-        var result = new Multiply<T>(gradient, square);
-        return [result];
+        return [gradient * square];
     }
 
     public override void DisposeResources()

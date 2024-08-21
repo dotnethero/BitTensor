@@ -20,9 +20,9 @@ public sealed class Softmax : AbstractOperation<float>
     internal readonly CuTensorReductionPlan<float> SoftExponentSumPlan;
     internal readonly CuTensorTernaryPlan<float> SoftmaxPlan;
 
-    public Softmax(AbstractNode<float> a, HashSet<Index> axis) : base(a.Shape, [a])
+    public Softmax(AbstractNode<float> input, HashSet<Index> axis) : base(input.Shape, [input])
     {
-        Input = a;
+        Input = input;
         Axis = axis;
 
         Epsilon = Context.Allocate(Shape.Scalar, [1e-6f]);
@@ -57,10 +57,8 @@ public sealed class Softmax : AbstractOperation<float>
     
     public override AbstractNode<float>[] Propagate(AbstractNode<float> gradient)
     {
-        var product = new Multiply<float>(this, gradient);
-        var sum = new Sum<float>(product, Axis, keepDims: true);
-        var diff = new Add<float>(gradient, sum, alpha: 1, beta: -1);
-        var result = new Multiply<float>(this, diff);
+        var sum = Ops.Sum(this * gradient, Axis, keepDims: true);
+        var result = this * (gradient - sum);
         return [result];
     }
 

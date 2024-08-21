@@ -21,6 +21,6 @@ public sealed unsafe class ReLU : AbstractOperation<float>
     
     public override AbstractNode<float>[] Propagate(AbstractNode<float> gradient)
     {
-        return [new ReLU(gradient, Alpha)];
+        return [Ops.ReLU(gradient, Alpha)];
     }
 }

@@ -40,7 +40,7 @@ public sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatin
         var epilogueGrad = Epilogue?.GetGradient(gradient) ?? gradient;
         var productGrads = Product.Propagate(epilogueGrad);
         var biasAxis = Shapes.GetBroadcastedAxis(Bias.Shape, epilogueGrad.Shape);
-        var biasGrad = new Sum<T>(gradient, axis: biasAxis).Reshape(Bias.Shape);
+        var biasGrad = Ops.Sum(gradient, axis: biasAxis).Reshape(Bias.Shape);
         return [..productGrads, biasGrad];
     }
 

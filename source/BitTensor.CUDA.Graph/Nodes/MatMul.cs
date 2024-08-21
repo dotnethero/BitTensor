@@ -40,12 +40,12 @@ public sealed class MatMul<T> : AbstractOperation<T> where T : unmanaged, IFloat
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
     {
         var gpad = gradient.Reshape(PaddedShape);
-        var da = new MatMul<T>(gpad, PaddedB.Transpose());
-        var db = new MatMul<T>(PaddedA.Transpose(), gpad);
+        var da = Ops.MatMul(gpad, PaddedB.Transpose());
+        var db = Ops.MatMul(PaddedA.Transpose(), gpad);
         var adims = Shapes.GetBroadcastedAxis(PaddedA.Shape, da.Shape);
         var bdims = Shapes.GetBroadcastedAxis(PaddedB.Shape, db.Shape);
-        var agrad = new Sum<T>(da, axis: adims).Reshape(A.Shape);
-        var bgrad = new Sum<T>(db, axis: bdims).Reshape(B.Shape);
+        var agrad = Ops.Sum(da, axis: adims).Reshape(A.Shape);
+        var bgrad = Ops.Sum(db, axis: bdims).Reshape(B.Shape);
         return [agrad, bgrad];
     }
 

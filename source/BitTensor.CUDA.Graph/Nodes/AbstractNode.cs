@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public abstract unsafe class AbstractNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
+public abstract unsafe partial class AbstractNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly List<AbstractNode<T>> Dependents = [];
     internal bool Outdated;

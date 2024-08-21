@@ -36,8 +36,8 @@ public sealed class Add<T> : AbstractOperation<T> where T : unmanaged, IFloating
         var bdims = Shapes.GetBroadcastedAxis(B.Shape, gradient.Shape);
         return
         [
-            new Sum<T>(gradient, axis: adims, scale: Alpha).Reshape(A.Shape),
-            new Sum<T>(gradient, axis: bdims, scale: Beta).Reshape(B.Shape)
+            Ops.Sum(gradient, axis: adims, scale: Alpha).Reshape(A.Shape),
+            Ops.Sum(gradient, axis: bdims, scale: Beta).Reshape(B.Shape)
         ];
     }
 }

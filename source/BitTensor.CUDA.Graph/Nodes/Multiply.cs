@@ -36,8 +36,8 @@ public sealed class Multiply<T> : AbstractOperation<T> where T : unmanaged, IFlo
         var bdims = Shapes.GetBroadcastedAxis(B.Shape, bgrad.Shape);
         return
         [
-            new Sum<T>(agrad, axis: adims).Reshape(A.Shape),
-            new Sum<T>(bgrad, axis: bdims).Reshape(B.Shape)
+            Ops.Sum(agrad, axis: adims).Reshape(A.Shape),
+            Ops.Sum(bgrad, axis: bdims).Reshape(B.Shape)
         ];
     }
 }

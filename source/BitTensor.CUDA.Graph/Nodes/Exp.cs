@@ -25,8 +25,7 @@ public sealed class Exp<T> : AbstractOperation<T> where T : unmanaged, IFloating
     
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
     {
-        var result = new Multiply<T>(gradient, this);
-        return [result];
+        return [gradient * this];
     }
 
     public override void DisposeResources()
