@@ -4,21 +4,21 @@ namespace BitTensor.CUDA.Graph.Nodes;
 
 public sealed unsafe class LeakyReLU : AbstractOperation<float>
 {
-    internal readonly AbstractNode<float> A;
+    internal readonly AbstractNode<float> Input;
     internal readonly float Alpha;
 
-    public LeakyReLU(AbstractNode<float> a, float alpha = 1f) : base(a.Shape, [a])
+    public LeakyReLU(AbstractNode<float> input, float alpha = 1f) : base(input.Shape, [input])
     {
-        A = a;
+        Input = input;
         Alpha = alpha;
     }
     
     public override void EnsureHasUpdatedValue()
     {
-        A.EnsureHasUpdatedValue();
-        Kernels.LeakyReLU(A.Size, A.Pointer, Tensor.Pointer, Alpha);
+        Input.EnsureHasUpdatedValue();
+        Kernels.LeakyReLU(Input.Size, Input.Pointer, Tensor.Pointer, Alpha);
     }
-
+    
     public override AbstractNode<float>[] Propagate(AbstractNode<float> gradient)
     {
         return [new LeakyReLU(gradient, Alpha)];

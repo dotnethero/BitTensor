@@ -27,9 +27,14 @@ public sealed class MatMul<T> : AbstractOperation<T> where T : unmanaged, IFloat
 
     public override void EnsureHasUpdatedValue()
     {
+        ExecuteInto(Tensor);
+    }
+
+    public void ExecuteInto(CudaTensor<T> output)
+    {
         A.EnsureHasUpdatedValue();
         B.EnsureHasUpdatedValue();
-        Plan.Execute(A, B, Tensor);
+        Plan.Execute(A, B, output);
     }
 
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)

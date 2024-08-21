@@ -5,6 +5,6 @@ namespace BitTensor.CUDA.Graph.Epilogues;
 
 public interface IEpilogue<T> where T : unmanaged, IFloatingPoint<T>
 {
-    void Execute(CudaTensor<T> output);
+    void ExecuteInplace(CudaTensor<T> output);
     AbstractNode<T> GetGradient(AbstractNode<T> gradient);
 }

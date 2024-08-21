@@ -12,7 +12,7 @@ public unsafe class LeakyReluEpilogue : IEpilogue<float>
         Alpha = alpha;
     }
     
-    public void Execute(CudaTensor<float> output)
+    public void ExecuteInplace(CudaTensor<float> output)
     {
         Kernels.LeakyReLU(output.Size, output.Pointer, output.Pointer, Alpha);
     }

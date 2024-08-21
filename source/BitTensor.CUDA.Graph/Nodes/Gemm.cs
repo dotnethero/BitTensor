@@ -30,9 +30,9 @@ public sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatin
     public override void EnsureHasUpdatedValue()
     {
         Bias.EnsureHasUpdatedValue();
-        Product.EnsureHasUpdatedValue();
+        Product.ExecuteInto(Tensor);
         Broadcast.Execute(Bias, Tensor, alpha: 1, gamma: 1f); // add inplace
-        Epilogue?.Execute(Tensor);
+        Epilogue?.ExecuteInplace(Tensor);
     }
 
     public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
