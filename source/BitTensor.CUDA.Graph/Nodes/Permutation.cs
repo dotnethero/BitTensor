@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-internal sealed class Permutation<T> : CudaTransformation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Permutation<T> : AbstractTransformation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly Index[] InversePermutation;
 

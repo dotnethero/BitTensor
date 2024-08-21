@@ -1,12 +1,11 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Graph.Nodes;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 
-namespace BitTensor.CUDA.Graph;
+namespace BitTensor.CUDA.Graph.Nodes;
 
-public abstract class CudaReduction<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal abstract class AbstractReduction<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CudaNode<T> Source;
     internal readonly CuTensorReductionPlan<T> Plan;
@@ -18,7 +17,7 @@ public abstract class CudaReduction<T> : CudaOperation<T> where T : unmanaged, I
         bool keepDims) => 
         a.Shape.Reduce(axis, keepDims);
 
-    protected CudaReduction(
+    protected AbstractReduction(
         CudaNode<T> source,
         HashSet<Index> axis,
         cutensorOperator_t operation,

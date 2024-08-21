@@ -1,9 +1,9 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
 
-namespace BitTensor.CUDA.Graph;
+namespace BitTensor.CUDA.Graph.Nodes;
 
-public abstract class CudaTransformation<T> : CudaNode<T>, IDifferentiable<T> where T : unmanaged, IFloatingPoint<T>
+internal abstract class AbstractTransformation<T> : CudaNode<T>, IDifferentiable<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly Lazy<CudaTensor<T>> TensorGetter;
 
@@ -11,7 +11,7 @@ public abstract class CudaTransformation<T> : CudaNode<T>, IDifferentiable<T> wh
     public sealed override CudaTensor<T> Tensor => TensorGetter.Value;
     public CudaNode<T> Source { get; }
     
-    protected CudaTransformation(Shape shape, CudaNode<T> source, Func<CudaTensor<T>, CudaTensor<T>> transformation) : base(shape)
+    protected AbstractTransformation(Shape shape, CudaNode<T> source, Func<CudaTensor<T>, CudaTensor<T>> transformation) : base(shape)
     {
         Context = CudaContext.GetContext(source);
         TensorGetter = new(() => transformation(source.Tensor));

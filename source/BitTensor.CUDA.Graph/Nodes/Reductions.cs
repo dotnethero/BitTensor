@@ -10,7 +10,7 @@ internal sealed class Sum<T>(
     HashSet<Index> axis,
     float scale = 1,
     bool keepDims = false) : 
-    CudaReduction<T>(source, axis, OpCode.CUTENSOR_OP_ADD, scale, keepDims)
+    AbstractReduction<T>(source, axis, OpCode.CUTENSOR_OP_ADD, scale, keepDims)
     where T : unmanaged, IFloatingPoint<T>;
 
 internal sealed class Max<T>(
@@ -18,7 +18,7 @@ internal sealed class Max<T>(
     HashSet<Index> axis,
     float scale = 1,
     bool keepDims = false) : 
-    CudaReduction<T>(source, axis, OpCode.CUTENSOR_OP_MAX, scale, keepDims)
+    AbstractReduction<T>(source, axis, OpCode.CUTENSOR_OP_MAX, scale, keepDims)
     where T : unmanaged, IFloatingPoint<T>;
 
 internal sealed class Min<T>(
@@ -26,5 +26,5 @@ internal sealed class Min<T>(
     HashSet<Index> axis,
     float scale = 1,
     bool keepDims = false) : 
-    CudaReduction<T>(source, axis, OpCode.CUTENSOR_OP_MIN, scale, keepDims)
+    AbstractReduction<T>(source, axis, OpCode.CUTENSOR_OP_MIN, scale, keepDims)
     where T : unmanaged, IFloatingPoint<T>;

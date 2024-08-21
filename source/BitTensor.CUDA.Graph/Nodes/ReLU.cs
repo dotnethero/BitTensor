@@ -2,7 +2,7 @@
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-internal sealed unsafe class ReLU : CudaOperation<float>
+internal sealed unsafe class ReLU : AbstractOperation<float>
 {
     internal readonly CudaNode<float> Input;
     internal readonly float Alpha;

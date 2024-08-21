@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-internal sealed class Reshape<T> : CudaTransformation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Reshape<T> : AbstractTransformation<T> where T : unmanaged, IFloatingPoint<T>
 {
     private static Shape GetShape(AbstractTensor source, Shape shape)
     {

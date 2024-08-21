@@ -4,7 +4,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-internal sealed class Log<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Log<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CudaNode<T> Input;
     internal readonly CuTensorBinaryPlan<T> Plan;

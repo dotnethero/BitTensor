@@ -3,7 +3,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-internal sealed class DotProduct<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class DotProduct<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CudaNode<T> A;
     internal readonly CudaNode<T> B;

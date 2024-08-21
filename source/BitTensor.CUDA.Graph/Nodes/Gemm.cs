@@ -4,7 +4,7 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-internal sealed class Gemm<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly MatMul<T> Product;
     internal readonly CudaNode<T> Bias;

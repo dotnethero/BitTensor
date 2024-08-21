@@ -7,7 +7,7 @@ namespace BitTensor.CUDA.Graph.Nodes;
 
 using OpCode = cutensorOperator_t;
 
-internal sealed class Softmax : CudaOperation<float>
+internal sealed class Softmax : AbstractOperation<float>
 {
     internal readonly CudaNode<float> Input;
     internal readonly HashSet<Index> Axis;
