@@ -14,7 +14,7 @@ public class CudaVariable<T> : CudaNode<T> where T : unmanaged, IFloatingPoint<T
         Tensor = tensor;
     }
 
-    public override void EnsureHasUpdatedValues()
+    public sealed override void EnsureHasUpdatedValues()
     {
         Outdated = false; // always up to date
     }

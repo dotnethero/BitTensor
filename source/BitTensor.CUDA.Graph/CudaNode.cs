@@ -54,4 +54,10 @@ public abstract unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<
     {
         DisposeResources();
     }
+
+    public override string ToString()
+    {
+        var type = GetType().Name;
+        return $"{type}, shape={Shape}";
+    }
 }

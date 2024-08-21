@@ -11,7 +11,7 @@ public partial class CudaNode<T> where T : unmanaged, IFloatingPoint<T>
 
         var nodes = new Stack<CudaNode<T>>(16);
         var grads = new GradientCollection<T>();
-        var one = Context.CreateNode<T>(T.One);
+        var one = Context.CreateVariable<T>(T.One);
 
         nodes.Push(this);
         grads.Push(this, one);

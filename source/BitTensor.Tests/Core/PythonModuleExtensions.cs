@@ -67,5 +67,5 @@ static class PythonModuleExtensions
 
     public static CudaNode<float> AsNode(
         this TensorData tensor, CudaContext context) =>
-        context.CreateNode(tensor.Shape, tensor.Values);
+        context.CreateVariable(tensor.Shape, tensor.Values);
 }

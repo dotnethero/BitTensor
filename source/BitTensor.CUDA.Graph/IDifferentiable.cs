@@ -2,8 +2,12 @@
 
 namespace BitTensor.CUDA.Graph;
 
-public interface IDifferentiable<T> where T : unmanaged, IFloatingPoint<T>
+public interface IHasChildren<T> where T : unmanaged, IFloatingPoint<T>
+{
+    CudaNode<T>[] GetChildren();
+}
+
+public interface IDifferentiable<T> : IHasChildren<T> where T : unmanaged, IFloatingPoint<T>
 {
     CudaNode<T>[] Propagate(CudaNode<T> gradient);
-    CudaNode<T>[] GetChildren();
 }

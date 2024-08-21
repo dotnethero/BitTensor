@@ -28,8 +28,8 @@ internal class Program
 
         using var context = CudaContext.CreateDefault();
 
-        var images = context.CreateNode<float>([batchSize, inputCount]);
-        var labels = context.CreateNode<float>([batchSize, outputCount]);
+        var images = context.CreateVariable<float>([batchSize, inputCount]);
+        var labels = context.CreateVariable<float>([batchSize, outputCount]);
 
         var indexes = Enumerable.Range(0, batchSize).ToArray();
 
@@ -46,6 +46,9 @@ internal class Program
         // train
         var sw = Stopwatch.StartNew();
         var compilation = model.Compile(images, labels, Loss.CrossEntropy);
+
+        CuDebug.WriteExpressionTree(compilation.Loss);
+
         model.Fit(compilation, lr: 3e-4f, epochs: 3000, trace: true);
         Console.WriteLine(sw.Elapsed); // 00:00:02.419
 
