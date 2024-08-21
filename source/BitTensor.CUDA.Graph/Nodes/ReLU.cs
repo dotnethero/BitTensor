@@ -2,24 +2,23 @@
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed unsafe class ReLU : AbstractOperation<float>
+internal sealed unsafe class ReLU : CudaOperation<float>
 {
-    internal readonly AbstractNode<float> Input;
+    internal readonly CudaNode<float> Input;
     internal readonly float Alpha;
 
-    public ReLU(AbstractNode<float> input, float alpha = 1f) : base(input.Shape, [input])
+    public ReLU(CudaNode<float> input, float alpha = 1f) : base(input.Shape, [input])
     {
         Input = input;
         Alpha = alpha;
     }
     
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        Input.EnsureHasUpdatedValue();
         Kernels.LeakyReLU(Input.Size, Input.Pointer, Tensor.Pointer, Alpha);
     }
     
-    public override AbstractNode<float>[] Propagate(AbstractNode<float> gradient)
+    public override CudaNode<float>[] Propagate(CudaNode<float> gradient)
     {
         return [Ops.ReLU(gradient, Alpha)];
     }

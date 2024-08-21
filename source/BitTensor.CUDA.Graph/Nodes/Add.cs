@@ -4,17 +4,17 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed class Add<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Add<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly AbstractNode<T> A;
-    internal readonly AbstractNode<T> B;
+    internal readonly CudaNode<T> A;
+    internal readonly CudaNode<T> B;
     internal readonly float Alpha;
     internal readonly float Beta;
     internal readonly CuTensorTernaryPlan<T> Plan;
 
     private static Shape GetShape(AbstractTensor a, AbstractTensor b) => Shapes.Broadcast(a.Shape, b.Shape);
 
-    public Add(AbstractNode<T> a, AbstractNode<T> b, float alpha = 1f, float beta = 1f) : base(GetShape(a, b), [a, b])
+    public Add(CudaNode<T> a, CudaNode<T> b, float alpha = 1f, float beta = 1f) : base(GetShape(a, b), [a, b])
     {
         A = a;
         B = b;
@@ -23,14 +23,12 @@ public sealed class Add<T> : AbstractOperation<T> where T : unmanaged, IFloating
         Plan = Context.cuTENSOR.CreateAddPlan<T>(a.Shape, b.Shape, Shape);
     }
 
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        A.EnsureHasUpdatedValue();
-        B.EnsureHasUpdatedValue();
         Plan.Execute(A, B, Tensor, Alpha, Beta, gamma: 0f);
     }
 
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         var adims = Shapes.GetBroadcastedAxis(A.Shape, gradient.Shape);
         var bdims = Shapes.GetBroadcastedAxis(B.Shape, gradient.Shape);

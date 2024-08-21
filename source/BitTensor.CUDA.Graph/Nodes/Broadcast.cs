@@ -4,15 +4,15 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed class Broadcast<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Broadcast<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly AbstractNode<T> A;
+    internal readonly CudaNode<T> A;
     internal readonly HashSet<Index> BroadcastedAxis;
     internal readonly float Scale;
     internal readonly CuTensorBroadcastPlan<T> Plan;
 
     public Broadcast(
-        AbstractNode<T> a,
+        CudaNode<T> a,
         Shape shape,
         float scale = 1f) :
         base(shape, [a])
@@ -26,13 +26,12 @@ public sealed class Broadcast<T> : AbstractOperation<T> where T : unmanaged, IFl
         Plan = Context.cuTENSOR.CreateBroadcastPlan<T>(a.Shape, shape);
     }
     
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        A.EnsureHasUpdatedValue();
         Plan.Execute(A, Tensor, alpha: Scale, gamma: 0);
     }
 
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         return [Ops.Sum(gradient, BroadcastedAxis, scale: Scale)];
     }

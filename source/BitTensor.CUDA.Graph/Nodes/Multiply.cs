@@ -4,16 +4,16 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed class Multiply<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Multiply<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly AbstractNode<T> A;
-    internal readonly AbstractNode<T> B;
+    internal readonly CudaNode<T> A;
+    internal readonly CudaNode<T> B;
     internal readonly float Scale;
     internal readonly CuTensorTernaryPlan<T> Plan;
 
     private static Shape GetShape(AbstractTensor a, AbstractTensor b) => Shapes.Broadcast(a.Shape, b.Shape);
 
-    public Multiply(AbstractNode<T> a, AbstractNode<T> b, float scale = 1f) : base(GetShape(a, b), [a, b])
+    public Multiply(CudaNode<T> a, CudaNode<T> b, float scale = 1f) : base(GetShape(a, b), [a, b])
     {
         A = a;
         B = b;
@@ -21,14 +21,12 @@ public sealed class Multiply<T> : AbstractOperation<T> where T : unmanaged, IFlo
         Plan = Context.cuTENSOR.CreateMultiplyPlan<T>(a.Shape, b.Shape, Shape);
     }
 
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        A.EnsureHasUpdatedValue();
-        B.EnsureHasUpdatedValue();
         Plan.Execute(A, B, Tensor, alpha: Scale, beta: 1f, gamma: 0f);
     }
 
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         var agrad = new Multiply<T>(gradient, B, Scale);
         var bgrad = new Multiply<T>(gradient, A, Scale);

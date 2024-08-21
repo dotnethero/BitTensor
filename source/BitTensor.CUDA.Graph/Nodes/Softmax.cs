@@ -7,9 +7,9 @@ namespace BitTensor.CUDA.Graph.Nodes;
 
 using OpCode = cutensorOperator_t;
 
-public sealed class Softmax : AbstractOperation<float>
+internal sealed class Softmax : CudaOperation<float>
 {
-    internal readonly AbstractNode<float> Input;
+    internal readonly CudaNode<float> Input;
     internal readonly HashSet<Index> Axis;
 
     internal readonly CudaTensor<float> Epsilon;
@@ -20,7 +20,7 @@ public sealed class Softmax : AbstractOperation<float>
     internal readonly CuTensorReductionPlan<float> SoftExponentSumPlan;
     internal readonly CuTensorTernaryPlan<float> SoftmaxPlan;
 
-    public Softmax(AbstractNode<float> input, HashSet<Index> axis) : base(input.Shape, [input])
+    public Softmax(CudaNode<float> input, HashSet<Index> axis) : base(input.Shape, [input])
     {
         Input = input;
         Axis = axis;
@@ -44,10 +44,8 @@ public sealed class Softmax : AbstractOperation<float>
             Shape);
     }
 
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        Input.EnsureHasUpdatedValue();
-        
         MaxPlan.Execute(Input, Reduced); // temp is max
         ValueMinusMaxPlan.Execute(Input, Reduced, Tensor, alpha: 1, beta: -1); // output is diff
         SoftExponentPlan.Execute(Tensor, Epsilon, Tensor); // outputs is exp + eps
@@ -55,7 +53,7 @@ public sealed class Softmax : AbstractOperation<float>
         SoftmaxPlan.Execute(Tensor, Reduced, Tensor);  
     }
     
-    public override AbstractNode<float>[] Propagate(AbstractNode<float> gradient)
+    public override CudaNode<float>[] Propagate(CudaNode<float> gradient)
     {
         var sum = Ops.Sum(this * gradient, Axis, keepDims: true);
         var result = this * (gradient - sum);

@@ -19,11 +19,11 @@ public partial class CudaNode<T> where T : unmanaged, IFloatingPoint<T>
         while (nodes.Count > 0)
         {
             var node = nodes.Pop();
-            if (node.Backward is null)
+            if (node is not IDifferentiable<T> operation)
                 continue;
 
-            var children = node.Children;
-            var childrenGrads = node.Backward(grads[node], node);
+            var children = operation.GetChildren();
+            var childrenGrads = operation.Propagate(grads[node]);
             for (var i = 0; i < children.Length; ++i)
             {
                 var child = children[i];

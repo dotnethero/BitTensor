@@ -5,26 +5,26 @@ namespace BitTensor.CUDA.Graph.Nodes;
 
 using OpCode = cutensorOperator_t;
 
-public sealed class Sum<T>(
-    AbstractNode<T> source,
+internal sealed class Sum<T>(
+    CudaNode<T> source,
     HashSet<Index> axis,
     float scale = 1,
     bool keepDims = false) : 
-    AbstractReduction<T>(source, axis, OpCode.CUTENSOR_OP_ADD, scale, keepDims)
+    CudaReduction<T>(source, axis, OpCode.CUTENSOR_OP_ADD, scale, keepDims)
     where T : unmanaged, IFloatingPoint<T>;
 
-public sealed class Max<T>(
-    AbstractNode<T> source,
+internal sealed class Max<T>(
+    CudaNode<T> source,
     HashSet<Index> axis,
     float scale = 1,
     bool keepDims = false) : 
-    AbstractReduction<T>(source, axis, OpCode.CUTENSOR_OP_MAX, scale, keepDims)
+    CudaReduction<T>(source, axis, OpCode.CUTENSOR_OP_MAX, scale, keepDims)
     where T : unmanaged, IFloatingPoint<T>;
 
-public sealed class Min<T>(
-    AbstractNode<T> source,
+internal sealed class Min<T>(
+    CudaNode<T> source,
     HashSet<Index> axis,
     float scale = 1,
     bool keepDims = false) : 
-    AbstractReduction<T>(source, axis, OpCode.CUTENSOR_OP_MIN, scale, keepDims)
+    CudaReduction<T>(source, axis, OpCode.CUTENSOR_OP_MIN, scale, keepDims)
     where T : unmanaged, IFloatingPoint<T>;

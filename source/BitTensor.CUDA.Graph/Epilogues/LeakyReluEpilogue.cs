@@ -17,7 +17,7 @@ public unsafe class LeakyReluEpilogue : IEpilogue<float>
         Kernels.LeakyReLU(output.Size, output.Pointer, output.Pointer, Alpha);
     }
 
-    public AbstractNode<float> GetGradient(AbstractNode<float> gradient)
+    public CudaNode<float> GetGradient(CudaNode<float> gradient)
     {
         return new ReLU(gradient, Alpha);
     }

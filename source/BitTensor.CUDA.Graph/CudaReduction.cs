@@ -1,24 +1,25 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Graph.Nodes;
 using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Plans;
 
-namespace BitTensor.CUDA.Graph.Nodes;
+namespace BitTensor.CUDA.Graph;
 
-public abstract class AbstractReduction<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+public abstract class CudaReduction<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly AbstractNode<T> Source;
-    internal readonly float Scale;
+    internal readonly CudaNode<T> Source;
     internal readonly CuTensorReductionPlan<T> Plan;
-    
+    internal readonly float Scale;
+
     private static Shape GetShape(
         AbstractTensor a,
         HashSet<Index> axis,
         bool keepDims) => 
         a.Shape.Reduce(axis, keepDims);
 
-    protected AbstractReduction(
-        AbstractNode<T> source,
+    protected CudaReduction(
+        CudaNode<T> source,
         HashSet<Index> axis,
         cutensorOperator_t operation,
         float scale = 1f,
@@ -30,13 +31,12 @@ public abstract class AbstractReduction<T> : AbstractOperation<T> where T : unma
         Plan = Context.cuTENSOR.CreateReductionPlan<T>(source.Shape, Shape, axis, operation, keepDims);
     }
 
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        Source.EnsureHasUpdatedValue();
         Plan.Execute(Source, Tensor, Scale);
     }
 
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         return [new Broadcast<T>(gradient, Source.Shape, Scale)];
     }

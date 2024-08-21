@@ -15,6 +15,11 @@ public static class Axis
         return inverted;
     }
 
+    public static HashSet<Index> GetAxis(this Shape shape) =>
+        shape
+            .GetOrdinaryAxis()
+            .ToHashSet();
+
     public static Index[] GetOrdinaryAxis(this Shape shape)
     {
         var dims = shape.Dimensions;

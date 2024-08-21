@@ -51,7 +51,6 @@ internal class Program
 
         // evaluate
         var output = model.Compute(images);
-        output.EnsureHasUpdatedValues();
 
         CuDebug.WriteLine(labels);
         CuDebug.WriteLine(output);
@@ -84,7 +83,6 @@ internal class Program
         // evaluate
         var output = model.Compute(x);
         var diff = Ops.Sum(output - d, [1]);
-        diff.EnsureHasUpdatedValues();
         CuDebug.WriteLine(diff);
     }
     

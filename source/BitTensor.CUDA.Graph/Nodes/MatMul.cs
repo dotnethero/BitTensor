@@ -4,18 +4,18 @@ using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed class MatMul<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class MatMul<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly AbstractNode<T> A;
-    internal readonly AbstractNode<T> B;
-    internal readonly AbstractNode<T> PaddedA;
-    internal readonly AbstractNode<T> PaddedB;
+    internal readonly CudaNode<T> A;
+    internal readonly CudaNode<T> B;
+    internal readonly CudaNode<T> PaddedA;
+    internal readonly CudaNode<T> PaddedB;
     internal readonly Shape PaddedShape;
     internal readonly CuTensorMatMulPlan<T> Plan;
 
     private static Shape GetShape(AbstractTensor a, AbstractTensor b) => Shapes.BroadcastMatrixProduct(a.Shape, b.Shape);
 
-    public MatMul(AbstractNode<T> a, AbstractNode<T> b) : base(GetShape(a, b), [a, b])
+    public MatMul(CudaNode<T> a, CudaNode<T> b) : base(GetShape(a, b), [a, b])
     {
         A = a;
         B = b;
@@ -25,19 +25,17 @@ public sealed class MatMul<T> : AbstractOperation<T> where T : unmanaged, IFloat
         Plan = Context.cuTENSOR.CreateMatMulPlan<T>(PaddedA.Shape, PaddedB.Shape, PaddedShape);
     }
 
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
         ExecuteInto(Tensor);
     }
 
     public void ExecuteInto(CudaTensor<T> output)
     {
-        A.EnsureHasUpdatedValue();
-        B.EnsureHasUpdatedValue();
         Plan.Execute(A, B, output);
     }
 
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         var gpad = gradient.Reshape(PaddedShape);
         var da = Ops.MatMul(gpad, PaddedB.Transpose());

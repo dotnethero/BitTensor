@@ -4,26 +4,25 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed class Exp<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Exp<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly AbstractNode<T> Input;
+    internal readonly CudaNode<T> Input;
     internal readonly CuTensorBinaryPlan<T> Plan;
     internal readonly float Scale;
 
-    public Exp(AbstractNode<T> input, float scale = 1f) : base(input.Shape, [input])
+    public Exp(CudaNode<T> input, float scale = 1f) : base(input.Shape, [input])
     {
         Input = input;
         Scale = scale;
         Plan = Context.cuTENSOR.CreateAggregationPlan<T>(Operand.Exp(Shape), Shape);
     }
     
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        Input.EnsureHasUpdatedValue();
         Plan.Execute(Input, Tensor, alpha: Scale, gamma: 0);
     }
     
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         return [gradient * this];
     }

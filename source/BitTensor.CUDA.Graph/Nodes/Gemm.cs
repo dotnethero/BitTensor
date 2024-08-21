@@ -1,14 +1,13 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
-using BitTensor.CUDA.Graph.Epilogues;
 using BitTensor.CUDA.Plans;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
-public sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatingPoint<T>
+internal sealed class Gemm<T> : CudaOperation<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly MatMul<T> Product;
-    internal readonly AbstractNode<T> Bias;
+    internal readonly CudaNode<T> Bias;
     internal readonly CuTensorBroadcastPlan<T> Broadcast;
     internal readonly IEpilogue<T>? Epilogue;
 
@@ -19,7 +18,7 @@ public sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatin
         return shape;
     }
 
-    public Gemm(AbstractNode<T> a, AbstractNode<T> b, AbstractNode<T> c, IEpilogue<T>? epilogue = null) : base(GetShape(a, b, c), [a, b, c])
+    public Gemm(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c, IEpilogue<T>? epilogue = null) : base(GetShape(a, b, c), [a, b, c])
     {
         Bias = c;
         Product = new MatMul<T>(a, b);
@@ -27,15 +26,14 @@ public sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloatin
         Epilogue = epilogue;
     }
 
-    public override void EnsureHasUpdatedValue()
+    public override void Execute()
     {
-        Bias.EnsureHasUpdatedValue();
         Product.ExecuteInto(Tensor);
         Broadcast.Execute(Bias, Tensor, alpha: 1, gamma: 1f); // add inplace
         Epilogue?.ExecuteInplace(Tensor);
     }
 
-    public override AbstractNode<T>[] Propagate(AbstractNode<T> gradient)
+    public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
         var epilogueGrad = Epilogue?.GetGradient(gradient) ?? gradient;
         var productGrads = Product.Propagate(epilogueGrad);

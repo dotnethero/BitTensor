@@ -1,10 +1,9 @@
 ﻿using System.Numerics;
-using BitTensor.CUDA.Graph.Nodes;
 
-namespace BitTensor.CUDA.Graph.Epilogues;
+namespace BitTensor.CUDA.Graph;
 
 public interface IEpilogue<T> where T : unmanaged, IFloatingPoint<T>
 {
     void ExecuteInplace(CudaTensor<T> output);
-    AbstractNode<T> GetGradient(AbstractNode<T> gradient);
+    CudaNode<T> GetGradient(CudaNode<T> gradient);
 }
