@@ -21,38 +21,57 @@ git clone https://github.com/yourusername/BitTensor.git
 ## Quick Start
 
 Here's a quick example to get you started with BitTensor:
+1. Create new context
+2. Allocate the tensor and create graph nodes
+3. Perform the calculation
 
 ```csharp
-using BitTensor.Core;
-using BitTensor.Units;
+using var context = CudaContext.CreateDefault();
 
-var linearLayer = new LinearLayer(inputs: 10, outputs: 5, activation: Tensor.Sigmoid);
-var input = Tensor.Random.Uniform([1, 10]);
-var output = linearLayer.Compute(input);
+var a = context.cuRAND.Uniform([3, 4]).AsNode(context);
+var b = context.cuRAND.Uniform([4, 5]).AsNode(context);
+var c = Ops.MatMul(a, b);
 
-Console.WriteLine($"Output: {output}");
+CuDebug.WriteExpressionTree(c);
+
+// c:
+// t0 = MatMul`1(t1, t2)
+// t2 = CudaVariable`1
+// t1 = CudaVariable`1
+
+CuDebug.WriteLine(c);
+
+// c(3,5) =
+// [[  1.272  1.617  0.944  1.314  1.615 ]
+//  [  1.434  1.382  0.651  1.362  1.589 ]
+//  [  1.266  1.098  0.868  1.021  1.359 ]]
 ```
 
 ## Examples
 
-### Building a Simple Model
+### Training a MNIST Model
 
 ```csharp
-var model = Model.Sequential(
+var trainImages = MNIST.ReadImages(@"train-images.idx3-ubyte");
+var trainLabels = MNIST.ReadLabels(@"train-labels.idx1-ubyte");
+        
+const int batchSize = 2048;
+const int inputCount = 28 * 28;
+const int hiddenCount = 512;
+const int outputCount = 10;
+
+using var context = CudaContext.CreateDefault();
+
+var model = Model.Create(
 [
-    new LinearLayer(inputs: 784, outputs: 128, activation: Tensor.ReLU),
-    new LinearLayer(inputs: 128, outputs: 10, activation: Tensor.Softmax)
+    new Flatten<float>(context),
+    new Linear(context, inputCount, hiddenCount, Activation.ReLU(0.1f)),
+    new Linear(context, hiddenCount, outputCount, Activation.Softmax)
 ]);
 
-var input = Tensor.Random.Uniform([1, 784]);
-var output = model.Compute(input);
-
-Console.WriteLine($"Model output: {output}");
+var trainer = Model.Compile(model, Loss.CrossEntropy, trainImages, trainLabels, batchSize);
+trainer.Fit(lr: 5e-3f, epochs: 50, trace: true);
 ```
-
-### Training the Model
-
-Refer to the `Fit` method in the `Model` class for examples on how to train the model using the provided dataset.
 
 ## License
 
