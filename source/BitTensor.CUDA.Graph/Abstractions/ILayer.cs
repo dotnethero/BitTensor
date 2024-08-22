@@ -1,11 +1,10 @@
 ﻿using System.Numerics;
-using BitTensor.CUDA.Graph;
 
-namespace BitTensor.CUDA.Models;
+namespace BitTensor.CUDA.Graph;
 
 public interface ILayer<T> where T : unmanaged, IFloatingPoint<T>
 {
+    CudaContext Context { get; }
     CudaWeights<T>[] Parameters { get; }
-    CudaNode<T> Compute(CudaNode<T> input);
+    CudaNode<T> Compose(CudaNode<T> input);
 }
-

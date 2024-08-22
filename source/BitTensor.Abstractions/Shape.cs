@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace BitTensor.Abstractions;
 
-[CollectionBuilder(typeof(Shape), "Create")]
+[CollectionBuilder(typeof(Shape), nameof(Create))]
 public sealed class Shape : IEnumerable<int>
 {
     public static readonly Shape Scalar = [];

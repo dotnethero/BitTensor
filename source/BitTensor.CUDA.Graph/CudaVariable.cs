@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA.Graph;
@@ -18,8 +19,8 @@ public class CudaVariable<T> : CudaNode<T> where T : unmanaged, IFloatingPoint<T
     {
         Outdated = false; // always up to date
     }
-    
-    public void LoadBatches(Dataset<T> dataset, int[] batchIndexes)
+
+    public void LoadBatches(Dataset<T> dataset, ReadOnlySpan<int> batchIndexes)
     {
         var stride = dataset.Shape.Strides[0];
 

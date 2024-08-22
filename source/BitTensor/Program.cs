@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Graph.Epilogues;
 using BitTensor.CUDA.Models;
@@ -21,85 +20,39 @@ internal class Program
         var testImages = MNIST.ReadImages(@"C:\Projects\BitTensor\mnist\t10k-images.idx3-ubyte");
         var testLabels = MNIST.ReadLabels(@"C:\Projects\BitTensor\mnist\t10k-labels.idx1-ubyte");
 
-        const int batchSize = 20;
+        const int batchSize = 2048;
         const int inputCount = 28 * 28;
-        const int hiddenCount = 300;
+        const int hiddenCount = 512;
         const int outputCount = 10;
 
         using var context = CudaContext.CreateDefault();
 
-        var images = context.CreateVariable<float>([batchSize, inputCount]);
-        var labels = context.CreateVariable<float>([batchSize, outputCount]);
-
-        var indexes = Enumerable.Range(0, batchSize).ToArray();
-
-        Random.Shared.Shuffle(indexes);
-        images.LoadBatches(trainImages, indexes);
-        labels.LoadBatches(trainLabels, indexes);
-
-        var model = Model.Sequential(
+        var model = Model.Create(
         [
+            new Flatten<float>(context),
             new LinearLayer(context, inputCount, hiddenCount, new LeakyReluEpilogue(0.1f)),
             new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
         ]);
 
-        // train
-        var sw = Stopwatch.StartNew();
-        var compilation = model.Compile(images, labels, Loss.CrossEntropy);
+        // train:
+        var timer = Stopwatch.StartNew();
+        var trainer = Model.Compile(model, Loss.CrossEntropy, trainImages, trainLabels, batchSize);
+        trainer.Fit(lr: 5e-3f, epochs: 50, trace: true);
+        timer.Stop();
 
-        CuDebug.WriteExpressionTree(compilation.Loss);
+        // evaluate:
+        // CuDebug.WriteLine(labels);
+        // CuDebug.WriteLine(output);
 
-        model.Fit(compilation, lr: 3e-4f, epochs: 3000, trace: true);
-        Console.WriteLine(sw.Elapsed); // 00:00:02.419
+        // debug:
+        // CuDebug.WriteExpressionTree(trainer.Loss);
 
-        // evaluate
-        var output = model.Compute(images);
+        Console.WriteLine(timer.Elapsed);
 
-        CuDebug.WriteLine(labels);
-        CuDebug.WriteLine(output);
-    }
-
-    private static void Test_linear_module()
-    {
-        const int inputCount = 400;
-        const int hiddenCount = 1000;
-        const int outputCount = 20;
-        const int batchSize = 50;
-
-        using var context = CudaContext.CreateDefault();
-
-        var x = context.cuRAND.Normal([batchSize, inputCount]).AsNode(context);
-        var d = context.cuRAND.Normal([batchSize, outputCount]).AsNode(context);
-
-        var model = Model.Sequential(
-        [
-            new LinearLayer(context, inputCount, hiddenCount, new LeakyReluEpilogue()),
-            new LinearLayer(context, hiddenCount, outputCount)
-        ]);
-
-        // train
-        var sw = Stopwatch.StartNew();
-        var compilation = model.Compile(x, d, Loss.MSE);
-        model.Fit(compilation, lr: 1e-6f, epochs: 1000, trace: true);
-        Console.WriteLine(sw.Elapsed); // 00:00:01.572
-
-        // evaluate
-        var output = model.Compute(x);
-        var diff = Ops.Sum(output - d, [1]);
-        CuDebug.WriteLine(diff);
-    }
-    
-    private static void Test_transpose()
-    {
-        using var context = CudaContext.CreateDefault();
-
-        var a = context.cuRAND.Normal([2, 3, 4]).AsNode(context);
-        var b = a.Transpose([1, 2, 0]);
-        var c = b.Transpose([1, 2, 0]);
-        var grads = Ops.Sum(c).GetGradients();
-
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(b);
-        CuDebug.WriteLine(c);
+        // 5e-3f, epochs: 50, trace: true
+        // 1.484
+        // 00:01:43.6200928
+        // 39 operation plans disposed
+        // 31 arrays (6672 kB) disposed
     }
 }
