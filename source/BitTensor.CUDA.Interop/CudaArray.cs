@@ -1,5 +1,6 @@
 ﻿using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA;
 
@@ -25,13 +26,13 @@ public static unsafe class CudaArray
     public static void* AllocateRaw(uint bytes)
     {
         void* pointer;
-        cudaMalloc(&pointer, bytes);
+        cudaMallocAsync(&pointer, bytes, CuStream.Default);
         return pointer;
     }
     
     public static void Free(void* pointer)
     {
-        cudaFree(pointer);
+        cudaFreeAsync(pointer, CuStream.Default);
     }
 }
 
@@ -56,7 +57,7 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
         var bytes = (uint)(Size * ElementSize);
         fixed (T* dp = destination)
         {
-            cudaMemcpy(dp, Pointer, bytes, cudaMemcpyKind.cudaMemcpyDeviceToHost);
+            cudaMemcpyAsync(dp, Pointer, bytes, cudaMemcpyKind.cudaMemcpyDeviceToHost, CuStream.Default);
         }
     }
 
@@ -68,7 +69,7 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
         var bytes = (uint)(Size * ElementSize);
         fixed (T* sp = source)
         {
-            cudaMemcpy(Pointer, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice);
+            cudaMemcpyAsync(Pointer, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice, CuStream.Default);
         }
     }
 
@@ -80,12 +81,12 @@ public unsafe class CudaArray<T> : IDeviceArray<T>, IDisposable where T : unmana
         var bytes = (uint)(size * ElementSize);
         fixed (T* sp = source)
         {
-            cudaMemcpy(Pointer + offset, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice);
+            cudaMemcpyAsync(Pointer + offset, sp, bytes, cudaMemcpyKind.cudaMemcpyHostToDevice, CuStream.Default);
         }
     }
 
     public void Dispose()
     {
-        cudaFree(Pointer);
+        cudaFreeAsync(Pointer, CuStream.Default);
     }
 }

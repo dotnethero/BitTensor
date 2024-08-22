@@ -44,9 +44,13 @@ public abstract unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<
     {
         EnsureHasUpdatedValues();
         Tensor.CopyToHost(destination);
+        Context.Synchronize();
     }
 
-    public void CopyToDevice(ReadOnlySpan<T> source) => Tensor.CopyToDevice(source);
+    public void CopyToDevice(ReadOnlySpan<T> source)
+    {
+        Tensor.CopyToDevice(source);
+    }
 
     public virtual void DisposeResources() {}
 
