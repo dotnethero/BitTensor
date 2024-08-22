@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA;
 
 namespace BitTensor;
 
@@ -6,14 +7,14 @@ public static unsafe class MNIST
 {
     private delegate void Epilogue<T>(Span<T> array, ReadOnlySpan<byte> buffer);
 
-    public static Dataset<float> ReadImages(string path)
+    public static CudaDataset<float> ReadImages(string path)
     {
         using var stream = File.OpenRead(path);
         var samples = ReadFile<float>(stream, Normalize);
         return samples;
     }
 
-    public static Dataset<float> ReadLabels(string path, int classes = 10)
+    public static CudaDataset<float> ReadLabels(string path, int classes = 10)
     {
         var samples = ReadLabelsRaw(path);
         var shape = samples.Shape.Append(classes);
@@ -30,7 +31,7 @@ public static unsafe class MNIST
         return new(shape, onehot);
     }
     
-    private static Dataset<byte> ReadLabelsRaw(string path)
+    private static CudaDataset<byte> ReadLabelsRaw(string path)
     {
         using var stream = File.OpenRead(path);
         var samples = ReadFile<byte>(stream, CopyToView);
@@ -54,7 +55,7 @@ public static unsafe class MNIST
         buffer.CopyTo(view);
     }
 
-    private static Dataset<T> ReadFile<T>(Stream stream, Epilogue<T> epilogue)
+    private static CudaDataset<T> ReadFile<T>(Stream stream, Epilogue<T> epilogue) where T : unmanaged
     {
         var magic = new byte[4];
         stream.ReadExactly(magic);
@@ -66,7 +67,7 @@ public static unsafe class MNIST
         return samples;
     }
 
-    private static Dataset<T> ReadSamples<T>(Stream stream, int[] dimensions, int elementSize, Epilogue<T> epilogue)
+    private static CudaDataset<T> ReadSamples<T>(Stream stream, int[] dimensions, int elementSize, Epilogue<T> epilogue) where T : unmanaged
     {
         var shape = Shape.Create(dimensions);
         var samples = shape[0];

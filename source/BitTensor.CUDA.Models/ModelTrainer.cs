@@ -1,13 +1,12 @@
 ﻿using System.Numerics;
-using BitTensor.Abstractions;
 using BitTensor.CUDA.Graph;
 
 namespace BitTensor.CUDA.Models;
 
 public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
 {
-    public Dataset<T> InputDataset { get; }
-    public Dataset<T> OutputDataset { get; }
+    public CudaDataset<T> InputDataset { get; }
+    public CudaDataset<T> OutputDataset { get; }
 
     public ILayer<T> Model { get; }
     public CudaVariable<T> Inputs { get; }
@@ -16,7 +15,7 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
     public CudaNode<T> Loss { get; }
     public GradientCollection<T> Gradients { get; }
 
-    internal ModelTrainer(ILayer<T> model, LossFunction<T> lossFunction, Dataset<T> inputs, Dataset<T> outputs, int batchSize = 1)
+    internal ModelTrainer(ILayer<T> model, LossFunction<T> lossFunction, CudaDataset<T> inputs, CudaDataset<T> outputs, int batchSize = 1)
     {
         Model = model;
         InputDataset = inputs;

@@ -14,8 +14,8 @@ public static class Model
     public static ModelTrainer<T> Compile<T>(
         ILayer<T> model,
         LossFunction<T> lossFunction,
-        Dataset<T> inputs,
-        Dataset<T> outputs,
+        CudaDataset<T> inputs,
+        CudaDataset<T> outputs,
         int batchSize = 1)
         where T : unmanaged, IFloatingPoint<T> => 
         new(model, lossFunction, inputs, outputs, batchSize);

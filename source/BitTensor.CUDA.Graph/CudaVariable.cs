@@ -20,15 +20,15 @@ public class CudaVariable<T> : CudaNode<T> where T : unmanaged, IFloatingPoint<T
         Outdated = false; // always up to date
     }
 
-    public void LoadBatches(Dataset<T> dataset, ReadOnlySpan<int> batchIndexes)
+    public unsafe void LoadBatches(CudaDataset<T> dataset, ReadOnlySpan<int> batchIndexes)
     {
         var stride = dataset.Shape.Strides[0];
 
         for (var i = 0; i < batchIndexes.Length; i++)
         {
             var sampleIndex = batchIndexes[i];
-            var batch = new ReadOnlySpan<T>(dataset.Data, sampleIndex * stride, stride);
-            Tensor.Array.CopyToDevice(batch, i * stride, stride);
+            var source = dataset.Pointer + sampleIndex * stride;
+            Tensor.Array.CopyToDevice(source, i * stride, stride);
         }
 
         Invalidate();
