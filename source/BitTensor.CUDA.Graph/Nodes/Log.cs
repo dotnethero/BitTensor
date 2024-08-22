@@ -24,9 +24,7 @@ internal sealed class Log<T> : AbstractOperation<T> where T : unmanaged, IFloati
     
     public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
-        var reciprocal = new Reciprocal<T>(Input);
-        var result = new Multiply<T>(gradient, reciprocal, Scale); // TODO: Scaled division
-        return [result];
+        return [new Divide<T>(gradient, Input, Scale)];
     }
 
     public override void DisposeResources()

@@ -50,9 +50,9 @@ internal class Program
         Console.WriteLine(timer.Elapsed);
 
         // 5e-3f, epochs: 50, trace: true
-        // 1.484
-        // 00:01:43.6200928
-        // 39 operation plans disposed
-        // 31 arrays (6672 kB) disposed
+        // 1.42
+        // 00:01:36.4560335
+        // 38 operation plans disposed
+        // 31 arrays (7694 kB) disposed
     }
 }
