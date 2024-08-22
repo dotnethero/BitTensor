@@ -28,8 +28,8 @@ public static class Ops
     
     public static CudaNode<float> ReLU(
         CudaNode<float> input,
-        float scale = 1f) => 
-        new ReLU(input, scale);
+        float alpha = 1f) => 
+        new ReLU(input, alpha);
     
     public static CudaNode<float> Softmax(
         CudaNode<float> input) => 
@@ -115,8 +115,7 @@ public static class Ops
     public static CudaNode<T> Gemm<T>(
         CudaNode<T> a,
         CudaNode<T> b,
-        CudaNode<T> c,
-        IEpilogue<T>? epilogue = null)
+        CudaNode<T> c)
         where T : unmanaged, IFloatingPoint<T> =>
-        new Gemm<T>(a, b, c, epilogue);
+        new Gemm<T>(a, b, c);
 }

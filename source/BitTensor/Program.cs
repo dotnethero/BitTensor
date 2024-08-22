@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using BitTensor.CUDA.Graph;
-using BitTensor.CUDA.Graph.Epilogues;
 using BitTensor.CUDA.Models;
+using BitTensor.CUDA.Models.Layers;
 
 namespace BitTensor;
 
@@ -30,8 +30,8 @@ internal class Program
         var model = Model.Create(
         [
             new Flatten<float>(context),
-            new LinearLayer(context, inputCount, hiddenCount, new LeakyReluEpilogue(0.1f)),
-            new LinearLayer(context, hiddenCount, outputCount, Ops.Softmax)
+            new Linear(context, inputCount, hiddenCount, Activation.ReLU(0.1f)),
+            new Linear(context, hiddenCount, outputCount, Activation.Softmax)
         ]);
 
         // train:

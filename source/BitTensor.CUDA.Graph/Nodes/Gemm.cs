@@ -9,7 +9,6 @@ internal sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloat
     internal readonly MatMul<T> Product;
     internal readonly CudaNode<T> Bias;
     internal readonly CuTensorBroadcastPlan<T> Broadcast;
-    internal readonly IEpilogue<T>? Epilogue;
 
     private static Shape GetShape(AbstractTensor a, AbstractTensor b, AbstractTensor c)
     {
@@ -18,26 +17,23 @@ internal sealed class Gemm<T> : AbstractOperation<T> where T : unmanaged, IFloat
         return shape;
     }
 
-    public Gemm(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c, IEpilogue<T>? epilogue = null) : base(GetShape(a, b, c), [a, b, c])
+    public Gemm(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c) : base(GetShape(a, b, c), [a, b, c])
     {
         Bias = c;
         Product = new MatMul<T>(a, b);
         Broadcast = Context.cuTENSOR.CreateBroadcastPlan<T>(c.Shape, Shape);
-        Epilogue = epilogue;
     }
 
     public override void Execute()
     {
         Product.ExecuteInto(Tensor);
         Broadcast.Execute(Bias, Tensor, alpha: 1, gamma: 1f); // add inplace
-        Epilogue?.ExecuteInplace(Tensor);
     }
 
     public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
     {
-        var epilogueGrad = Epilogue?.GetGradient(gradient) ?? gradient;
-        var productGrads = Product.Propagate(epilogueGrad);
-        var biasAxis = Shapes.GetBroadcastedAxis(Bias.Shape, epilogueGrad.Shape);
+        var productGrads = Product.Propagate(gradient);
+        var biasAxis = Shapes.GetBroadcastedAxis(Bias.Shape, gradient.Shape);
         var biasGrad = Ops.Sum(gradient, axis: biasAxis).Reshape(Bias.Shape);
         return [..productGrads, biasGrad];
     }
