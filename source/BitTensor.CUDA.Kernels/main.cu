@@ -1,5 +1,7 @@
 ﻿
 #include <cuda_runtime.h>
+#include <cudnn.h>
+#include <cudnn_backend.h>
 
 #include "helpers.hpp"
 #include "kernels.cuh"

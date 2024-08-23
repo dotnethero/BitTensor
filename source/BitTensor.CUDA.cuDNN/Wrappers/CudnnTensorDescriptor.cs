@@ -4,67 +4,101 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
+using DescriptorType = cudnnBackendDescriptorType_t;
+using AttributeName = cudnnBackendAttributeName_t;
+using AttributeType = cudnnBackendAttributeType_t;
+
 public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : IFloatingPoint<T>
 {
-    internal readonly cudnnTensorStruct* Descriptor;
+    internal readonly cudnnBackendDescriptor_t* Descriptor;
     internal readonly int* Extents;
     internal readonly int* Strides;
 
-    public CudnnTensorDescriptor(Shape anyShape)
+    public CudnnTensorDescriptor(long id, Shape anyShape, long alignment = 4)
     {
         var type = Types.GetDataType<T>();
-        var shape = MakeAtLeast4D(anyShape);
+        var shape = MakeAtLeast2D(anyShape);
 
-        cudnnTensorStruct* descriptor;
+        Extents = CudaArray.AllocateAtHost<int>(shape.Dimensions);
+        Strides = CudaArray.AllocateAtHost<int>(shape.Dimensions);
+
+        for (var i = 0; i < shape.Dimensions; ++i)
+        {
+            Extents[i] = shape.Extents[i];
+            Strides[i] = shape.Strides[i];
+        }
+
         cudnnStatus_t status;
+        cudnnBackendDescriptor_t* descriptor;
 
-        status = cuDNN.cudnnCreateTensorDescriptor(&descriptor);
+        status = cuDNN.cudnnBackendCreateDescriptor(DescriptorType.CUDNN_BACKEND_TENSOR_DESCRIPTOR, &descriptor);
         Status.EnsureIsSuccess(status);
 
-        if (shape.Dimensions == 4)
-        {
-            status = cuDNN.cudnnSetTensor4dDescriptorEx(
-                descriptor, type, 
-                shape.Extents[^4], // extents
-                shape.Extents[^3],
-                shape.Extents[^2],
-                shape.Extents[^1], 
-                shape.Strides[^4], // strides
-                shape.Strides[^3],
-                shape.Strides[^2],
-                shape.Strides[^1]);
+        status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_TENSOR_DATA_TYPE,
+            AttributeType.CUDNN_TYPE_DATA_TYPE,
+            elementCount: 1,
+            &type);
 
-            Status.EnsureIsSuccess(status);
-        }
-        else
-        {
-            Extents = CudaArray.AllocateAtHost<int>(shape.Dimensions);
-            Strides = CudaArray.AllocateAtHost<int>(shape.Dimensions);
+        Status.EnsureIsSuccess(status);
 
-            for (var i = 0; i < shape.Dimensions; ++i)
-            {
-                Extents[i] = shape.Extents[i];
-                Strides[i] = shape.Strides[i];
-            }
+        status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_TENSOR_DIMENSIONS,
+            AttributeType.CUDNN_TYPE_INT64,
+            elementCount: shape.Dimensions,
+            Extents);
 
-            status = cuDNN.cudnnSetTensorNdDescriptor(descriptor, type, shape.Dimensions, Extents, Strides);
-            Status.EnsureIsSuccess(status);
-        }
+        Status.EnsureIsSuccess(status);
+
+        status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_TENSOR_STRIDES,
+            AttributeType.CUDNN_TYPE_INT64,
+            elementCount: shape.Dimensions,
+            Strides);
+
+        Status.EnsureIsSuccess(status);
+
+        status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_TENSOR_UNIQUE_ID,
+            AttributeType.CUDNN_TYPE_INT64,
+            elementCount: 1,
+            &id);
+
+        Status.EnsureIsSuccess(status);
+
+        status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_TENSOR_BYTE_ALIGNMENT,
+            AttributeType.CUDNN_TYPE_INT64,
+            elementCount: 1,
+            &alignment);
+
+        Status.EnsureIsSuccess(status);
+
+        status = cuDNN.cudnnBackendFinalize(descriptor);
+        Status.EnsureIsSuccess(status);
 
         Descriptor = descriptor;
     }
 
-    private static Shape MakeAtLeast4D(Shape shape)
+    private static Shape MakeAtLeast2D(Shape shape)
     {
-        var dimensions = shape.Dimensions < 4 ? 4 : shape.Dimensions;
+        var dimensions = shape.Dimensions < 2 ? 2 : shape.Dimensions;
         var additional = dimensions - shape.Dimensions;
         var ones = Enumerable.Repeat(1, additional);
         return [..ones, ..shape];
     }
-
     public void Dispose()
     {
-        cuDNN.cudnnDestroyTensorDescriptor(Descriptor);
+        cudnnStatus_t status;
+
+        status = cuDNN.cudnnBackendDestroyDescriptor(Descriptor);
+        Status.EnsureIsSuccess(status);
+
         CudaArray.FreeHost(Extents);
         CudaArray.FreeHost(Strides);
     }

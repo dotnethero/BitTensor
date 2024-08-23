@@ -59,7 +59,7 @@ public static unsafe partial class cuDNN
     public static extern cudnnStatus_t cudnnGraphVersionCheck();
 
     [DllImport(__DllName, EntryPoint = "cudnnBackendCreateDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-    public static extern cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t descriptorType, void** descriptor);
+    public static extern cudnnStatus_t cudnnBackendCreateDescriptor(cudnnBackendDescriptorType_t descriptorType, cudnnBackendDescriptor_t** descriptor);
 
     [DllImport(__DllName, EntryPoint = "cudnnBackendDestroyDescriptor", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
     public static extern cudnnStatus_t cudnnBackendDestroyDescriptor(void* descriptor);
@@ -675,6 +675,12 @@ public static unsafe partial class cuDNN
 
 [StructLayout(LayoutKind.Sequential)]
 public unsafe partial struct cudnnContext
+{
+    public fixed byte _unused[1];
+}
+
+[StructLayout(LayoutKind.Sequential)]
+public unsafe struct cudnnBackendDescriptor_t
 {
     public fixed byte _unused[1];
 }
@@ -1606,4 +1612,66 @@ public enum cudnnFusedOpsVariantParamLabel_t : int
     CUDNN_SCALAR_INT64_T_BN_ACCUMULATION_COUNT = 101,
     CUDNN_SCALAR_DOUBLE_BN_EXP_AVG_FACTOR = 102,
     CUDNN_SCALAR_DOUBLE_BN_EPSILON = 103,
+}
+
+public enum cudnnPointwiseMode_t
+{
+    CUDNN_POINTWISE_ADD        = 0,
+    CUDNN_POINTWISE_ADD_SQUARE = 5,
+    CUDNN_POINTWISE_DIV        = 6,
+    CUDNN_POINTWISE_MAX        = 3,
+    CUDNN_POINTWISE_MIN        = 2,
+    CUDNN_POINTWISE_MOD        = 7,
+    CUDNN_POINTWISE_MUL        = 1,
+    CUDNN_POINTWISE_POW        = 8,
+    CUDNN_POINTWISE_SUB        = 9,
+
+    CUDNN_POINTWISE_ABS        = 10,
+    CUDNN_POINTWISE_CEIL       = 11,
+    CUDNN_POINTWISE_COS        = 12,
+    CUDNN_POINTWISE_EXP        = 13,
+    CUDNN_POINTWISE_FLOOR      = 14,
+    CUDNN_POINTWISE_LOG        = 15,
+    CUDNN_POINTWISE_NEG        = 16,
+    CUDNN_POINTWISE_RSQRT      = 17,
+    CUDNN_POINTWISE_SIN        = 18,
+    CUDNN_POINTWISE_SQRT       = 4,
+    CUDNN_POINTWISE_TAN        = 19,
+    CUDNN_POINTWISE_ERF        = 20,
+    CUDNN_POINTWISE_IDENTITY   = 21,
+    CUDNN_POINTWISE_RECIPROCAL = 22,
+    CUDNN_POINTWISE_ATAN2      = 23,
+
+    CUDNN_POINTWISE_RELU_FWD             = 100,
+    CUDNN_POINTWISE_TANH_FWD             = 101,
+    CUDNN_POINTWISE_SIGMOID_FWD          = 102,
+    CUDNN_POINTWISE_ELU_FWD              = 103,
+    CUDNN_POINTWISE_GELU_FWD             = 104,
+    CUDNN_POINTWISE_SOFTPLUS_FWD         = 105,
+    CUDNN_POINTWISE_SWISH_FWD            = 106,
+    CUDNN_POINTWISE_GELU_APPROX_TANH_FWD = 107,
+
+    CUDNN_POINTWISE_RELU_BWD             = 200,
+    CUDNN_POINTWISE_TANH_BWD             = 201,
+    CUDNN_POINTWISE_SIGMOID_BWD          = 202,
+    CUDNN_POINTWISE_ELU_BWD              = 203,
+    CUDNN_POINTWISE_GELU_BWD             = 204,
+    CUDNN_POINTWISE_SOFTPLUS_BWD         = 205,
+    CUDNN_POINTWISE_SWISH_BWD            = 206,
+    CUDNN_POINTWISE_GELU_APPROX_TANH_BWD = 207,
+
+    CUDNN_POINTWISE_CMP_EQ  = 300,
+    CUDNN_POINTWISE_CMP_NEQ = 301,
+    CUDNN_POINTWISE_CMP_GT  = 302,
+    CUDNN_POINTWISE_CMP_GE  = 303,
+    CUDNN_POINTWISE_CMP_LT  = 304,
+    CUDNN_POINTWISE_CMP_LE  = 305,
+
+    CUDNN_POINTWISE_LOGICAL_AND = 400,
+    CUDNN_POINTWISE_LOGICAL_OR  = 401,
+    CUDNN_POINTWISE_LOGICAL_NOT = 402,
+
+    CUDNN_POINTWISE_GEN_INDEX = 501,
+
+    CUDNN_POINTWISE_BINARY_SELECT = 601,
 }
