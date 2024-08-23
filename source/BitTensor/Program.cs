@@ -18,21 +18,25 @@ internal class Program
 
     private static void Test1()
     {
+        using var context = new CudnnContext();
         using var x = new CudnnTensorDescriptor<float>(1, [3, 4]);
         using var b = new CudnnTensorDescriptor<float>(2, [3, 4]);
         using var y = new CudnnTensorDescriptor<float>(3, [3, 4]);
         using var op = new CudnnPointwiseOperator<float>();
         using var pw = new CudnnPointwiseOperation<float>(op, x, b, y);
+        using var graph = new CudnnGraph(context, [pw]);
         Console.WriteLine("OK");
     }
     
     private static void Test2()
     {
+        using var context = new CudnnContext();
         using var a = new CudnnTensorDescriptor<float>(1, [3, 4]);
         using var b = new CudnnTensorDescriptor<float>(2, [4, 5]);
         using var c = new CudnnTensorDescriptor<float>(3, [3, 5]);
         using var op = new CudnnMatMulOperator<float>();
         using var mm = new CudnnMatMulOperation<float>(op, a, b, c);
+        using var graph = new CudnnGraph(context, [mm]);
         Console.WriteLine("OK");
     }
 
