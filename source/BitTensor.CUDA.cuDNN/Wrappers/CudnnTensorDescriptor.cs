@@ -11,16 +11,16 @@ using AttributeType = cudnnBackendAttributeType_t;
 public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : IFloatingPoint<T>
 {
     internal readonly cudnnBackendDescriptor_t* Descriptor;
-    internal readonly int* Extents;
-    internal readonly int* Strides;
+    internal readonly long* Extents;
+    internal readonly long* Strides;
 
     public CudnnTensorDescriptor(long id, Shape anyShape, long alignment = 4)
     {
         var type = Types.GetDataType<T>();
         var shape = MakeAtLeast2D(anyShape);
 
-        Extents = CudaArray.AllocateAtHost<int>(shape.Dimensions);
-        Strides = CudaArray.AllocateAtHost<int>(shape.Dimensions);
+        Extents = CudaArray.AllocateAtHost<long>(shape.Dimensions);
+        Strides = CudaArray.AllocateAtHost<long>(shape.Dimensions);
 
         for (var i = 0; i < shape.Dimensions; ++i)
         {

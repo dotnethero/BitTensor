@@ -20,7 +20,7 @@ class WrapperTests
     }
 
     [TestCase(new[] { 4, 4 }, new[] { 4, 4 }, new[] { 4, 4 })]
-    [TestCase(new[] { 2, 3 }, new[] { 3, 4 }, new[] { 3, 5 })]
+    [TestCase(new[] { 2, 3 }, new[] { 3, 4 }, new[] { 2, 4 })]
     public void Create_cuDNN_matmul_descriptor(int[] aShape, int[] bShape, int[] cShape)
     {
         using var a = CreateTensorDescriptor(1, aShape);
