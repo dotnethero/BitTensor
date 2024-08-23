@@ -10,9 +10,10 @@ using AttributeType = cudnnBackendAttributeType_t;
 
 public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly cudnnBackendDescriptor_t* Descriptor;
     internal readonly long* Extents;
     internal readonly long* Strides;
+
+    public cudnnBackendDescriptor_t* Descriptor { get; }
 
     public CudnnTensorDescriptor(long id, Shape anyShape)
     {

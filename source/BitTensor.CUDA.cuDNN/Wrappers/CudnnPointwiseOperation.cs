@@ -7,12 +7,12 @@ using DescriptorType = cudnnBackendDescriptorType_t;
 using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 
-public sealed unsafe class CudnnPointwiseOperationDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
+public sealed unsafe class CudnnPointwiseOperation<T> : ICudnnOperation where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly cudnnBackendDescriptor_t* Descriptor;
+    public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnPointwiseOperationDescriptor(
-        CudnnPointwiseDescriptor<T> pw,
+    public CudnnPointwiseOperation(
+        CudnnPointwiseOperator<T> pw,
         CudnnTensorDescriptor<T> x,
         CudnnTensorDescriptor<T> b,
         CudnnTensorDescriptor<T> y)

@@ -21,8 +21,8 @@ internal class Program
         using var x = new CudnnTensorDescriptor<float>(1, [3, 4]);
         using var b = new CudnnTensorDescriptor<float>(2, [3, 4]);
         using var y = new CudnnTensorDescriptor<float>(3, [3, 4]);
-        using var op = new CudnnPointwiseDescriptor<float>();
-        using var pw = new CudnnPointwiseOperationDescriptor<float>(op, x, b, y);
+        using var op = new CudnnPointwiseOperator<float>();
+        using var pw = new CudnnPointwiseOperation<float>(op, x, b, y);
         Console.WriteLine("OK");
     }
     
@@ -31,8 +31,8 @@ internal class Program
         using var a = new CudnnTensorDescriptor<float>(1, [3, 4]);
         using var b = new CudnnTensorDescriptor<float>(2, [4, 5]);
         using var c = new CudnnTensorDescriptor<float>(3, [3, 5]);
-        using var op = new CudnnMatMulDescriptor<float>();
-        using var mm = new CudnnMatMulOperationDescriptor<float>(op, a, b, c);
+        using var op = new CudnnMatMulOperator<float>();
+        using var mm = new CudnnMatMulOperation<float>(op, a, b, c);
         Console.WriteLine("OK");
     }
 

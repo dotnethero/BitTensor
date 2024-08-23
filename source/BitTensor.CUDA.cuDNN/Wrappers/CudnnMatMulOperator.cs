@@ -3,13 +3,17 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
-public sealed unsafe class CudnnMatMulDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
-{
-    internal readonly cudnnBackendDescriptor_t* Descriptor;
+using DescriptorType = cudnnBackendDescriptorType_t;
+using AttributeName = cudnnBackendAttributeName_t;
+using AttributeType = cudnnBackendAttributeType_t;
 
-    public CudnnMatMulDescriptor()
+public sealed unsafe class CudnnMatMulOperator<T> : ICudnnOperator where T : unmanaged, IFloatingPoint<T>
+{
+    public cudnnBackendDescriptor_t* Descriptor { get; }
+
+    public CudnnMatMulOperator()
     {
-        var descriptor = Descriptors.Create(cudnnBackendDescriptorType_t.CUDNN_BACKEND_MATMUL_DESCRIPTOR);
+        var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_MATMUL_DESCRIPTOR);
         var type = Types.GetDataType<T>();
 
         SetPrecision(descriptor, type);
@@ -21,8 +25,8 @@ public sealed unsafe class CudnnMatMulDescriptor<T> : IDisposable where T : unma
     {
         var status = cuDNN.cudnnBackendSetAttribute(
             descriptor,
-            cudnnBackendAttributeName_t.CUDNN_ATTR_MATMUL_COMP_TYPE,
-            cudnnBackendAttributeType_t.CUDNN_TYPE_DATA_TYPE, 
+            AttributeName.CUDNN_ATTR_MATMUL_COMP_TYPE,
+            AttributeType.CUDNN_TYPE_DATA_TYPE, 
             elementCount: 1,
             &type);
 

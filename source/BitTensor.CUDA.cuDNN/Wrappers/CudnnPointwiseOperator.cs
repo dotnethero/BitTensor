@@ -3,13 +3,17 @@ using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
-public sealed unsafe class CudnnPointwiseDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
-{
-    internal readonly cudnnBackendDescriptor_t* Descriptor;
+using DescriptorType = cudnnBackendDescriptorType_t;
+using AttributeName = cudnnBackendAttributeName_t;
+using AttributeType = cudnnBackendAttributeType_t;
 
-    public CudnnPointwiseDescriptor()
+public sealed unsafe class CudnnPointwiseOperator<T> : ICudnnOperator where T : unmanaged, IFloatingPoint<T>
+{
+    public cudnnBackendDescriptor_t* Descriptor { get; }
+
+    public CudnnPointwiseOperator()
     {
-        var descriptor = Descriptors.Create(cudnnBackendDescriptorType_t.CUDNN_BACKEND_POINTWISE_DESCRIPTOR);
+        var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_POINTWISE_DESCRIPTOR);
         var type = Types.GetDataType<T>();
 
         SetOperation(descriptor, cudnnPointwiseMode_t.CUDNN_POINTWISE_ADD);
@@ -22,8 +26,8 @@ public sealed unsafe class CudnnPointwiseDescriptor<T> : IDisposable where T : u
     {
         var status = cuDNN.cudnnBackendSetAttribute(
             descriptor,
-            cudnnBackendAttributeName_t.CUDNN_ATTR_POINTWISE_MODE,
-            cudnnBackendAttributeType_t.CUDNN_TYPE_POINTWISE_MODE, 
+            AttributeName.CUDNN_ATTR_POINTWISE_MODE,
+            AttributeType.CUDNN_TYPE_POINTWISE_MODE, 
             elementCount: 1,
             &mode);
         
@@ -34,8 +38,8 @@ public sealed unsafe class CudnnPointwiseDescriptor<T> : IDisposable where T : u
     {
         var status = cuDNN.cudnnBackendSetAttribute(
             descriptor,
-            cudnnBackendAttributeName_t.CUDNN_ATTR_POINTWISE_MATH_PREC,
-            cudnnBackendAttributeType_t.CUDNN_TYPE_DATA_TYPE, 
+            AttributeName.CUDNN_ATTR_POINTWISE_MATH_PREC,
+            AttributeType.CUDNN_TYPE_DATA_TYPE, 
             elementCount: 1,
             &type);
 

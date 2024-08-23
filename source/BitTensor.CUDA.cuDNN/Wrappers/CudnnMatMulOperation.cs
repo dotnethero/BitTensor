@@ -7,12 +7,12 @@ using DescriptorType = cudnnBackendDescriptorType_t;
 using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 
-public sealed unsafe class CudnnMatMulOperationDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
+public sealed unsafe class CudnnMatMulOperation<T> : ICudnnOperation where T : unmanaged, IFloatingPoint<T>
 {
-    internal readonly cudnnBackendDescriptor_t* Descriptor;
+    public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnMatMulOperationDescriptor(
-        CudnnMatMulDescriptor<T> matmul,
+    public CudnnMatMulOperation(
+        CudnnMatMulOperator<T> matmul,
         CudnnTensorDescriptor<T> a,
         CudnnTensorDescriptor<T> b,
         CudnnTensorDescriptor<T> c)
