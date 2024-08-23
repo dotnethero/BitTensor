@@ -10,8 +10,8 @@ internal class Program
 {
     public static void Main()
     {
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
         Test1();
-        Test2();
 
         // Test_MNIST();
     }
@@ -19,27 +19,22 @@ internal class Program
     private static void Test1()
     {
         using var context = new CudnnContext();
-        using var x = new CudnnTensorDescriptor<float>(1, [3, 4]);
-        using var b = new CudnnTensorDescriptor<float>(2, [3, 4]);
-        using var y = new CudnnTensorDescriptor<float>(3, [3, 4]);
-        using var op = new CudnnPointwiseOperator<float>();
-        using var pw = new CudnnPointwiseOperation<float>(op, x, b, y);
-        using var graph = new CudnnGraph(context, [pw]);
-        Console.WriteLine("OK");
+        using var t1 = new CudnnTensorDescriptor<float>(1, [3, 4]);
+        using var t2 = new CudnnTensorDescriptor<float>(2, [3, 4]);
+        using var t3 = new CudnnTensorDescriptor<float>(3, [3, 4]);
+        using var t4 = new CudnnTensorDescriptor<float>(4, [4, 5]);
+        using var t5 = new CudnnTensorDescriptor<float>(5, [3, 5]);
+        using var pwc = new CudnnPointwiseOperator<float>();
+        using var pw = new CudnnPointwiseOperation<float>(pwc, t1, t2, t3);
+        using var mmc = new CudnnMatMulOperator<float>();
+        using var mm = new CudnnMatMulOperation<float>(mmc, t3, t4, t5);
+        using var graph = new CudnnGraph(context, [pw, mm]);
+        using var engine = new CudnnEngine(graph, globalIndex: 0);
+        using var config = new CudnnEngineConfiguration(engine);
+        var ws = config.GetWorkspaceSize();
+        Console.WriteLine($"OK: {ws}");
     }
     
-    private static void Test2()
-    {
-        using var context = new CudnnContext();
-        using var a = new CudnnTensorDescriptor<float>(1, [3, 4]);
-        using var b = new CudnnTensorDescriptor<float>(2, [4, 5]);
-        using var c = new CudnnTensorDescriptor<float>(3, [3, 5]);
-        using var op = new CudnnMatMulOperator<float>();
-        using var mm = new CudnnMatMulOperation<float>(op, a, b, c);
-        using var graph = new CudnnGraph(context, [mm]);
-        Console.WriteLine("OK");
-    }
-
     private static void Test_MNIST()
     {
         var trainImages = MNIST.ReadImages(@"C:\Projects\BitTensor\mnist\train-images.idx3-ubyte");
