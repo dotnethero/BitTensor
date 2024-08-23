@@ -42,7 +42,6 @@ public sealed unsafe class CudnnGraph : IDisposable
 
     private static void SetOperations(cudnnBackendDescriptor_t* descriptor, int count, cudnnBackendDescriptor_t** operations)
     {
-        
         var status = cuDNN.cudnnBackendSetAttribute(
             descriptor,
             AttributeName.CUDNN_ATTR_OPERATIONGRAPH_OPS,

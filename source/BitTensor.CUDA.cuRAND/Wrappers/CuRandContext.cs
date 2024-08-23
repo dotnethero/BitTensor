@@ -2,21 +2,27 @@
 
 namespace BitTensor.CUDA.Wrappers;
 
-public sealed class CuRandContext
+public sealed class CuRandContext : IDisposable
 {
+    internal readonly CuRandGenerator Generator = new(seed: 0);
+
     public CudaTensor<float> Uniform(Shape shape)
     {
-        using var generator = new CuRandGenerator(seed: 0);
         var tensor = new CudaTensor<float>(shape);
-        generator.GenerateUniform(tensor);
+        Generator.GenerateUniform(tensor);
         return tensor;
     }
         
     public CudaTensor<float> Normal(Shape shape, float mean = 0f, float stddev = 1f)
     {
-        using var generator = new CuRandGenerator(seed: 0);
+        using var generator = new CuRandGenerator();
         var tensor = new CudaTensor<float>(shape);
-        generator.GenerateNormal(tensor, mean, stddev);
+        Generator.GenerateNormal(tensor, mean, stddev);
         return tensor;
+    }
+
+    public void Dispose()
+    {
+        Generator.Dispose();
     }
 }

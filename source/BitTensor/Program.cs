@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Models;
 using BitTensor.CUDA.Models.Layers;
@@ -11,6 +12,7 @@ internal class Program
     public static void Main()
     {
         Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
+
         Test1();
 
         // Test_MNIST();
@@ -18,21 +20,31 @@ internal class Program
 
     private static void Test1()
     {
+        var random = new CuRandContext();
+
+        using var a = random.Normal([3, 4]);
+        using var b = random.Normal([3, 4]);
+        using var c = new CudaTensor<float>([3, 4]);
+
         using var context = new CudnnContext();
-        using var t1 = new CudnnTensorDescriptor<float>(1, [3, 4]);
-        using var t2 = new CudnnTensorDescriptor<float>(2, [3, 4]);
-        using var t3 = new CudnnTensorDescriptor<float>(3, [3, 4]);
-        using var t4 = new CudnnTensorDescriptor<float>(4, [4, 5]);
-        using var t5 = new CudnnTensorDescriptor<float>(5, [3, 5]);
+
+        using var ta = new CudnnTensorDescriptor<float>(a.Id, a.Shape);
+        using var tb = new CudnnTensorDescriptor<float>(b.Id, b.Shape);
+        using var tc = new CudnnTensorDescriptor<float>(c.Id, c.Shape);
+        
         using var pwc = new CudnnPointwiseOperator<float>();
-        using var pw = new CudnnPointwiseOperation<float>(pwc, t1, t2, t3);
-        using var mmc = new CudnnMatMulOperator<float>();
-        using var mm = new CudnnMatMulOperation<float>(mmc, t3, t4, t5);
-        using var graph = new CudnnGraph(context, [pw, mm]);
-        using var engine = new CudnnEngine(graph, globalIndex: 0);
+        using var pw = new CudnnPointwiseOperation<float>(pwc, ta, tb, tc);
+        using var graph = new CudnnGraph(context, [pw]);
+
+        using var engine = new CudnnEngine(graph, globalIndex: 1);
         using var config = new CudnnEngineConfiguration(engine);
-        var ws = config.GetWorkspaceSize();
-        Console.WriteLine($"OK: {ws}");
+        using var plan = new CudnnExecutionPlan(context, config);
+        using var pack = new CudnnVariantPack<float>([a, b, c]);
+
+        context.Execute(plan, pack);
+        CuDebug.WriteLine(a);
+        CuDebug.WriteLine(b);
+        CuDebug.WriteLine(c); // incorrect
     }
     
     private static void Test_MNIST()
