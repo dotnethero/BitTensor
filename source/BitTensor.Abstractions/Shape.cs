@@ -12,6 +12,7 @@ public sealed class Shape : IEnumerable<int>
     public readonly int ArraySize;
     public readonly int[] Extents;
     public readonly int[] Strides;
+    public readonly bool IsPacked;
 
     public static Shape Create(ReadOnlySpan<int> extents) => new(extents);
     public static Shape Create(ReadOnlySpan<int> extents, ReadOnlySpan<int> strides) => new(extents, strides);
@@ -22,6 +23,7 @@ public sealed class Shape : IEnumerable<int>
         ArraySize = GetArraySize(extents);
         Extents = extents.ToArray();
         Strides = GetStrides(extents);
+        IsPacked = true;
     }
 
     private Shape(ReadOnlySpan<int> extents, ReadOnlySpan<int> strides)
@@ -30,6 +32,7 @@ public sealed class Shape : IEnumerable<int>
         ArraySize = GetArraySize(extents);
         Extents = extents.ToArray();
         Strides = strides.ToArray();
+        IsPacked = GetStrides(extents).ArrayEqualsTo(strides);
     }
 
     public void EnsureCanReshape(Shape shape)

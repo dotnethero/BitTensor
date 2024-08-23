@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BitTensor.CUDA.cuDNN\BitTensor.CUDA.cuDNN.csproj" />
     <ProjectReference Include="..\BitTensor.CUDA.Graph\BitTensor.CUDA.Graph.csproj" />
   </ItemGroup>
 

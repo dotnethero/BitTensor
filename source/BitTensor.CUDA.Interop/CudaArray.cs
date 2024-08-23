@@ -22,7 +22,7 @@ public static unsafe class CudaArray
         array.CopyToDevice(values);
         return array;
     }
-
+    
     public static void* AllocateRaw(uint bytes)
     {
         void* pointer;
@@ -30,9 +30,30 @@ public static unsafe class CudaArray
         return pointer;
     }
     
+    public static T* AllocateAtHost<T>(int size) where T : unmanaged
+    {
+        var bytes = (uint)(size * sizeof(T));
+        var pointer = (T*)AllocateAtHostRaw(bytes);
+        return pointer;
+    }
+
+    public static void* AllocateAtHostRaw(uint bytes)
+    {
+        void* pointer;
+        cudaMallocHost(&pointer, bytes);
+        return pointer;
+    }
+
     public static void Free(void* pointer)
     {
-        cudaFreeAsync(pointer, CuStream.Default);
+        if (pointer is not null)
+            cudaFreeAsync(pointer, CuStream.Default);
+    }
+    
+    public static void FreeHost(void* pointer)
+    {
+        if (pointer is not null)
+            cudaFreeHost(pointer);
     }
 }
 
