@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BitTensor.CUDA.cuDNN\BitTensor.CUDA.cuDNN.csproj" />
     <ProjectReference Include="..\BitTensor.CUDA.Models\BitTensor.CUDA.Models.csproj" />
   </ItemGroup>
 

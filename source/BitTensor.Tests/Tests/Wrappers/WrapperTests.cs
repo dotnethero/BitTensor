@@ -26,8 +26,9 @@ class WrapperTests
         using var a = CreateTensorDescriptor(1, aShape);
         using var b = CreateTensorDescriptor(2, bShape);
         using var c = CreateTensorDescriptor(3, cShape);
-
-        using var matmul = new CudnnMatMulDescriptor<float>(a, b, c);
+        
+        using var mmc = new CudnnMatMulDescriptor<float>();
+        using var mm = new CudnnMatMulOperationDescriptor<float>(mmc, a, b, c);
     }
     
     [TestCase(new[] { 1, 1 }, new[] { 1, 1 }, new[] { 1, 1 })]
@@ -38,7 +39,8 @@ class WrapperTests
         using var b = CreateTensorDescriptor(2, bShape);
         using var c = CreateTensorDescriptor(3, cShape);
 
-        using var pw = new CudnnPointwiseDescriptor<float>(a, b, c);
+        using var pwc = new CudnnPointwiseDescriptor<float>();
+        using var pw = new CudnnPointwiseOperationDescriptor<float>(pwc, a, b, c);
     }
 
     private static CudnnTensorDescriptor<float> CreateTensorDescriptor(long id, int[] shape) => new(id, Shape.Create(shape));

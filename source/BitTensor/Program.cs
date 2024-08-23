@@ -2,6 +2,7 @@
 using BitTensor.CUDA.Graph;
 using BitTensor.CUDA.Models;
 using BitTensor.CUDA.Models.Layers;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor;
 
@@ -9,7 +10,30 @@ internal class Program
 {
     public static void Main()
     {
-        Test_MNIST();
+        Test1();
+        Test2();
+
+        // Test_MNIST();
+    }
+
+    private static void Test1()
+    {
+        using var x = new CudnnTensorDescriptor<float>(1, [3, 4]);
+        using var b = new CudnnTensorDescriptor<float>(2, [3, 4]);
+        using var y = new CudnnTensorDescriptor<float>(3, [3, 4]);
+        using var op = new CudnnPointwiseDescriptor<float>();
+        using var pw = new CudnnPointwiseOperationDescriptor<float>(op, x, b, y);
+        Console.WriteLine("OK");
+    }
+    
+    private static void Test2()
+    {
+        using var a = new CudnnTensorDescriptor<float>(1, [3, 4]);
+        using var b = new CudnnTensorDescriptor<float>(2, [4, 5]);
+        using var c = new CudnnTensorDescriptor<float>(3, [3, 5]);
+        using var op = new CudnnMatMulDescriptor<float>();
+        using var mm = new CudnnMatMulOperationDescriptor<float>(op, a, b, c);
+        Console.WriteLine("OK");
     }
 
     private static void Test_MNIST()
