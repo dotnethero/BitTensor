@@ -2,7 +2,7 @@
 using BitTensor.CUDA.Wrappers;
 using NUnit.Framework;
 
-namespace BitTensor.Tests.Wrappers;
+namespace BitTensor.Tests.cuDNN;
 
 [TestFixture]
 class WrapperTests
