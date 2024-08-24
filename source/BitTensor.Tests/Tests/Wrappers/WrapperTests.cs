@@ -16,7 +16,7 @@ class WrapperTests
     [TestCase(new[] { 2, 3, 4, 5, 6 })]
     public void Create_cuDNN_tensor_descriptor(int[] shape)
     {
-        using var descriptor = new CudnnTensorDescriptor<float>(1, Shape.Create(shape));
+        using var descriptor = new CudnnTensorDescriptor<float>(Shape.Create(shape), 1);
     }
 
     [TestCase(new[] { 4, 4 }, new[] { 4, 4 }, new[] { 4, 4 })]
@@ -43,5 +43,5 @@ class WrapperTests
         using var pw = new CudnnPointwiseOperation<float>(pwc, a, b, c);
     }
 
-    private static CudnnTensorDescriptor<float> CreateTensorDescriptor(long id, int[] shape) => new(id, Shape.Create(shape));
+    private static CudnnTensorDescriptor<float> CreateTensorDescriptor(long id, int[] shape) => new(Shape.Create(shape), id);
 }

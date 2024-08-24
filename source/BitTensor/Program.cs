@@ -11,7 +11,7 @@ internal class Program
 {
     public static void Main()
     {
-        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "0");
 
         Test1();
 
@@ -22,31 +22,44 @@ internal class Program
     {
         var random = new CuRandContext();
 
-        using var a = random.Normal([6, 3]);
-        using var b = random.Normal([6, 3]); // TODO: does not work for [6, 1]
-        using var c = new CudaTensor<float>([6, 3]);
-        using var x = new CudaTensor<float>([6, 3]);
+        const int BATCH = 3;
+        const int INPUTS = 8;
+        const int OUTPUTS = 4;
+
+        using var inputs = random.Normal([BATCH, INPUTS]);
+        using var weights = random.Normal([INPUTS, OUTPUTS]);
+        using var bias = random.Normal([OUTPUTS]);
+        using var temp = new CudaTensor<float>([BATCH, OUTPUTS]);
+        using var outputs = new CudaTensor<float>([BATCH, OUTPUTS]);
 
         using var cutensor = new CuTensorContext();
-        using var cuplan = cutensor.CreateAddPlan<float>(a.Shape, b.Shape, x.Shape);
+        using var cuplan1 = cutensor.CreateMatMulPlan<float>(inputs.Shape, weights.Shape, temp.Shape);
+        using var cuplan2 = cutensor.CreateAddPlan<float>(temp.Shape, bias.Shape, outputs.Shape);
 
-        cuplan.Execute(a, b, c);
-        CuDebug.WriteLine(c);
+        cuplan1.Execute(inputs, weights, outputs);
+        cuplan2.Execute(outputs, bias, outputs);
+
+        CuDebug.WriteLine(outputs);
 
         using var context = new CudnnContext();
 
-        using var ta = new CudnnTensorDescriptor<float>(a.Id, a.Shape);
-        using var tb = new CudnnTensorDescriptor<float>(b.Id, b.Shape);
-        using var tc = new CudnnTensorDescriptor<float>(x.Id, x.Shape);
-        
-        using var pwc = new CudnnPointwiseOperator<float>();
-        using var pw = new CudnnPointwiseOperation<float>(pwc, ta, tb, tc);
+        using var ti = new CudnnTensorDescriptor<float>(inputs);
+        using var tw = new CudnnTensorDescriptor<float>(weights);
+        using var tb = new CudnnTensorDescriptor<float>(bias);
+        using var tt = new CudnnTensorDescriptor<float>(outputs.Shape, -1, isVirtual: true);
+        using var to = new CudnnTensorDescriptor<float>(outputs);
 
-        using var graph = new CudnnGraph(context, [pw]);
-        using var pack = new CudnnVariantPack<float>([a, b, x]);
+        using var mmc = new CudnnMatMulOperator<float>();
+        using var mm = new CudnnMatMulOperation<float>(mmc, ti, tw, tt);
+
+        using var pwc = new CudnnPointwiseOperator<float>();
+        using var pw = new CudnnPointwiseOperation<float>(pwc, tt, tb, to);
+
+        using var graph = new CudnnGraph(context, [mm, pw]);
+        using var pack = new CudnnVariantPack<float>([inputs, weights, bias, outputs]);
 
         context.ExecuteGraph(graph, pack);
-        CuDebug.WriteLine(x);
+        CuDebug.WriteLine(outputs);
     }
     
     private static void Test_MNIST()

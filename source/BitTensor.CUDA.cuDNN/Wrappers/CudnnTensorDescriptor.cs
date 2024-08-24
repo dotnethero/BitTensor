@@ -15,7 +15,11 @@ public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unma
 
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnTensorDescriptor(long id, Shape anyShape)
+    public CudnnTensorDescriptor(AbstractTensor tensor) : this(tensor.Shape, tensor.Id)
+    {
+    }
+
+    public CudnnTensorDescriptor(Shape anyShape, long id, bool isVirtual = false)
     {
         var alignment = sizeof(T);
         var type = Types.GetDataType<T>();
@@ -30,30 +34,16 @@ public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unma
             Strides[i] = shape.Strides[i];
         }
 
-        var descriptor = CreateDescriptor();
+        var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_TENSOR_DESCRIPTOR);
 
         SetDataType(descriptor, type);
         SetExtents(descriptor, shape.Dimensions, Extents);
         SetStrides(descriptor, shape.Dimensions, Strides);
         SetUniqueId(descriptor, id);
         SetAlignment(descriptor, alignment);
-        Finalize(descriptor);
+        SetIsVirtual(descriptor, isVirtual);
 
-        Descriptor = descriptor;
-    }
-
-    private static cudnnBackendDescriptor_t* CreateDescriptor()
-    {
-        cudnnBackendDescriptor_t* descriptor;
-        cudnnStatus_t status = cuDNN.cudnnBackendCreateDescriptor(DescriptorType.CUDNN_BACKEND_TENSOR_DESCRIPTOR, &descriptor);
-        Status.EnsureIsSuccess(status);
-        return descriptor;
-    }
-    
-    private static void Finalize(cudnnBackendDescriptor_t* descriptor)
-    {
-        var status = cuDNN.cudnnBackendFinalize(descriptor);
-        Status.EnsureIsSuccess(status);
+        Descriptor = Descriptors.Finalize(descriptor);
     }
 
     public static void SetDataType(cudnnBackendDescriptor_t* descriptor, cudnnDataType_t type)
@@ -112,6 +102,18 @@ public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unma
             AttributeType.CUDNN_TYPE_INT64,
             elementCount: 1,
             &alignment);
+
+        Status.EnsureIsSuccess(status);
+    }
+    
+    private static void SetIsVirtual(cudnnBackendDescriptor_t* descriptor, bool isVirtual)
+    {
+        var status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_TENSOR_IS_VIRTUAL,
+            AttributeType.CUDNN_TYPE_BOOLEAN,
+            elementCount: 1,
+            &isVirtual);
 
         Status.EnsureIsSuccess(status);
     }
