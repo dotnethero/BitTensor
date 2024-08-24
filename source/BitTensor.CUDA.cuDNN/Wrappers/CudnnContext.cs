@@ -15,7 +15,7 @@ public sealed unsafe class CudnnContext: IDisposable
         Handle = handle;
     }
     
-    public void Execute<T>(CudnnExecutionPlan plan, CudnnVariantPack<T> pack) where T : unmanaged, IFloatingPoint<T>
+    public void ExecutePlan<T>(CudnnExecutionPlan plan, CudnnVariantPack<T> pack) where T : unmanaged, IFloatingPoint<T>
     {
         var status = cuDNN.cudnnBackendExecute(
             this.Handle,
@@ -23,6 +23,15 @@ public sealed unsafe class CudnnContext: IDisposable
             pack.Descriptor);
 
         Status.EnsureIsSuccess(status);
+    }
+
+    public void ExecuteGraph<T>(CudnnGraph graph, CudnnVariantPack<T> pack) where T : unmanaged, IFloatingPoint<T>
+    {
+        using var heuristics = new CudnnEngineHeuristics(graph);
+        using var config = heuristics.GetConfiguration();
+        using var engine = new CudnnEngine(graph, globalIndex: 0);
+        using var plan = new CudnnExecutionPlan(this, config);
+        ExecutePlan(plan, pack);
     }
 
     public void Dispose()

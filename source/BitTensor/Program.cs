@@ -22,10 +22,10 @@ internal class Program
     {
         var random = new CuRandContext();
 
-        using var a = random.Normal([3, 4]);
-        using var b = random.Normal([3, 4]);
-        using var c = new CudaTensor<float>([3, 4]);
-        using var x = new CudaTensor<float>([3, 4]);
+        using var a = random.Normal([6, 3]);
+        using var b = random.Normal([6, 3]); // TODO: does not work for [6, 1]
+        using var c = new CudaTensor<float>([6, 3]);
+        using var x = new CudaTensor<float>([6, 3]);
 
         using var cutensor = new CuTensorContext();
         using var cuplan = cutensor.CreateAddPlan<float>(a.Shape, b.Shape, x.Shape);
@@ -43,13 +43,9 @@ internal class Program
         using var pw = new CudnnPointwiseOperation<float>(pwc, ta, tb, tc);
 
         using var graph = new CudnnGraph(context, [pw]);
-        using var heuristics = new CudnnEngineHeuristics(graph);
-        using var config = heuristics.GetConfiguration();
-        using var engine = new CudnnEngine(graph, globalIndex: 0);
-        using var plan = new CudnnExecutionPlan(context, config);
         using var pack = new CudnnVariantPack<float>([a, b, x]);
 
-        context.Execute(plan, pack);
+        context.ExecuteGraph(graph, pack);
         CuDebug.WriteLine(x);
     }
     
