@@ -1675,3 +1675,11 @@ public enum cudnnPointwiseMode_t
 
     CUDNN_POINTWISE_BINARY_SELECT = 601,
 }
+
+public enum cudnnBackendHeurMode_t
+{
+    CUDNN_HEUR_MODE_INSTANT = 0,
+    CUDNN_HEUR_MODE_B = 1,
+    CUDNN_HEUR_MODE_FALLBACK = 2,
+    CUDNN_HEUR_MODE_A = 3
+}

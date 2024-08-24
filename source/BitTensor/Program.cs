@@ -11,14 +11,14 @@ internal class Program
 {
     public static void Main()
     {
-        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "1");
 
         Test1();
 
         // Test_MNIST();
     }
 
-    private static void Test1()
+    private static unsafe void Test1()
     {
         var random = new CuRandContext();
 
@@ -34,10 +34,11 @@ internal class Program
         
         using var pwc = new CudnnPointwiseOperator<float>();
         using var pw = new CudnnPointwiseOperation<float>(pwc, ta, tb, tc);
-        using var graph = new CudnnGraph(context, [pw]);
 
-        using var engine = new CudnnEngine(graph, globalIndex: 1);
-        using var config = new CudnnEngineConfiguration(engine);
+        using var graph = new CudnnGraph(context, [pw]);
+        using var heuristics = new CudnnEngineHeuristics(graph);
+        using var config = heuristics.GetConfiguration();
+        using var engine = new CudnnEngine(graph, globalIndex: 0);
         using var plan = new CudnnExecutionPlan(context, config);
         using var pack = new CudnnVariantPack<float>([a, b, c]);
 
