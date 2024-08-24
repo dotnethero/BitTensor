@@ -58,8 +58,19 @@ public sealed class Shape : IEnumerable<int>
         }
         return Create(extents, strides);
     }
-
+    
     public Shape Append(int size) => Create([..Extents, size]);
+    
+    public Shape Expand(int dimensions)
+    {
+        var dims = Dimensions < dimensions ? dimensions : Dimensions;
+        var additional = dims - Dimensions;
+        var ones = Enumerable.Repeat(1, additional).ToArray();
+        var sizes = Enumerable.Repeat(ArraySize, additional).ToArray();
+        return Create(
+            [..ones, ..Extents],
+            [..sizes, ..Strides]);
+    }
 
     public Shape Reduce(HashSet<Index> axis, bool keepDims = false)
     {

@@ -1,9 +1,11 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using System.Diagnostics;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
 internal static unsafe class Descriptors
 {
+    [StackTraceHidden]
     public static cudnnBackendDescriptor_t* Create(cudnnBackendDescriptorType_t type)
     {
         cudnnBackendDescriptor_t* descriptor;
@@ -12,6 +14,7 @@ internal static unsafe class Descriptors
         return descriptor;
     }
     
+    [StackTraceHidden]
     public static cudnnBackendDescriptor_t* Finalize(cudnnBackendDescriptor_t* descriptor)
     {
         var status = cuDNN.cudnnBackendFinalize(descriptor);

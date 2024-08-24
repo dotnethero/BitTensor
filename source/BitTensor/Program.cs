@@ -11,26 +11,33 @@ internal class Program
 {
     public static void Main()
     {
-        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "1");
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
 
         Test1();
 
         // Test_MNIST();
     }
 
-    private static unsafe void Test1()
+    private static void Test1()
     {
         var random = new CuRandContext();
 
         using var a = random.Normal([3, 4]);
         using var b = random.Normal([3, 4]);
         using var c = new CudaTensor<float>([3, 4]);
+        using var x = new CudaTensor<float>([3, 4]);
+
+        using var cutensor = new CuTensorContext();
+        using var cuplan = cutensor.CreateAddPlan<float>(a.Shape, b.Shape, x.Shape);
+
+        cuplan.Execute(a, b, c);
+        CuDebug.WriteLine(c);
 
         using var context = new CudnnContext();
 
         using var ta = new CudnnTensorDescriptor<float>(a.Id, a.Shape);
         using var tb = new CudnnTensorDescriptor<float>(b.Id, b.Shape);
-        using var tc = new CudnnTensorDescriptor<float>(c.Id, c.Shape);
+        using var tc = new CudnnTensorDescriptor<float>(x.Id, x.Shape);
         
         using var pwc = new CudnnPointwiseOperator<float>();
         using var pw = new CudnnPointwiseOperation<float>(pwc, ta, tb, tc);
@@ -40,12 +47,10 @@ internal class Program
         using var config = heuristics.GetConfiguration();
         using var engine = new CudnnEngine(graph, globalIndex: 0);
         using var plan = new CudnnExecutionPlan(context, config);
-        using var pack = new CudnnVariantPack<float>([a, b, c]);
+        using var pack = new CudnnVariantPack<float>([a, b, x]);
 
         context.Execute(plan, pack);
-        CuDebug.WriteLine(a);
-        CuDebug.WriteLine(b);
-        CuDebug.WriteLine(c); // incorrect
+        CuDebug.WriteLine(x);
     }
     
     private static void Test_MNIST()

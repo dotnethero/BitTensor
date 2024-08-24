@@ -34,6 +34,12 @@ public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T> where T : un
         return new(shape, Array);
     }
     
+    public CudaTensor<T> Transpose() // no allocation
+    {
+        var shape = Shape.Transpose();
+        return new(shape, Array);
+    }
+
     public CudaTensor<T> Transpose(Index[] axis) // no allocation
     {
         var shape = Shape.Transpose(axis);

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using BitTensor.CUDA.Interop;
+﻿using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
@@ -59,7 +58,9 @@ public sealed unsafe class CudnnEngineHeuristics : IDisposable
             &config);
 
         Status.EnsureIsSuccess(status);
-        Debug.Assert(count != -1);
+
+        if (count == -1)
+            throw new InvalidOperationException("Configuration not found");
 
         return new CudnnEngineConfiguration(config);
     }

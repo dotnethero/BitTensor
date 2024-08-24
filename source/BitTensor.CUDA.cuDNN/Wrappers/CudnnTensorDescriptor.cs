@@ -19,7 +19,7 @@ public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unma
     {
         var alignment = sizeof(T);
         var type = Types.GetDataType<T>();
-        var shape = MakeAtLeast2D(anyShape);
+        var shape = anyShape.Expand(dimensions: 3);
 
         Extents = CudaArray.AllocateAtHost<long>(shape.Dimensions);
         Strides = CudaArray.AllocateAtHost<long>(shape.Dimensions);
@@ -114,14 +114,6 @@ public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unma
             &alignment);
 
         Status.EnsureIsSuccess(status);
-    }
-
-    private static Shape MakeAtLeast2D(Shape shape)
-    {
-        var dimensions = shape.Dimensions < 2 ? 2 : shape.Dimensions;
-        var additional = dimensions - shape.Dimensions;
-        var ones = Enumerable.Repeat(1, additional);
-        return [..ones, ..shape];
     }
 
     public void Dispose()
