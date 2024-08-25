@@ -23,7 +23,7 @@ public class Linear : ILayer<float>
 
     public CudaNode<float> Compose(CudaNode<float> input)
     {
-        var z = Ops.Gemm(input, Weights, Bias);
+        var z = Ops.Gemm(input, Weights, Bias, CudaBackend.cuDNN);
         return Activation is not null
             ? Activation(z)
             : z;

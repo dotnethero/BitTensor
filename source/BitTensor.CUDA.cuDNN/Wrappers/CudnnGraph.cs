@@ -1,10 +1,16 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using System.Numerics;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
 using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 using DescriptorType = cudnnBackendDescriptorType_t;
+
+public sealed record CudnnCompiledGraph<T>(
+    CudnnExecutionPlan Plan,
+    CudnnVariantPack<T> Pack)
+    where T : unmanaged, IFloatingPoint<T>;
 
 public sealed unsafe class CudnnGraph : IDisposable
 {

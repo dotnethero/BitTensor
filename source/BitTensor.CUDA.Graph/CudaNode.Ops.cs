@@ -115,7 +115,13 @@ public static class Ops
     public static CudaNode<T> Gemm<T>(
         CudaNode<T> a,
         CudaNode<T> b,
-        CudaNode<T> c)
+        CudaNode<T> c,
+        CudaBackend backend = CudaBackend.cuTENSOR)
         where T : unmanaged, IFloatingPoint<T> =>
-        new Gemm<T>(a, b, c);
+        backend switch
+        {
+            CudaBackend.cuTENSOR => new Gemm<T>(a, b, c),
+            CudaBackend.cuDNN => new GemmCudnn<T>(a, b, c),
+            _ => throw new ArgumentOutOfRangeException(nameof(backend))
+        };
 }
