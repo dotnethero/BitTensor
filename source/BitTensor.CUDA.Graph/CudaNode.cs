@@ -1,10 +1,11 @@
 ﻿using System.Numerics;
+using System.Runtime.CompilerServices;
 using BitTensor.Abstractions;
 using BitTensor.CUDA.Graph.Nodes;
 
 namespace BitTensor.CUDA.Graph;
 
-public abstract unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
+public abstract unsafe partial class CudaNode<T> : AbstractTensor, IUniqueDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly List<CudaNode<T>> Dependents = [];
     internal bool Outdated;
@@ -12,8 +13,18 @@ public abstract unsafe partial class CudaNode<T> : AbstractTensor, IDeviceArray<
     public abstract CudaContext Context { get; }
     public abstract CudaTensor<T> Tensor { get; }
 
-    public T* Pointer => Tensor.Pointer;
+    public long UniqueId
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Id;
+    }
 
+    public T* Pointer
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Tensor.Pointer;
+    }
+    
     int IDeviceArray.ElementSize => sizeof(T);
     int IDeviceArray.Size => Shape.ArraySize;
 

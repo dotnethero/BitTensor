@@ -21,3 +21,7 @@ public interface IDeviceArray<T> : IDeviceArray where T : unmanaged
     }
 }
 
+public interface IUniqueDeviceArray<T> : IDeviceArray<T> where T : unmanaged
+{
+    long UniqueId { get; }
+}

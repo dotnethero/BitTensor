@@ -3,9 +3,15 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe class CudaTensor<T> : AbstractTensor, IDeviceArray<T> where T : unmanaged
+public unsafe class CudaTensor<T> : AbstractTensor, IUniqueDeviceArray<T> where T : unmanaged
 {
     public readonly CudaArray<T> Array;
+
+    public long UniqueId
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => Id;
+    }
 
     public T* Pointer
     {

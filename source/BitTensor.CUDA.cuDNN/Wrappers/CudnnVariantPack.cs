@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using BitTensor.Abstractions;
 using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
@@ -11,7 +12,7 @@ public sealed unsafe class CudnnVariantPack<T> : IDisposable where T : unmanaged
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnVariantPack(CudaTensor<T>[] tensors)
+    public CudnnVariantPack(IUniqueDeviceArray<T>[] tensors)
     {
         var count = tensors.Length;
         var uniques = stackalloc long[count];
@@ -19,7 +20,7 @@ public sealed unsafe class CudnnVariantPack<T> : IDisposable where T : unmanaged
 
         for (var i = 0; i < count; i++)
         {
-            uniques[i] = tensors[i].Id;
+            uniques[i] = tensors[i].UniqueId;
             pointers[i] = tensors[i].Pointer;
         }
 

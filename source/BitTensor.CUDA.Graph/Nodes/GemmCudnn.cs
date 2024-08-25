@@ -10,7 +10,8 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
     internal readonly CudaNode<T> Bias;
 
     internal readonly CudnnContext CudnnContext;
-    internal readonly Lazy<CudnnCompiledGraph<T>> CudnnGraph;
+    internal readonly CudnnExecutionPlan CudnnPlan;
+    internal readonly Lazy<CudnnVariantPack<T>> CudnnPack;
 
     private static Shape GetShape(AbstractTensor a, AbstractTensor b, AbstractTensor c)
     {
@@ -25,17 +26,12 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
         Product = new MatMul<T>(a, b);
 
         CudnnContext = new CudnnContext();
-        CudnnGraph = new Lazy<CudnnCompiledGraph<T>>(() => Compile(a, b, c));
-    }
 
-
-    private CudnnCompiledGraph<T> Compile(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c)
-    {
-        var ta = new CudnnTensorDescriptor<float>(a.Tensor);
-        var tb = new CudnnTensorDescriptor<float>(b.Tensor);
-        var tc = new CudnnTensorDescriptor<float>(c.Tensor);
+        var ta = new CudnnTensorDescriptor<float>(a);
+        var tb = new CudnnTensorDescriptor<float>(b);
+        var tc = new CudnnTensorDescriptor<float>(c);
         var tt = new CudnnTensorDescriptor<float>(Shape, -1, isVirtual: true);
-        var to = new CudnnTensorDescriptor<float>(Tensor);
+        var to = new CudnnTensorDescriptor<float>(this);
 
         var mmc = new CudnnMatMulOperator<float>();
         var mm = new CudnnMatMulOperation<float>(mmc, ta, tb, tt);
@@ -46,18 +42,15 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
         var graph = new CudnnGraph(CudnnContext, [mm, pw]);
         var heuristics = new CudnnEngineHeuristics(graph);
 
-        var plan = new CudnnExecutionPlan(CudnnContext, heuristics.GetConfiguration());
-        var pack = new CudnnVariantPack<T>([a.Tensor, b.Tensor, c.Tensor, Tensor]);
-
-        return new CudnnCompiledGraph<T>(plan, pack);
+        CudnnPlan = new CudnnExecutionPlan(CudnnContext, heuristics.GetConfiguration());
+        CudnnPack = new Lazy<CudnnVariantPack<T>>(() => new([a, b, c, this]));
     }
 
     public override void Execute()
     {
-        var graph = CudnnGraph.Value;
         CudnnContext.ExecutePlan(
-            graph.Plan,
-            graph.Pack);
+            CudnnPlan,
+            CudnnPack.Value);
     }
 
     public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
@@ -70,8 +63,10 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
 
     public override void DisposeResources()
     {
+        CudnnPack.Value.Dispose();
+        CudnnPlan.Dispose();
         CudnnContext.Dispose();
-
-        // TODO: dispose cuDNN wrappers
+        
+        // TODO: dispose other cuDNN wrappers
     }
 }
