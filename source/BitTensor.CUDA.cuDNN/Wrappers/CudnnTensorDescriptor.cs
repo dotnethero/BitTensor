@@ -8,7 +8,7 @@ using DescriptorType = cudnnBackendDescriptorType_t;
 using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 
-public sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
+internal sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly long* Extents;
     internal readonly long* Strides;

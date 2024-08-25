@@ -6,7 +6,7 @@ using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 using DescriptorType = cudnnBackendDescriptorType_t;
 
-public sealed unsafe class CudnnEngineHeuristics : IDisposable
+internal sealed unsafe class CudnnEngineHeuristics : IDisposable
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
 

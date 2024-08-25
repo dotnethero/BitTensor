@@ -5,7 +5,7 @@ using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA;
 
-public static class Fusion
+internal static class Fusion
 {
     internal static long MaxVirtualId = 0;
 

@@ -7,7 +7,7 @@ namespace BitTensor.CUDA.Plans;
 /// <summary>
 /// X = A⋅B + C
 /// </summary>
-public sealed class CudnnGemmGraph<T> : IDisposable where T : unmanaged, IFloatingPoint<T>
+public sealed class CudnnGemmGraph<T> : ICudnnGraph where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly CudnnTensorDescriptor<T> A;
     internal readonly CudnnTensorDescriptor<T> B;
@@ -42,7 +42,7 @@ public sealed class CudnnGemmGraph<T> : IDisposable where T : unmanaged, IFloati
         Graph = new CudnnGraph(context, [Product, Bias]);
     }
 
-    public CudnnExecutionPlan GetExecutionPlan() => Graph.GetExecutionPlan();
+    public ICudnnPlan GetExecutionPlan() => Graph.GetExecutionPlan();
 
     public void Dispose()
     {

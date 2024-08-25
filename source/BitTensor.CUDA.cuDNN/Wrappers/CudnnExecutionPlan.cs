@@ -7,7 +7,7 @@ using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 using DescriptorType = cudnnBackendDescriptorType_t;
 
-public sealed unsafe class CudnnExecutionPlan : IDisposable
+internal sealed unsafe class CudnnExecutionPlan : ICudnnPlan
 {
     internal readonly CudnnContext Context;
     internal readonly CudnnEngineHeuristics Heuristics;

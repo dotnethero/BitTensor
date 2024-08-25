@@ -11,8 +11,8 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
     internal readonly CudaNode<T> Bias;
 
     internal readonly CudnnContext CudnnContext;
-    internal readonly CudnnGemmGraph<T> CudnnGraph;
-    internal readonly CudnnExecutionPlan CudnnPlan;
+    internal readonly ICudnnGraph CudnnGraph;
+    internal readonly ICudnnPlan CudnnPlan;
     internal readonly Lazy<CudnnVariantPack<T>> CudnnPack;
 
     private static Shape GetShape(AbstractTensor a, AbstractTensor b, AbstractTensor c)

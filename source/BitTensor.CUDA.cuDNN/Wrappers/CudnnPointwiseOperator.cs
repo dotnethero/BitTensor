@@ -7,7 +7,7 @@ using DescriptorType = cudnnBackendDescriptorType_t;
 using AttributeName = cudnnBackendAttributeName_t;
 using AttributeType = cudnnBackendAttributeType_t;
 
-public sealed unsafe class CudnnPointwiseOperator<T> : ICudnnOperator where T : unmanaged, IFloatingPoint<T>
+internal sealed unsafe class CudnnPointwiseOperator<T> : ICudnnOperator where T : unmanaged, IFloatingPoint<T>
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
