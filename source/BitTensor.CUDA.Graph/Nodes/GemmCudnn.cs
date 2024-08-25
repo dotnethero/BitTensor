@@ -27,17 +27,14 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
 
         CudnnContext = new CudnnContext();
 
-        var ta = new CudnnTensorDescriptor<float>(a);
-        var tb = new CudnnTensorDescriptor<float>(b);
-        var tc = new CudnnTensorDescriptor<float>(c);
-        var tt = new CudnnTensorDescriptor<float>(Shape, -1, isVirtual: true);
-        var to = new CudnnTensorDescriptor<float>(this);
+        var ta = a.CreateDescriptor();
+        var tb = b.CreateDescriptor();
+        var tc = c.CreateDescriptor();
+        var to = this.CreateDescriptor();
 
-        var mmc = new CudnnMatMulOperator<float>();
-        var mm = new CudnnMatMulOperation<float>(mmc, ta, tb, tt);
-
-        var pwc = new CudnnPointwiseOperator<float>();
-        var pw = new CudnnPointwiseOperation<float>(pwc, tt, tc, to);
+        var tt = Fusion.VirtualDescriptor<T>(Shape);
+        var mm = Fusion.MatMul(ta, tb, tt);
+        var pw = Fusion.Add(tt, tc, to);
 
         var graph = new CudnnGraph(CudnnContext, [mm, pw]);
         var heuristics = new CudnnEngineHeuristics(graph);

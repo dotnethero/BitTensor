@@ -5,7 +5,7 @@ using BitTensor.CUDA.Graph.Nodes;
 
 namespace BitTensor.CUDA.Graph;
 
-public abstract unsafe partial class CudaNode<T> : AbstractTensor, IUniqueDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
+public abstract unsafe partial class CudaNode<T> : AbstractTensor<T>, IUniqueDeviceArray<T> where T : unmanaged, IFloatingPoint<T>
 {
     internal readonly List<CudaNode<T>> Dependents = [];
     internal bool Outdated;

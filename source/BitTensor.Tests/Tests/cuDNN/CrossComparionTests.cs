@@ -35,17 +35,14 @@ internal class CrossComparionTests
 
         using var context = new CudnnContext();
 
-        using var ti = new CudnnTensorDescriptor<float>(inputs);
-        using var tw = new CudnnTensorDescriptor<float>(weights);
-        using var tb = new CudnnTensorDescriptor<float>(bias);
-        using var tt = new CudnnTensorDescriptor<float>(outputs2.Shape, -1, isVirtual: true);
-        using var to = new CudnnTensorDescriptor<float>(outputs2);
+        using var ti = inputs.CreateDescriptor();
+        using var tw = weights.CreateDescriptor();
+        using var tb = bias.CreateDescriptor();
+        using var to = outputs2.CreateDescriptor();
 
-        using var mmc = new CudnnMatMulOperator<float>();
-        using var mm = new CudnnMatMulOperation<float>(mmc, ti, tw, tt);
-
-        using var pwc = new CudnnPointwiseOperator<float>();
-        using var pw = new CudnnPointwiseOperation<float>(pwc, tt, tb, to);
+        using var tt = Fusion.VirtualDescriptor<float>(outputs2.Shape);
+        using var mm = Fusion.MatMul(ti, tw, tt);
+        using var pw = Fusion.Add(tt, tb, to);
 
         using var graph = new CudnnGraph(context, [mm, pw]);
         using var pack = new CudnnVariantPack<float>([inputs, weights, bias, outputs2]);

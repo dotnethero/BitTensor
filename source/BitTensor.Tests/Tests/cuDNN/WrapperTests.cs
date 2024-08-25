@@ -1,4 +1,5 @@
 ﻿using BitTensor.Abstractions;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 using NUnit.Framework;
 
@@ -39,7 +40,7 @@ class WrapperTests
         using var b = CreateTensorDescriptor(2, bShape);
         using var c = CreateTensorDescriptor(3, cShape);
 
-        using var pwc = new CudnnPointwiseOperator<float>();
+        using var pwc = new CudnnPointwiseOperator<float>(cudnnPointwiseMode_t.CUDNN_POINTWISE_ADD);
         using var pw = new CudnnPointwiseOperation<float>(pwc, a, b, c);
     }
 

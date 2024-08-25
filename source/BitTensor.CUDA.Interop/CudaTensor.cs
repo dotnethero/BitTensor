@@ -3,7 +3,7 @@ using BitTensor.Abstractions;
 
 namespace BitTensor.CUDA;
 
-public unsafe class CudaTensor<T> : AbstractTensor, IUniqueDeviceArray<T> where T : unmanaged
+public unsafe class CudaTensor<T> : AbstractTensor<T>, IUniqueDeviceArray<T> where T : unmanaged
 {
     public readonly CudaArray<T> Array;
 

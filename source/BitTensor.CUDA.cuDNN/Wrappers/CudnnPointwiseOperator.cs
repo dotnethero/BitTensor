@@ -11,12 +11,12 @@ public sealed unsafe class CudnnPointwiseOperator<T> : ICudnnOperator where T : 
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnPointwiseOperator()
+    public CudnnPointwiseOperator(cudnnPointwiseMode_t mode)
     {
         var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_POINTWISE_DESCRIPTOR);
         var type = Types.GetDataType<T>();
 
-        SetOperation(descriptor, cudnnPointwiseMode_t.CUDNN_POINTWISE_ADD);
+        SetOperation(descriptor, mode);
         SetPrecision(descriptor, type);
         
         Descriptor = Descriptors.Finalize(descriptor);

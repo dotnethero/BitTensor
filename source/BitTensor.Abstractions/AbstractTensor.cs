@@ -20,7 +20,7 @@ public abstract class AbstractTensor
     public readonly int PrevDimension;
     public readonly int LastDimension;
 
-    protected internal AbstractTensor(Shape shape)
+    protected AbstractTensor(Shape shape)
     {
         Id = Interlocked.Increment(ref MaxID);
         Size = shape.ArraySize;
@@ -42,5 +42,12 @@ public abstract class AbstractTensor
             PrevDimension = Shape[Dimensions - 2];
             IsColumn = PrevDimension == Size;
         }
+    }
+}
+
+public abstract class AbstractTensor<T> : AbstractTensor
+{
+    protected AbstractTensor(Shape shape) : base(shape)
+    {
     }
 }
