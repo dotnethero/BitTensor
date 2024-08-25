@@ -1,4 +1,5 @@
-﻿using BitTensor.CUDA.Interop;
+﻿using System.Numerics;
+using BitTensor.CUDA.Interop;
 
 namespace BitTensor.CUDA.Wrappers;
 
@@ -8,14 +9,24 @@ using DescriptorType = cudnnBackendDescriptorType_t;
 
 public sealed unsafe class CudnnExecutionPlan : IDisposable
 {
+    internal readonly CudnnContext Context;
+    internal readonly CudnnEngineHeuristics Heuristics;
+    internal readonly CudnnEngineConfiguration Configuration;
+
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnExecutionPlan(CudnnContext context, CudnnEngineConfiguration config)
+    public CudnnExecutionPlan(CudnnContext context, CudnnGraph graph)
     {
+        Context = context;
+        Heuristics = new CudnnEngineHeuristics(graph);
+        Configuration = Heuristics.GetConfiguration();
+
+        // execution plan
+
         var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR);
 
         SetHandle(descriptor, context.Handle);
-        SetConfig(descriptor, config.Descriptor);
+        SetConfig(descriptor, Configuration.Descriptor);
 
         Descriptor = Descriptors.Finalize(descriptor);
     }
@@ -44,6 +55,16 @@ public sealed unsafe class CudnnExecutionPlan : IDisposable
         Status.EnsureIsSuccess(status);
     }
     
+    public void Execute<T>(CudnnVariantPack<T> pack) where T : unmanaged, IFloatingPoint<T>
+    {
+        var status = cuDNN.cudnnBackendExecute(
+            Context.Handle,
+            this.Descriptor,
+            pack.Descriptor);
+
+        Status.EnsureIsSuccess(status);
+    }
+
     public long GetWorkspaceSize()
     {
         long workspaceSize;
@@ -64,5 +85,8 @@ public sealed unsafe class CudnnExecutionPlan : IDisposable
     public void Dispose()
     {
         cuDNN.cudnnBackendDestroyDescriptor(Descriptor);
+
+        Configuration.Dispose();
+        Heuristics.Dispose();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using BitTensor.Abstractions;
+using BitTensor.CUDA.Plans;
 using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph.Nodes;
@@ -10,6 +11,7 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
     internal readonly CudaNode<T> Bias;
 
     internal readonly CudnnContext CudnnContext;
+    internal readonly CudnnGemmGraph<T> CudnnGraph;
     internal readonly CudnnExecutionPlan CudnnPlan;
     internal readonly Lazy<CudnnVariantPack<T>> CudnnPack;
 
@@ -22,32 +24,20 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
 
     public GemmCudnn(CudaNode<T> a, CudaNode<T> b, CudaNode<T> c) : base(GetShape(a, b, c), [a, b, c])
     {
+        // TODO: add own propagate function
+
         Bias = c;
         Product = new MatMul<T>(a, b);
 
         CudnnContext = new CudnnContext();
-
-        var ta = a.CreateDescriptor();
-        var tb = b.CreateDescriptor();
-        var tc = c.CreateDescriptor();
-        var to = this.CreateDescriptor();
-
-        var tt = Fusion.VirtualDescriptor<T>(Shape);
-        var mm = Fusion.MatMul(ta, tb, tt);
-        var pw = Fusion.Add(tt, tc, to);
-
-        var graph = new CudnnGraph(CudnnContext, [mm, pw]);
-        var heuristics = new CudnnEngineHeuristics(graph);
-
-        CudnnPlan = new CudnnExecutionPlan(CudnnContext, heuristics.GetConfiguration());
+        CudnnGraph = new CudnnGemmGraph<T>(CudnnContext, a, b, c, this);
         CudnnPack = new Lazy<CudnnVariantPack<T>>(() => new([a, b, c, this]));
+        CudnnPlan = CudnnGraph.GetExecutionPlan();
     }
 
     public override void Execute()
     {
-        CudnnContext.ExecutePlan(
-            CudnnPlan,
-            CudnnPack.Value);
+        CudnnPlan.Execute(CudnnPack.Value);
     }
 
     public override CudaNode<T>[] Propagate(CudaNode<T> gradient)
@@ -62,8 +52,7 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
     {
         CudnnPack.Value.Dispose();
         CudnnPlan.Dispose();
+        CudnnGraph.Dispose();
         CudnnContext.Dispose();
-        
-        // TODO: dispose other cuDNN wrappers
     }
 }

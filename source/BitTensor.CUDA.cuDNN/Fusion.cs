@@ -14,7 +14,7 @@ public static class Fusion
         where T : unmanaged, IFloatingPoint<T> => 
         new(tensor);
 
-    public static CudnnTensorDescriptor<T> VirtualDescriptor<T>(
+    public static CudnnTensorDescriptor<T> CreateVirtualDescriptor<T>(
         Shape shape)
         where T : unmanaged, IFloatingPoint<T> => 
         new(shape, --MaxVirtualId, isVirtual: true);

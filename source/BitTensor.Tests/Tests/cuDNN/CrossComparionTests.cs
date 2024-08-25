@@ -40,14 +40,16 @@ internal class CrossComparionTests
         using var tb = bias.CreateDescriptor();
         using var to = outputs2.CreateDescriptor();
 
-        using var tt = Fusion.VirtualDescriptor<float>(outputs2.Shape);
+        using var tt = Fusion.CreateVirtualDescriptor<float>(outputs2.Shape);
         using var mm = Fusion.MatMul(ti, tw, tt);
         using var pw = Fusion.Add(tt, tb, to);
 
         using var graph = new CudnnGraph(context, [mm, pw]);
         using var pack = new CudnnVariantPack<float>([inputs, weights, bias, outputs2]);
 
-        context.ExecuteGraph(graph, pack);
+        using var plan = graph.GetExecutionPlan();
+
+        plan.Execute(pack);
         CuDebug.WriteLine(outputs2);
 
         TensorAsserts.ValuesAreEqual(outputs1, outputs2, tolerance: 1e-3f);

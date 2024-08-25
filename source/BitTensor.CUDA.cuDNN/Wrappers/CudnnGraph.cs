@@ -14,10 +14,16 @@ public sealed record CudnnCompiledGraph<T>(
 
 public sealed unsafe class CudnnGraph : IDisposable
 {
+    internal readonly CudnnContext Context;
+    internal readonly ICudnnOperation[] Operations;
+
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
     public CudnnGraph(CudnnContext context, ICudnnOperation[] operations)
     {
+        Context = context;
+        Operations = operations;
+
         var opCount = operations.Length;
         var opArray = stackalloc cudnnBackendDescriptor_t*[opCount];
 
@@ -56,6 +62,11 @@ public sealed unsafe class CudnnGraph : IDisposable
             operations);
         
         Status.EnsureIsSuccess(status);
+    }
+
+    public CudnnExecutionPlan GetExecutionPlan()
+    {
+        return new CudnnExecutionPlan(Context, this);
     }
 
     public void Dispose()
