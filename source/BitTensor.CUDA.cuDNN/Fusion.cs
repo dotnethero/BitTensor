@@ -29,6 +29,17 @@ internal static class Fusion
         var op = new CudnnPointwiseOperation<T>(pw, x, b, y);
         return op;
     }
+    
+    public static CudnnPointwiseOperation<T> ReLU<T>(
+        CudnnTensorDescriptor<T> x,
+        CudnnTensorDescriptor<T> y,
+        float alpha) 
+        where T : unmanaged, IFloatingPoint<T>
+    {
+        var pw = new CudnnPointwiseOperator<T>(cudnnPointwiseMode_t.CUDNN_POINTWISE_RELU_FWD, lowerClipSlope: alpha);
+        var op = new CudnnPointwiseOperation<T>(pw, x, y);
+        return op;
+    }
 
     public static CudnnMatMulOperation<T> MatMul<T>(
         CudnnTensorDescriptor<T> a,

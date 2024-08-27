@@ -30,14 +30,14 @@ internal class Program
         var model = Model.Create(
         [
             new Flatten<float>(context),
-            new Linear(context, inputCount, hiddenCount, Activation.ReLU(0.1f)),
+            new LinearRelu(context, inputCount, hiddenCount, alpha: 0.1f),
             new Linear(context, hiddenCount, outputCount, Activation.Softmax)
         ]);
 
         // train:
         var timer = Stopwatch.StartNew();
         var trainer = Model.Compile(model, Loss.CrossEntropy, trainImages, trainLabels, batchSize);
-        trainer.Fit(lr: 5e-3f, epochs: 50, trace: true);
+        trainer.Fit(lr: 5e-3f, epochs: 500, trace: true);
         timer.Stop();
 
         // evaluate:

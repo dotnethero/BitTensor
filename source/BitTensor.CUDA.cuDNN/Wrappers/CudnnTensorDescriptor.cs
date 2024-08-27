@@ -21,7 +21,7 @@ internal sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : un
 
     public CudnnTensorDescriptor(Shape anyShape, long id, bool isVirtual = false)
     {
-        var alignment = sizeof(T);
+        var alignment = sizeof(T) * 8;
         var type = Types.GetDataType<T>();
         var shape = anyShape.Expand(dimensions: 3);
 

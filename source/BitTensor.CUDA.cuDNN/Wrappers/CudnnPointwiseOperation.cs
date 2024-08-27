@@ -10,6 +10,20 @@ using AttributeType = cudnnBackendAttributeType_t;
 internal sealed unsafe class CudnnPointwiseOperation<T> : ICudnnOperation where T : unmanaged, IFloatingPoint<T>
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
+    
+    public CudnnPointwiseOperation(
+        CudnnPointwiseOperator<T> pw,
+        CudnnTensorDescriptor<T> x,
+        CudnnTensorDescriptor<T> y)
+    {
+        var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_OPERATION_POINTWISE_DESCRIPTOR);
+
+        SetOperation(descriptor, pw.Descriptor);
+        SetX(descriptor, x.Descriptor);
+        SetY(descriptor, y.Descriptor);
+
+        Descriptor = Descriptors.Finalize(descriptor);
+    }
 
     public CudnnPointwiseOperation(
         CudnnPointwiseOperator<T> pw,

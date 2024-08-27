@@ -124,4 +124,12 @@ public static class Ops
             CudaBackend.cuDNN => new GemmCudnn<T>(a, b, c),
             _ => throw new ArgumentOutOfRangeException(nameof(backend))
         };
+
+    public static CudaNode<float> GemmRelu(
+        CudaNode<float> a,
+        CudaNode<float> b,
+        CudaNode<float> c,
+        float alpha) =>
+        new GemmReluCudnn<float>(a, b, c, alpha);
+
 }

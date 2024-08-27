@@ -21,6 +21,18 @@ internal sealed unsafe class CudnnPointwiseOperator<T> : ICudnnOperator where T 
         
         Descriptor = Descriptors.Finalize(descriptor);
     }
+    
+    public CudnnPointwiseOperator(cudnnPointwiseMode_t mode, float lowerClipSlope)
+    {
+        var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_POINTWISE_DESCRIPTOR);
+        var type = Types.GetDataType<T>();
+
+        SetOperation(descriptor, mode);
+        SetPrecision(descriptor, type);
+        SetLowerClipSlope(descriptor, lowerClipSlope);
+
+        Descriptor = Descriptors.Finalize(descriptor);
+    }
 
     private static void SetOperation(cudnnBackendDescriptor_t* descriptor, cudnnPointwiseMode_t mode)
     {
@@ -30,6 +42,18 @@ internal sealed unsafe class CudnnPointwiseOperator<T> : ICudnnOperator where T 
             AttributeType.CUDNN_TYPE_POINTWISE_MODE, 
             elementCount: 1,
             &mode);
+        
+        Status.EnsureIsSuccess(status);
+    }
+
+    private static void SetLowerClipSlope(cudnnBackendDescriptor_t* descriptor, float slope)
+    {
+        var status = cuDNN.cudnnBackendSetAttribute(
+            descriptor,
+            AttributeName.CUDNN_ATTR_POINTWISE_RELU_LOWER_CLIP_SLOPE,
+            AttributeType.CUDNN_TYPE_FLOAT, 
+            elementCount: 1,
+            &slope);
         
         Status.EnsureIsSuccess(status);
     }
