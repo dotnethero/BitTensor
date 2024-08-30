@@ -53,6 +53,16 @@ internal static class Fusion
 
     // unary
 
+    public static CudnnPointwiseOperation<T> Exp<T>(
+        CudnnTensorDescriptor<T> x,
+        CudnnTensorDescriptor<T> y) 
+        where T : unmanaged, IFloatingPoint<T>
+    {
+        var pw = new CudnnPointwiseOperator<T>(cudnnPointwiseMode_t.CUDNN_POINTWISE_EXP);
+        var op = new CudnnPointwiseOperation<T>(pw, x, y);
+        return op;
+    }
+
     public static CudnnPointwiseOperation<T> ReLU<T>(
         CudnnTensorDescriptor<T> x,
         CudnnTensorDescriptor<T> y,

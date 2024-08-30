@@ -5,10 +5,12 @@ using BitTensor.CUDA.Models.Layers;
 
 namespace BitTensor;
 
-internal class Program
+internal static class Program
 {
     public static void Main()
     {
+        Environment.SetEnvironmentVariable("CUDNN_LOGDEST_DBG", "stderr");
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
         Test_MNIST();
     }
 
@@ -30,14 +32,15 @@ internal class Program
         var model = Model.Create(
         [
             new Flatten<float>(context),
+            //new Linear(context, inputCount, hiddenCount, Activation.ReLU(alpha: 0.1f)),
             new LinearRelu(context, inputCount, hiddenCount, alpha: 0.1f),
-            new Linear(context, hiddenCount, outputCount, Activation.Softmax)
+            new Linear(context, hiddenCount, outputCount, Activation.Softmax(CudaBackend.cuDNN))
         ]);
 
         // train:
-        var timer = Stopwatch.StartNew();
         var trainer = Model.Compile(model, Loss.CrossEntropy, trainImages, trainLabels, batchSize);
-        trainer.Fit(lr: 5e-3f, epochs: 50, trace: true);
+        var timer = Stopwatch.StartNew();
+        trainer.Fit(lr: 5e-3f, epochs: 10, trace: true);
         timer.Stop();
 
         // evaluate:

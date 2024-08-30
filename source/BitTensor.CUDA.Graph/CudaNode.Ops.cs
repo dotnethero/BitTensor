@@ -32,13 +32,20 @@ public static class Ops
         new ReLU(input, alpha);
     
     public static CudaNode<float> Softmax(
-        CudaNode<float> input) => 
-        new Softmax(input, [^1]);
+        CudaNode<float> input,
+        CudaBackend backend = CudaBackend.cuTENSOR) => 
+        Softmax(input, [^1], backend);
 
     public static CudaNode<float> Softmax(
         CudaNode<float> input,
-        HashSet<Index> axis) => 
-        new Softmax(input, axis);
+        HashSet<Index> axis,
+        CudaBackend backend = CudaBackend.cuTENSOR) =>
+        backend switch
+        {
+            CudaBackend.cuTENSOR => new Softmax(input, axis),
+            CudaBackend.cuDNN => new SoftmaxCudnn<float>(input, axis),
+            _ => throw new ArgumentOutOfRangeException(nameof(backend))
+        };
 
     // reductions
     

@@ -31,7 +31,7 @@ internal sealed class GemmCudnn<T> : AbstractOperation<T> where T : unmanaged, I
 
         CudnnContext = new CudnnContext();
         CudnnGraph = new CudnnGemmGraph<T>(CudnnContext, a, b, c, this);
-        CudnnPack = new Lazy<CudnnVariantPack<T>>(() => new([a, b, c, this]));
+        CudnnPack = new(() => new([a, b, c, this]));
         CudnnPlan = CudnnGraph.GetExecutionPlan();
     }
 
