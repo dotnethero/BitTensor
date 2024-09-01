@@ -10,12 +10,12 @@ internal sealed unsafe class CudnnEngineHeuristics : IDisposable
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnEngineHeuristics(CudnnGraph graph)
+    public CudnnEngineHeuristics(CudnnGraph graph, cudnnBackendHeurMode_t mode = cudnnBackendHeurMode_t.CUDNN_HEUR_MODE_INSTANT)
     {
         var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINEHEUR_DESCRIPTOR);
 
         SetGraph(descriptor, graph.Descriptor);
-        SetMode(descriptor, cudnnBackendHeurMode_t.CUDNN_HEUR_MODE_INSTANT);
+        SetMode(descriptor, mode);
 
         Descriptor = Descriptors.Finalize(descriptor);
     }
@@ -44,25 +44,47 @@ internal sealed unsafe class CudnnEngineHeuristics : IDisposable
         Status.EnsureIsSuccess(status);
     }
     
-    public CudnnEngineConfiguration GetConfiguration()
+    public CudnnEngineConfiguration[] GetConfigurations()
     {
         var count = -1L;
-        var config = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINECFG_DESCRIPTOR);
+        
+        var countStatus = cuDNN.cudnnBackendGetAttribute(
+            Descriptor,
+            AttributeName.CUDNN_ATTR_ENGINEHEUR_RESULTS,
+            AttributeType.CUDNN_TYPE_BACKEND_DESCRIPTOR, 
+            requestedElementCount: 0L,
+            elementCount: &count,
+            null);
+        
+        Status.EnsureIsSuccess(countStatus);
+        
+        if (count == 0)
+            throw new InvalidOperationException("Configuration not found");
+
+        var configs = stackalloc cudnnBackendDescriptor_t*[(int)count];
+        var result = new CudnnEngineConfiguration[count];
+
+        for (var i = 0; i < count; ++i)
+        {
+            configs[i] = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINECFG_DESCRIPTOR);
+        }
 
         var status = cuDNN.cudnnBackendGetAttribute(
             Descriptor,
             AttributeName.CUDNN_ATTR_ENGINEHEUR_RESULTS,
             AttributeType.CUDNN_TYPE_BACKEND_DESCRIPTOR, 
-            requestedElementCount: 1L,
-            elementCount: &count,
-            &config);
+            requestedElementCount: count,
+            elementCount: null,
+            configs);
 
         Status.EnsureIsSuccess(status);
 
-        if (count == -1)
-            throw new InvalidOperationException("Configuration not found");
-
-        return new CudnnEngineConfiguration(config);
+        for (var i = 0; i < count; ++i)
+        {
+            result[i] = new(configs[i]);
+        }
+        
+        return result;
     }
 
     public void Dispose()

@@ -58,9 +58,32 @@ internal sealed unsafe class CudnnGraph : ICudnnGraph
         Status.EnsureIsSuccess(status);
     }
 
-    public ICudnnPlan GetExecutionPlan()
+    public ICudnnPlan GetExecutionPlan() => GetExecutionPlan(cudnnBackendHeurMode_t.CUDNN_HEUR_MODE_INSTANT);
+
+    public ICudnnPlan GetExecutionPlan(cudnnBackendHeurMode_t mode)
     {
-        return new CudnnExecutionPlan(Context, this);
+        using var heuristics = new CudnnEngineHeuristics(this, mode);
+        
+        CudnnExecutionPlan plan = null;
+        foreach (var configuration in heuristics.GetConfigurations())
+        {
+            try
+            {
+                plan = new CudnnExecutionPlan(Context, configuration);
+                break;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        if (plan is null)
+        {
+            throw new InvalidOperationException("Could not find valid configuration");
+        }
+
+        return plan;
     }
 
     public void Dispose()

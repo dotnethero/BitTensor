@@ -10,18 +10,14 @@ using DescriptorType = cudnnBackendDescriptorType_t;
 internal sealed unsafe class CudnnExecutionPlan : ICudnnPlan
 {
     internal readonly CudnnContext Context;
-    internal readonly CudnnEngineHeuristics Heuristics;
     internal readonly CudnnEngineConfiguration Configuration;
 
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnExecutionPlan(CudnnContext context, CudnnGraph graph)
+    public CudnnExecutionPlan(CudnnContext context, CudnnEngineConfiguration configuration)
     {
         Context = context;
-        Heuristics = new CudnnEngineHeuristics(graph);
-        Configuration = Heuristics.GetConfiguration();
-
-        // execution plan
+        Configuration = configuration;
 
         var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_EXECUTION_PLAN_DESCRIPTOR);
 
@@ -87,6 +83,5 @@ internal sealed unsafe class CudnnExecutionPlan : ICudnnPlan
         cuDNN.cudnnBackendDestroyDescriptor(Descriptor);
 
         Configuration.Dispose();
-        Heuristics.Dispose();
     }
 }

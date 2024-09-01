@@ -1,6 +1,7 @@
 ﻿using BitTensor.Core.Tests;
 using BitTensor.CUDA;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Interop;
 using BitTensor.CUDA.Wrappers;
 using NUnit.Framework;
 
@@ -9,6 +10,13 @@ namespace BitTensor.Tests.cuDNN;
 [TestFixture]
 internal class CrossComparionTests
 {
+    [SetUp]
+    public void SetEnvironment()
+    {
+        Environment.SetEnvironmentVariable("CUDNN_LOGDEST_DBG", "stdout");
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
+    }
+    
     [Test]
     [TestCase(3, 8, 4)]
     [TestCase(1, 8, 4)]
@@ -53,5 +61,28 @@ internal class CrossComparionTests
         CuDebug.WriteLine(outputs2);
 
         TensorAsserts.ValuesAreEqual(outputs1, outputs2, tolerance: 1e-3f);
+    }
+
+    [Test]
+    public static void Test_reduction()
+    {
+        var random = new CuRandContext();
+
+        using var inputs = random.Normal([16, 16]);
+        using var outputs2 = new CudaTensor<float>([]);
+        
+        using var context = new CudnnContext();
+
+        using var ti = inputs.CreateDescriptor();
+        using var to = outputs2.CreateDescriptor();
+
+        using var sum = Fusion.Max(ti, to);
+        using var graph = new CudnnGraph(context, [sum]);
+        using var plan = graph.GetExecutionPlan();
+        using var pack = new CudnnVariantPack<float>([inputs, outputs2]);
+        
+        plan.Execute(pack);
+        
+        CuDebug.WriteLine(outputs2);
     }
 }
