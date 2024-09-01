@@ -67,6 +67,9 @@ internal sealed unsafe class CudnnGraph : ICudnnGraph
         CudnnExecutionPlan plan = null;
         foreach (var configuration in heuristics.GetConfigurations())
         {
+            if (!configuration.TryGetEngine(out var engine))
+                continue;
+            
             try
             {
                 plan = new CudnnExecutionPlan(Context, configuration);

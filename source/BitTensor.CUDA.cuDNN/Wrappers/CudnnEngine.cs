@@ -10,6 +10,11 @@ internal sealed unsafe class CudnnEngine : IDisposable
 {
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
+    public CudnnEngine(cudnnBackendDescriptor_t* descriptor)
+    {
+        Descriptor = descriptor;
+    }
+    
     public CudnnEngine(CudnnGraph graph, long globalIndex = 0)
     {
         var descriptor = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINE_DESCRIPTOR);

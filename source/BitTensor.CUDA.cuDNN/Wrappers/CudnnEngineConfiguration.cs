@@ -36,6 +36,28 @@ internal sealed unsafe class CudnnEngineConfiguration : IDisposable
         Status.EnsureIsSuccess(status);
     }
 
+    public bool TryGetEngine(out CudnnEngine result)
+    {
+        var count = -1L;
+        var engine = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINE_DESCRIPTOR);
+        var status = cuDNN.cudnnBackendGetAttribute(
+            Descriptor,
+            AttributeName.CUDNN_ATTR_ENGINECFG_ENGINE,
+            AttributeType.CUDNN_TYPE_BACKEND_DESCRIPTOR, 
+            requestedElementCount: 1,
+            elementCount: &count,
+            &engine);
+
+        if (status != cudnnStatus_t.CUDNN_STATUS_SUCCESS)
+        {
+            result = null;
+            return false;
+        }
+
+        result = new CudnnEngine(engine);
+        return true;
+    }
+    
     public long GetWorkspaceSize()
     {
         long workspaceSize;
