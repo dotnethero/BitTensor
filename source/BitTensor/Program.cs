@@ -34,7 +34,7 @@ internal static class Program
             new Flatten<float>(context),
             //new Linear(context, inputCount, hiddenCount, Activation.ReLU(alpha: 0.1f)),
             new LinearRelu(context, inputCount, hiddenCount, alpha: 0.1f),
-            new Linear(context, hiddenCount, outputCount, Activation.Softmax(CudaBackend.cuDNN))
+            new Linear(context, hiddenCount, outputCount, Activation.Softmax(CudaBackend.cuTENSOR))
         ]);
 
         // train:

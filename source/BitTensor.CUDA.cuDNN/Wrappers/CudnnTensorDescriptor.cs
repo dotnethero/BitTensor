@@ -15,15 +15,15 @@ internal sealed unsafe class CudnnTensorDescriptor<T> : IDisposable where T : un
 
     public cudnnBackendDescriptor_t* Descriptor { get; }
 
-    public CudnnTensorDescriptor(AbstractTensor tensor) : this(tensor.Shape, tensor.Id)
+    public CudnnTensorDescriptor(AbstractTensor tensor, int dimensions = 2) : this(tensor.Shape, tensor.Id, dimensions)
     {
     }
 
-    public CudnnTensorDescriptor(Shape anyShape, long id, bool isVirtual = false)
+    public CudnnTensorDescriptor(Shape anyShape, long id, int dimensions = 2, bool isVirtual = false)
     {
-        var alignment = sizeof(T) * 8;
+        var alignment = sizeof(T);
         var type = Types.GetDataType<T>();
-        var shape = anyShape.Expand(dimensions: 3);
+        var shape = anyShape.Expand(dimensions);
 
         Extents = CudaArray.AllocateAtHost<long>(shape.Dimensions);
         Strides = CudaArray.AllocateAtHost<long>(shape.Dimensions);

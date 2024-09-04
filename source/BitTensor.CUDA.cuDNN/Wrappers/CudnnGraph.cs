@@ -64,29 +64,16 @@ internal sealed unsafe class CudnnGraph : ICudnnGraph
     {
         using var heuristics = new CudnnEngineHeuristics(this, mode);
         
-        CudnnExecutionPlan plan = null;
         foreach (var configuration in heuristics.GetConfigurations())
         {
             if (!configuration.TryGetEngine(out var engine))
                 continue;
             
-            try
-            {
-                plan = new CudnnExecutionPlan(Context, configuration);
-                break;
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+            return new CudnnExecutionPlan(Context, configuration);
+
         }
 
-        if (plan is null)
-        {
-            throw new InvalidOperationException("Could not find valid configuration");
-        }
-
-        return plan;
+        throw new InvalidOperationException("Could not find valid configuration");
     }
 
     public void Dispose()

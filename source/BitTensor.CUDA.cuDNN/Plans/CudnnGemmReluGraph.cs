@@ -29,14 +29,14 @@ public sealed class CudnnGemmReluGraph<T> : ICudnnGraph where T : unmanaged, IFl
         AbstractTensor<T> x,
         float alpha)
     {
-        A = a.CreateDescriptor();
-        B = b.CreateDescriptor();
-        C = c.CreateDescriptor();
-        X = x.CreateDescriptor();
+        A = a.CreateDescriptor(dimensions: 3);
+        B = b.CreateDescriptor(dimensions: 3);
+        C = c.CreateDescriptor(dimensions: 3);
+        X = x.CreateDescriptor(dimensions: 3);
 
         // temp
-        AB = Fusion.CreateVirtualDescriptor<T>(x.Shape);
-        Z = Fusion.CreateVirtualDescriptor<T>(x.Shape);
+        AB = Fusion.CreateVirtualDescriptor<T>(x.Shape, dimensions: 3);
+        Z = Fusion.CreateVirtualDescriptor<T>(x.Shape, dimensions: 3);
 
         // operations
         Product = Fusion.MatMul(A, B, AB);

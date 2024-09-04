@@ -10,14 +10,16 @@ internal static class Fusion
     internal static long MaxVirtualId;
 
     public static CudnnTensorDescriptor<T> CreateDescriptor<T>(
-        this AbstractTensor<T> tensor)
+        this AbstractTensor<T> tensor,
+        int dimensions = 2)
         where T : unmanaged, IFloatingPoint<T> => 
-        new(tensor);
+        new(tensor, dimensions);
 
     public static CudnnTensorDescriptor<T> CreateVirtualDescriptor<T>(
-        Shape shape)
+        Shape shape,
+        int dimensions = 2)
         where T : unmanaged, IFloatingPoint<T> => 
-        new(shape, --MaxVirtualId, isVirtual: true);
+        new(shape, --MaxVirtualId, dimensions, isVirtual: true);
 
     // reduction
     
