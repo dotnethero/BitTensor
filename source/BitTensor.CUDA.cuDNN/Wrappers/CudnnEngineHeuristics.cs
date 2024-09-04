@@ -46,6 +46,41 @@ internal sealed unsafe class CudnnEngineHeuristics : IDisposable
     
     public CudnnEngineConfiguration[] GetConfigurations()
     {
+        var count = GetConfigurationsCount();
+        if (count == 0)
+            throw new InvalidOperationException("Configuration not found");
+
+        var configs = new cudnnBackendDescriptor_t*[count];
+        var result = new CudnnEngineConfiguration[count];
+
+        for (var i = 0; i < count; ++i)
+        {
+            configs[i] = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINECFG_DESCRIPTOR);
+        }
+
+        fixed (cudnnBackendDescriptor_t** pointer = configs)
+        {
+            var status = cuDNN.cudnnBackendGetAttribute(
+                Descriptor,
+                AttributeName.CUDNN_ATTR_ENGINEHEUR_RESULTS,
+                AttributeType.CUDNN_TYPE_BACKEND_DESCRIPTOR, 
+                requestedElementCount: count,
+                elementCount: null,
+                pointer);
+
+            Status.EnsureIsSuccess(status);
+        }
+
+        for (var i = 0; i < count; ++i)
+        {
+            result[i] = new(configs[i]);
+        }
+        
+        return result;
+    }
+
+    private long GetConfigurationsCount()
+    {
         var count = -1L;
         
         var countStatus = cuDNN.cudnnBackendGetAttribute(
@@ -57,34 +92,7 @@ internal sealed unsafe class CudnnEngineHeuristics : IDisposable
             null);
         
         Status.EnsureIsSuccess(countStatus);
-        
-        if (count == 0)
-            throw new InvalidOperationException("Configuration not found");
-
-        var configs = stackalloc cudnnBackendDescriptor_t*[(int)count];
-        var result = new CudnnEngineConfiguration[count];
-
-        for (var i = 0; i < count; ++i)
-        {
-            configs[i] = Descriptors.Create(DescriptorType.CUDNN_BACKEND_ENGINECFG_DESCRIPTOR);
-        }
-
-        var status = cuDNN.cudnnBackendGetAttribute(
-            Descriptor,
-            AttributeName.CUDNN_ATTR_ENGINEHEUR_RESULTS,
-            AttributeType.CUDNN_TYPE_BACKEND_DESCRIPTOR, 
-            requestedElementCount: count,
-            elementCount: null,
-            configs);
-
-        Status.EnsureIsSuccess(status);
-
-        for (var i = 0; i < count; ++i)
-        {
-            result[i] = new(configs[i]);
-        }
-        
-        return result;
+        return count;
     }
 
     public void Dispose()

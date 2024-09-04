@@ -67,16 +67,29 @@ internal class CrossComparionTests
     public static void Test_reduction()
     {
         var random = new CuRandContext();
+        
+        using var inputs = random.Normal([8, 16]);
+        using var outputs1 = new CudaTensor<float>([8, 1]);
+        using var outputs2 = new CudaTensor<float>([8, 1]);
+        
+        using var cutensor = new CuTensorContext();
+        using var cuplan = cutensor.CreateReductionPlan<float>(
+            inputs.Shape,
+            outputs1.Shape,
+            axis: [^1],
+            operation: cutensorOperator_t.CUTENSOR_OP_ADD,
+            keepDims: true);
 
-        using var inputs = random.Normal([16, 16]);
-        using var outputs2 = new CudaTensor<float>([]);
+        cuplan.Execute(inputs, outputs1);
+
+        CuDebug.WriteLine(outputs1);
         
         using var context = new CudnnContext();
 
         using var ti = inputs.CreateDescriptor();
         using var to = outputs2.CreateDescriptor();
 
-        using var sum = Fusion.Max(ti, to);
+        using var sum = Fusion.Sum(ti, to);
         using var graph = new CudnnGraph(context, [sum]);
         using var plan = graph.GetExecutionPlan();
         using var pack = new CudnnVariantPack<float>([inputs, outputs2]);
@@ -84,5 +97,7 @@ internal class CrossComparionTests
         plan.Execute(pack);
         
         CuDebug.WriteLine(outputs2);
+        
+        TensorAsserts.ValuesAreEqual(outputs1, outputs2, tolerance: 1e-3f);
     }
 }
