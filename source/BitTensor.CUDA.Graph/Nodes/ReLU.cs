@@ -1,4 +1,5 @@
 ﻿using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Graph.Nodes;
 
@@ -15,7 +16,7 @@ internal sealed unsafe class ReLU : AbstractOperation<float>
     
     public override void Execute()
     {
-        Kernels.LeakyReLU(Input.Size, Input.Pointer, Tensor.Pointer, Alpha);
+        Kernels.LeakyReLU(Input.Size, Input.Pointer, Tensor.Pointer, Alpha, CuStream.Default);
     }
     
     public override CudaNode<float>[] Propagate(CudaNode<float> gradient)

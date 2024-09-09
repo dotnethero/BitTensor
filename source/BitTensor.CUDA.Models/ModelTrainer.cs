@@ -1,5 +1,10 @@
-﻿using System.Numerics;
+﻿using System.ComponentModel;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Text;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Models;
 
@@ -32,8 +37,15 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
         Gradients = Loss.GetGradients();
     }
 
-    public void Fit(float lr, int epochs, bool trace = false)
+    public unsafe void Fit(float lr, int epochs, bool trace = false)
     {
+        CUstream_st* stream = null;
+        CUgraph_st* graph = null;
+        CUgraphExec_st* graphInstance = null;
+
+        var error0 = cudaRT.cudaStreamCreate(&stream);
+        CuStream.Default = stream;
+
         for (var i = 0; i < epochs; i++)
         {
             var batchSize = Inputs.Shape[0];
@@ -47,13 +59,45 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
                 var batchIndexes = indexes.AsSpan(j, batchSize);
                 Inputs.LoadBatches(InputDataset, batchIndexes);
                 Desired.LoadBatches(OutputDataset, batchIndexes);
-                Loss.EnsureHasUpdatedValues();
-                ApplyGradients(Model.Parameters, Gradients, lr);
+
+                if (j == 0 && graphInstance is null)
+                {
+                    Loss.EnsureHasUpdatedValues();
+                    ApplyGradients(Model.Parameters, Gradients, lr);
+                }
+
+                if (j > 0 && graphInstance is null)
+                {
+                    var error1 = cudaRT.cudaStreamBeginCapture(stream, cudaStreamCaptureMode.cudaStreamCaptureModeThreadLocal);
+                    Loss.EnsureHasUpdatedValues();
+                    ApplyGradients(Model.Parameters, Gradients, lr);
+                    var error2 = cudaRT.cudaStreamEndCapture(stream, &graph);
+                    //var bytes = Encoding.ASCII.GetBytes(@"C:\Projects\graph.log");
+                    //fixed (byte* b = bytes)
+                    //{
+                    //    var error25 = cudaRT.cudaGraphDebugDotPrint(graph, b, 0);
+                    //}
+
+                    var error3 = cudaRT.cudaGraphInstantiate(&graphInstance, graph, 1);
+                }
+
+                if (j > 0 && graphInstance is not null)
+                {
+                    var error5 = cudaRT.cudaGraphLaunch(graphInstance, stream);
+                }
             }
 
-            var loss = CuDebug.View(Loss);
-            Console.WriteLine(loss);
+            var error6 = cudaRT.cudaStreamSynchronize(stream);
+
+            if (trace)
+            {
+                var loss = CuDebug.View(Loss);
+                Console.WriteLine(loss);
+            }
         }
+
+        cudaRT.cudaStreamDestroy(stream);
+        CuStream.Default = (CUstream_st*)0;
     }
     
     private static void ApplyGradients(CudaWeights<T>[] variables, GradientCollection<T> gradients, float lr)

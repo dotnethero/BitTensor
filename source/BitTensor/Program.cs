@@ -10,7 +10,7 @@ internal static class Program
     public static void Main()
     {
         Environment.SetEnvironmentVariable("CUDNN_LOGDEST_DBG", "stderr");
-        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "2");
+        Environment.SetEnvironmentVariable("CUDNN_LOGLEVEL_DBG", "0");
         Test_MNIST();
     }
 
@@ -32,15 +32,14 @@ internal static class Program
         var model = Model.Create(
         [
             new Flatten<float>(context),
-            //new Linear(context, inputCount, hiddenCount, Activation.ReLU(alpha: 0.1f)),
-            new LinearRelu(context, inputCount, hiddenCount, alpha: 0.1f),
-            new Linear(context, hiddenCount, outputCount, Activation.Softmax(CudaBackend.cuTENSOR))
+            new Linear(context, inputCount, hiddenCount, Activation.ReLU(alpha: 0.3f)),
+            new Linear(context, hiddenCount, outputCount, Activation.Softmax())
         ]);
 
         // train:
         var trainer = Model.Compile(model, Loss.CrossEntropy, trainImages, trainLabels, batchSize);
         var timer = Stopwatch.StartNew();
-        trainer.Fit(lr: 5e-3f, epochs: 10, trace: true);
+        trainer.Fit(lr: 5e-3f, epochs: 100, trace: false);
         timer.Stop();
 
         // evaluate:
