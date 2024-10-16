@@ -39,7 +39,7 @@ internal static class Program
         // train:
         var trainer = Model.Compile(model, Loss.CrossEntropy, trainImages, trainLabels, batchSize);
         var timer = Stopwatch.StartNew();
-        trainer.Fit(lr: 5e-3f, epochs: 100, trace: false);
+        trainer.Fit(lr: 5e-3f, epochs: 50, trace: false);
         timer.Stop();
 
         // evaluate:
