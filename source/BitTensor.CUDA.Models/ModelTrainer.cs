@@ -42,7 +42,7 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
         CudaGraphInstance graphInstance = null;
         CuStream.Default = stream.Pointer; // TODO: Update operation contracts
 
-        for (var i = 0; i < epochs; i++)
+        for (var epoch = 0; epoch < epochs; epoch++)
         {
             var batchSize = Inputs.Shape[0];
             var datasetSize = InputDataset.Shape[0];
@@ -50,44 +50,45 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
 
             Random.Shared.Shuffle(indexes);
 
-            for (var j = 0; j < datasetSize - batchSize; j += batchSize)
+            for (var offset = 0; offset < datasetSize - batchSize; offset += batchSize)
             {
-                var batchIndexes = indexes.AsSpan(j, batchSize);
+                var batchIndexes = indexes.AsSpan(offset, batchSize);
                 Inputs.LoadBatches(InputDataset, batchIndexes);
                 Desired.LoadBatches(OutputDataset, batchIndexes);
 
-                if (j == 0 && graphInstance is null)
+                if (epoch == 0 && offset == 0)
                 {
-                    // perform allocations on first run
+                    // perform allocations on first run 
                     Loss.EnsureHasUpdatedValues();
                     ApplyGradients(Model.Parameters, Gradients, lr);
                 }
-
-                if (j > 0 && graphInstance is null)
+                else
                 {
-                    // capture execution graph
-                    stream.BeginCapture();
-                    Loss.EnsureHasUpdatedValues();
-                    ApplyGradients(Model.Parameters, Gradients, lr);
-                    graph = stream.EndCapture();
-                    graphInstance = graph.CreateInstance();
-                }
-
-                if (j > 0 && graphInstance is not null)
-                {
-                    graphInstance.Launch(stream);
+                    if (graphInstance is null)
+                    {
+                        // capture execution graph
+                        stream.BeginCapture();
+                        Loss.EnsureHasUpdatedValues();
+                        ApplyGradients(Model.Parameters, Gradients, lr);
+                        graph = stream.EndCapture();
+                        graphInstance = graph.CreateInstance();
+                    }
+                    else
+                    {
+                        graphInstance.Launch(stream);
+                    }
                 }
             }
             
-            stream.Synchronize();
-            
             if (trace)
             {
+                stream.Synchronize();
                 var loss = CuDebug.View(Loss);
                 Console.WriteLine(loss);
             }
         }
 
+        stream.Synchronize();
         graphInstance?.Dispose();
         graph?.Dispose();
         
