@@ -49,6 +49,7 @@ internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T
         float alpha,
         float beta)
     {
+        var yy = CuStream.Default;
         var status = cutensorContract(
             Context.Handle, 
             plan.Plan, 
@@ -56,7 +57,7 @@ internal sealed unsafe class CuTensorContraction<T> : ICuTensorOperation where T
             &beta,  c.Pointer, d.Pointer, 
             ws.Pointer, 
             ws.Bytes,
-            CuStream.Default);
+            yy);
         
         Status.EnsureIsSuccess(status);
     }

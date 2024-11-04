@@ -63,6 +63,9 @@ public sealed class Shape : IEnumerable<int>
     
     public Shape Expand(int dimensions)
     {
+        if (dimensions <= Dimensions)
+            return this;
+        
         var dims = Dimensions < dimensions ? dimensions : Dimensions;
         var additional = dims - Dimensions;
         var ones = Enumerable.Repeat(1, additional).ToArray();

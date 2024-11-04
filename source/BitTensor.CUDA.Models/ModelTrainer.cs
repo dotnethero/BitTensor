@@ -1,5 +1,7 @@
 ﻿using System.Numerics;
 using BitTensor.CUDA.Graph;
+using BitTensor.CUDA.Interop;
+using BitTensor.CUDA.Wrappers;
 
 namespace BitTensor.CUDA.Models;
 
@@ -32,9 +34,15 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
         Gradients = Loss.GetGradients();
     }
 
-    public void Fit(float lr, int epochs, bool trace = false)
+    public unsafe void Fit(float lr, int epochs, bool trace = false)
     {
-        for (var i = 0; i < epochs; i++)
+        using var stream = new CudaStream();
+        
+        CudaGraph graph = null;
+        CudaGraphInstance graphInstance = null;
+        CuStream.Default = stream.Pointer; // TODO: Update operation contracts
+
+        for (var epoch = 0; epoch < epochs; epoch++)
         {
             var batchSize = Inputs.Shape[0];
             var datasetSize = InputDataset.Shape[0];
@@ -42,18 +50,49 @@ public sealed class ModelTrainer<T> where T : unmanaged, IFloatingPoint<T>
 
             Random.Shared.Shuffle(indexes);
 
-            for (var j = 0; j < datasetSize - batchSize; j += batchSize)
+            for (var offset = 0; offset < datasetSize - batchSize; offset += batchSize)
             {
-                var batchIndexes = indexes.AsSpan(j, batchSize);
+                var batchIndexes = indexes.AsSpan(offset, batchSize);
                 Inputs.LoadBatches(InputDataset, batchIndexes);
                 Desired.LoadBatches(OutputDataset, batchIndexes);
-                Loss.EnsureHasUpdatedValues();
-                ApplyGradients(Model.Parameters, Gradients, lr);
-            }
 
-            var loss = CuDebug.View(Loss);
-            Console.WriteLine(loss);
+                if (epoch == 0 && offset == 0)
+                {
+                    // perform allocations on first run 
+                    Loss.EnsureHasUpdatedValues();
+                    ApplyGradients(Model.Parameters, Gradients, lr);
+                }
+                else
+                {
+                    if (graphInstance is null)
+                    {
+                        // capture execution graph
+                        stream.BeginCapture();
+                        Loss.EnsureHasUpdatedValues();
+                        ApplyGradients(Model.Parameters, Gradients, lr);
+                        graph = stream.EndCapture();
+                        graphInstance = graph.CreateInstance();
+                    }
+                    else
+                    {
+                        graphInstance.Launch(stream);
+                    }
+                }
+            }
+            
+            if (trace)
+            {
+                stream.Synchronize();
+                var loss = CuDebug.View(Loss);
+                Console.WriteLine(loss);
+            }
         }
+
+        stream.Synchronize();
+        graphInstance?.Dispose();
+        graph?.Dispose();
+        
+        CuStream.Default = default;
     }
     
     private static void ApplyGradients(CudaWeights<T>[] variables, GradientCollection<T> gradients, float lr)
