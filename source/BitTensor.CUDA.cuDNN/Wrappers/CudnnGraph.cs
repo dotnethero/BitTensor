@@ -58,7 +58,7 @@ internal sealed unsafe class CudnnGraph : ICudnnGraph
         Status.EnsureIsSuccess(status);
     }
 
-    public ICudnnPlan GetExecutionPlan() => GetExecutionPlan(cudnnBackendHeurMode_t.CUDNN_HEUR_MODE_INSTANT);
+    public ICudnnPlan GetExecutionPlan() => GetExecutionPlan(cudnnBackendHeurMode_t.CUDNN_HEUR_MODE_A);
 
     public ICudnnPlan GetExecutionPlan(cudnnBackendHeurMode_t mode)
     {

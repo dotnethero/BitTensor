@@ -45,7 +45,14 @@ internal sealed unsafe class CuTensorBinaryOperation<T> : ICuTensorOperation whe
         float alpha,
         float gamma)
     {
-        var status = cutensorElementwiseBinaryExecute(Context.Handle, plan.Plan, &alpha, a.Pointer, &gamma, b.Pointer, c.Pointer, CuStream.Default);
+        var status = cutensorElementwiseBinaryExecute(
+            Context.Handle,
+            plan.Plan,
+            &alpha, a.Pointer,
+            &gamma, b.Pointer,
+                    c.Pointer,
+            CuStream.Default);
+        
         Status.EnsureIsSuccess(status);
     }
     

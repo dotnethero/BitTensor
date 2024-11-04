@@ -4,6 +4,8 @@ namespace BitTensor.CUDA.Wrappers;
 
 public sealed unsafe class CudaStream : IDisposable
 {
+    public static readonly CUstream_st* Default = (CUstream_st*)0;
+
     public readonly CUstream_st* Pointer;
 
     public CudaStream()
